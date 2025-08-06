@@ -82,7 +82,7 @@ jobs:
                   if (Test-Path package) { Remove-Item package -Recurse }
                   New-Item -ItemType Directory -Force -Path package | Out-Null
                   Copy-Item -Path secrets -Destination package -Recurse
-                  Copy-Item -Path "resident_app.exe","resident_app.exe.sha256","launchParams.jsonc","functionParams.jsonc","networks.jsonc","tokens.jsonc" -Destination package
+                  Copy-Item -Path "resident_app.exe","resident_app.exe.sha256","launchParams.jsonc","functionParams.jsonc","networks.jsonc","tokens.jsonc","launchers/run_resident_app.cmd" -Destination package
                   Push-Location package
                   Compress-Archive -Path * -DestinationPath "../${{ matrix.zip_name }}"
                   Pop-Location
@@ -94,7 +94,7 @@ jobs:
               run: |
                   mkdir -p package
                   cp -r secrets package
-                  cp resident_app resident_app.sha256 launchParams.jsonc functionParams.jsonc networks.jsonc tokens.jsonc package/
+                  cp resident_app resident_app.sha256 launchParams.jsonc functionParams.jsonc networks.jsonc tokens.jsonc launchers/run_resident_app.sh package/
                   cd package
                   zip -r "../${{ matrix.zip_name }}" .
 
