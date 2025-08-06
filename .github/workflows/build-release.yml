@@ -24,7 +24,7 @@ jobs:
                       zip_name: release-macos.zip
         runs-on: ${{ matrix.os }}
         env:
-            NODE_VERSION: '22.18.0'
+            NODE_VERSION: '24.5.0'
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         steps:

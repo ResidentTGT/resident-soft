@@ -7,6 +7,7 @@ import { ChainId, Network } from '@utils/network';
 import { ethers } from 'ethers';
 import { ERC20_ABI } from '@utils/abi/erc20abi';
 import { FusionSDK, PrivateKeyProviderConnector } from '@1inch/fusion-sdk';
+import { URLSearchParams } from 'node:url';
 
 const INCH_API_BASE_URL = 'https://api.1inch.io/v5.0/';
 
