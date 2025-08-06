@@ -1,6 +1,5 @@
 import './src/extensions/array';
-import { emitWarning } from '@src/utils/emitWarning';
-emitWarning();
+
 import { readFileSync } from 'fs';
 import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
 import { LaunchParams } from '@utils/launchParams.type';
