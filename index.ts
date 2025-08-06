@@ -5,7 +5,9 @@ import { LaunchParams } from '@utils/launchParams.type';
 import { parse } from 'jsonc-parser';
 import { welcome } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
+import { emitWarning } from '@src/utils/emitWarning';
 
+emitWarning();
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
 	console.error(`\u001b[1;31mUnhandled exception occurred: ${message}\u001b[0m`);
