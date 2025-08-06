@@ -1,0 +1,37 @@
+{
+	"ACTION_PARAMS": {
+		"group": "CommonUi",
+		"action": "RestoreRabby",
+	},
+	"SHUFFLE_ACCOUNTS": false,
+	"UNTIL_SUCCESS": true,
+	"TAKE_STATE": false,
+	"STATE_NAME": "refuel",
+	"JOB_ACCOUNTS": [
+		{
+			"file": "resident_main",
+			"start": 130,
+			"end": 500,
+			"include": [1],
+			"exclude": [],
+		},
+	],
+	"DELAY_BETWEEN_ACCS_IN_S": [10, 0],
+
+	"NUMBER_OF_THREADS": 10,
+	"NUMBER_OF_EXECUTIONS": 1,
+	"CHAIN_ID": 8453,
+
+	"WAIT_GAS_PRICE": 0,
+	"DELAY_AFTER_ERROR_IN_S": 1,
+	"PROXY": false,
+	"ROTATE_PROXY": false,
+	"USE_ENCRYPTION": true,
+	"ENCRYPTION": {
+		"ACCOUNTS_ENCRYPTED_PATH": "secrets/accounts/encrypted",
+		"ACCOUNTS_DECRYPTED_PATH": "secrets/accounts/decrypted",
+		"SECRET_STORAGE_ENCRYPTED_PATH": "secrets/secretStorage/encrypted/secretStorage.jsonc",
+		"SECRET_STORAGE_DECRYPTED_PATH": "secrets/secretStorage/decrypted/secretStorage.jsonc",
+	},
+	"LICENSE": "",
+}

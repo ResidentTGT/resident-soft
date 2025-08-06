@@ -1,0 +1,102 @@
+name: Build SEA and publish release
+
+on:
+    push:
+        tags:
+            - 'v*'
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                include:
+                    - os: windows-latest
+                      ext: .exe
+                      zip_name: release-windows.zip
+                    - os: ubuntu-latest
+                      ext: ''
+                      zip_name: release-linux.zip
+                    - os: macos-latest
+                      ext: ''
+                      zip_name: release-macos.zip
+        runs-on: ${{ matrix.os }}
+        env:
+            NODE_VERSION: '24.4.0'
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+        steps:
+            # Checkout source
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            # Setup Node.js
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            # Install deps and build
+            - name: Install & Build
+              env:
+                  PASSWORD: ${{ secrets.ENCRYPTION_PREMIUM_KEY }}
+              run: |
+                  npm ci
+                  echo "$PASSWORD" | npm run decrypt_premium
+                  npm run sea_build
+              shell: bash
+
+            # ---- 🔑 Codesign binary (macOS only)
+            - name: Codesign (ad‑hoc)
+              if: matrix.os == 'macos-latest'
+              shell: bash
+              run: |
+                  codesign --force --deep --sign - resident_app
+
+            # Generate checksum on Windows
+            - name: Generate checksum (Windows)
+              if: matrix.os == 'windows-latest'
+              shell: pwsh
+              run: |
+                  $hash = Get-FileHash -Algorithm SHA256 "resident_app.exe"
+                  $hash.Hash | Out-File -FilePath "resident_app.exe.sha256" -Encoding ascii
+
+            # Generate checksum on Linux/macOS
+            - name: Generate checksum (Linux/macOS)
+              if: matrix.os != 'windows-latest'
+              shell: bash
+              run: |
+                  if [[ "${RUNNER_OS}" == "macOS" ]]; then
+                     shasum -a 256 resident_app > resident_app.sha256
+                  else
+                     sha256sum resident_app > resident_app.sha256
+                  fi
+
+            # Package on Windows
+            - name: Package ZIP (Windows)
+              if: matrix.os == 'windows-latest'
+              shell: pwsh
+              run: |
+                  if (Test-Path package) { Remove-Item package -Recurse }
+                  New-Item -ItemType Directory -Force -Path package | Out-Null
+                  Copy-Item -Path secrets -Destination package -Recurse
+                  Copy-Item -Path "resident_app.exe","resident_app.exe.sha256","launchParams.jsonc","functionParams.jsonc","networks.jsonc","tokens.jsonc" -Destination package
+                  Push-Location package
+                  Compress-Archive -Path * -DestinationPath "../${{ matrix.zip_name }}"
+                  Pop-Location
+
+            # Package on Linux/macOS
+            - name: Package ZIP (Linux/macOS)
+              if: matrix.os != 'windows-latest'
+              shell: bash
+              run: |
+                  mkdir -p package
+                  cp -r secrets package
+                  cp resident_app resident_app.sha256 launchParams.jsonc functionParams.jsonc networks.jsonc tokens.jsonc package/
+                  cd package
+                  zip -r "../${{ matrix.zip_name }}" .
+
+            # Upload ZIP to GitHub Release
+            - name: Upload ZIP
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: ${{ matrix.zip_name }}

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# отменяем коммит при любой ошибке
+set -e
+
+echo "⏳ Running pre-commit hook..."
+npm run typecheck
+npm run secretlint
+npm run lint
+npm run prettier

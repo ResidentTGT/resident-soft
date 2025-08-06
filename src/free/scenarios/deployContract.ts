@@ -1,0 +1,76 @@
+// secretlint-disable @secretlint/secretlint-rule-secp256k1-privatekey
+import { Account } from '@utils/account';
+import { Logger } from '@utils/logger';
+import { Network } from '@utils/network';
+import { ContractFactory, ethers } from 'ethers';
+
+export async function deployContract(account: Account, network: Network) {
+	if (!account.wallets?.evm?.address || !account.wallets?.evm?.private) throw new Error(`There is no account.wallets?.evm!`);
+
+	const provider = network.getProvider();
+	const wallet = new ethers.Wallet(account.wallets.evm.private, provider);
+
+	const byteCode = EMPTY_CONTRACT_BYTECODE; //[OWN_CONTRACT_BYTECODE, MERKLY_BYTECODE][Random.intFromInterval(1, 2) - 1];
+	const factory = new ContractFactory(DEPLOY_ABI, byteCode, wallet);
+
+	const contract = await factory.deploy();
+
+	await Logger.getInstance().log(`${await contract.getAddress()} deployed on Scroll from ${account.wallets?.evm?.address}`);
+}
+
+export const DEPLOY_ABI = [
+	{
+		inputs: [],
+		stateMutability: 'nonpayable',
+		type: 'constructor',
+	},
+	{
+		inputs: [],
+		name: 'getBalance',
+		outputs: [
+			{
+				internalType: 'uint256',
+				name: '',
+				type: 'uint256',
+			},
+		],
+		stateMutability: 'view',
+		type: 'function',
+	},
+	{
+		inputs: [],
+		name: 'owner',
+		outputs: [
+			{
+				internalType: 'address payable',
+				name: '',
+				type: 'address',
+			},
+		],
+		stateMutability: 'view',
+		type: 'function',
+	},
+	{
+		inputs: [
+			{
+				internalType: 'uint256',
+				name: '_amount',
+				type: 'uint256',
+			},
+		],
+		name: 'withdraw',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function',
+	},
+	{
+		stateMutability: 'payable',
+		type: 'receive',
+	},
+] as const;
+
+export const EMPTY_CONTRACT_BYTECODE = '';
+export const OWN_CONTRACT_BYTECODE =
+	'0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610258806100606000396000f3fe6080604052600436106100385760003560e01c806312065fe0146100445780632e1a7d4d1461006f5780638da5cb5b146100aa5761003f565b3661003f57005b600080fd5b34801561005057600080fd5b506100596100eb565b6040518082815260200191505060405180910390f35b34801561007b57600080fd5b506100a86004803603602081101561009257600080fd5b81019080803590602001909291905050506100f3565b005b3480156100b657600080fd5b506100bf6101fe565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b600047905090565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146101b4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601f8152602001807f4f6e6c7920746865204f776e65722063616c6c2074686973206d6574686f640081525060200191505060405180910390fd5b3373ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f193505050501580156101fa573d6000803e3d6000fd5b5050565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff168156fea26469706673582212200e37ede00b52138cd97343ee0b979ed1ae10992c82f64d42a97932fbebb9e4e164736f6c63430007060033' as const;
+export const MERKLY_BYTECODE =
+	'0x60806040526000805461ffff1916905534801561001b57600080fd5b5060fb8061002a6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80630c55699c146037578063b49004e914605b575b600080fd5b60005460449061ffff1681565b60405161ffff909116815260200160405180910390f35b60616063565b005b60008054600191908190607a90849061ffff166096565b92506101000a81548161ffff021916908361ffff160217905550565b61ffff81811683821601908082111560be57634e487b7160e01b600052601160045260246000fd5b509291505056fea2646970667358221220666c87ec501268817295a4ca1fc6e3859faf241f38dd688f145135970920009264736f6c63430008120033';

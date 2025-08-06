@@ -1,0 +1,66 @@
+{
+	"Common": {
+		"CheckBalances": {
+			"tokenNames": ["ETH"],
+			"tokenAlert": { "symbol": "", "less": true, "amountAlert": 100 },
+		},
+		"GenerateWallets": { "amount": 5 },
+		"RefuelGasZip": { "amount": [1, 0], "toChainIds": ["8453"] },
+		"RefuelManyGasZip": { "amount": [1, 0], "toChainIds": ["8453"], "addresses": ["0x..."] },
+		"RefuelRelayLink": { "amount": [0.0007, 0.0008], "toChainId": "Solana" },
+		"RefuelManyRelayLink": { "amount": [0.0007, 0.0008], "toChainId": "8453", "addresses": ["0x..."] },
+	},
+	"Evm": {
+		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "bitget-evm" },
+		"CheckNft": { "nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62" },
+		"Wrap": { "amount": [1, 0] },
+		"Unwrap": { "amount": [1, 0] },
+		"Approve": { "tokenSymbol": "USDT", "spender": "0x...", "amount": [1, 1] },
+		"MakeTransaction": { "contractAddress": "0x005E2c2a327cEBE03409221cb37Abf4911AFF791", "data": "0x1249c58b", "value": 0 },
+	},
+	"Svm": {
+		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "" },
+	},
+	"Odos": {
+		"Swap": {
+			"token1": "USDC",
+			"token2": "ETH",
+			"amount": [0, 0],
+			"slippageInPercent": 3,
+			"minAmountForSwap": "0.1",
+		},
+	},
+	"Okx": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
+	"Bitget": { "Withdraw": { "amount": [1, 2], "token": "SOL", "to": "solana", "toChainId": "Solana" } },
+	"Gate": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
+	"Binance": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
+	"CommonUi": {
+		"OpenPages": {
+			"pageUrls": [
+				"https://opensea.io/",
+				// "https://mail.google.com/mail/u/0/#inbox"
+			],
+			"loginInRabby": true,
+			"loginInPetra": false,
+		},
+		"GetProfiles": { "count": 1000 },
+		"RestoreMetamask": { "closeBrowser": true },
+		"RestorePetra": { "closeBrowser": true },
+		"RestoreBackpack": { "closeBrowser": true },
+		"RestoreArgent": { "closeBrowser": true },
+		"RestoreRabby": { "closeBrowser": true },
+	},
+	"Opensea": {
+		"OpenseaBuyByLink": { "links": ["https://opensea.io/item/base/..."] },
+		"SweepByLink": { "links": ["https://opensea.io/collection/unioverse-heroes-2"], "count": 2 },
+		"SellCollectionByLink": { "link": "https://opensea.io/collection/unioverse-heroes-2" },
+	},
+	"Browser": {},
+	"Twitter": {},
+	"Discord": {},
+
+	"Berachain": { "FlyTradeSwap": { "tokenSymbol1": "HONEY", "tokenSymbol2": "BERA", "amount": [1, 0] } },
+
+	"TEST": { "TEST": {} },
+	"Plasma": { "Deposit": { "token": "USDT", "amount": "0.01" } },
+}
