@@ -38,6 +38,6 @@ export async function checkNft(accounts: Account[], chainId: ChainId, nftContrac
 
 	worksheet.getRow(1).font = { bold: true };
 
-	const path = `states/nft.xlsx`;
+	const path = `states/nft_${nftContract}.xlsx`;
 	await workbook.xlsx.writeFile(path);
 }
