@@ -4,7 +4,7 @@ export class MissingFieldError extends Error {
 	public readonly fieldName: string;
 	public readonly columnName?: string;
 
-	constructor(fieldName?: string, isAccount = true) {
+	constructor(fieldName: string, isAccount = true) {
 		const allColumns: Column[] = SHEETS.flatMap((sheet) => sheet.columns);
 
 		if (isAccount) {
