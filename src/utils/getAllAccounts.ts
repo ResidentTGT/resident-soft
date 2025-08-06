@@ -13,5 +13,6 @@ export const getAllAccounts = async (folderPath: string, fileNames: string[]) =>
 	for (const file of filteredFiles) {
 		accs.push(...(await convertFromCsvToJsonAccounts(`${folderPath}/${file}`)));
 	}
+	await Logger.getInstance().log(`Total accounts in files: ${accs.length}`);
 	return accs;
 };
