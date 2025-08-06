@@ -180,7 +180,7 @@ export async function checkBalances(
 	const finalMessage = state.sumTokensBalances
 		.map((s) => `${s.token}: ${(+s.balance).toFixed(5)} (${(+s.balanceInUsd).toFixed(2)}$)`)
 		.join(' | ');
-	await logger.log(finalMessage + `\nData saved to states/${stateName}.json`, MessageType.Info);
+	await logger.log(finalMessage + `\nData saved to states/${stateName}.json`, MessageType.Notice);
 }
 
 export interface TokenBalance {

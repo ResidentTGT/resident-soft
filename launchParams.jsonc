@@ -1,24 +1,24 @@
 {
 	"ACTION_PARAMS": {
-		"group": "CommonUi",
-		"action": "RestoreRabby",
+		"group": "Common",
+		"action": "CheckBalances",
 	},
 	"SHUFFLE_ACCOUNTS": false,
-	"UNTIL_SUCCESS": true,
+	"UNTIL_SUCCESS": false,
 	"TAKE_STATE": false,
 	"STATE_NAME": "refuel",
 	"JOB_ACCOUNTS": [
 		{
-			"file": "resident_main",
-			"start": 130,
+			"file": "accs",
+			"start": 1,
 			"end": 500,
-			"include": [1],
+			"include": [],
 			"exclude": [],
 		},
 	],
-	"DELAY_BETWEEN_ACCS_IN_S": [10, 0],
+	"DELAY_BETWEEN_ACCS_IN_S": [1, 5],
 
-	"NUMBER_OF_THREADS": 10,
+	"NUMBER_OF_THREADS": 1,
 	"NUMBER_OF_EXECUTIONS": 1,
 	"CHAIN_ID": 8453,
 

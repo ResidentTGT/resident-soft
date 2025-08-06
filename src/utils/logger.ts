@@ -1,4 +1,4 @@
-import TelegramBot from 'node-telegram-bot-api';
+import { Bot as TelegramBot } from 'grammy';
 import { delay } from './delay';
 import fs from 'fs';
 
@@ -64,7 +64,7 @@ export class Logger {
 				while (!success && attempts < TRIES) {
 					attempts++;
 					try {
-						await this.telegramBot.sendMessage(this.telegramParams.chatId, message.toString().slice(0, 4090));
+						await this.telegramBot.api.sendMessage(this.telegramParams.chatId, message.toString().slice(0, 4090));
 						success = true;
 					} catch (e) {
 						if (attempts < TRIES) {
