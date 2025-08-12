@@ -63,4 +63,5 @@
 
 	"TEST": { "TEST": {} },
 	"Plasma": { "Deposit": { "token": "USDT", "amount": "0.01" } },
+	"ZksyncLite": { "SendToken": { "to": "0x..." } },
 }
