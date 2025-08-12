@@ -23,6 +23,7 @@ export enum ActionsGroupName {
 	Hemi = 'Hemi',
 	Shape = 'Shape',
 	Plasma = 'Plasma',
+	ZksyncLite = 'ZksyncLite',
 }
 
 export enum ActionName {
@@ -193,6 +194,11 @@ export const ACTIONS: ActionsGroup[] = [
 		group: ActionsGroupName.TEST,
 		premium: false,
 		actions: [{ action: ActionName.TEST, isolated: true }],
+	},
+	{
+		group: ActionsGroupName.ZksyncLite,
+		premium: true,
+		actions: [{ action: ActionName.SendToken, isolated: true }],
 	},
 	{
 		group: ActionsGroupName.TEST_PREMIUM,
