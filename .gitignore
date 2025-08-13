@@ -113,5 +113,5 @@ secrets/
 states/
 sea_build/*.exe
 sea_build/*.blob
-dependency-cruiser/dependency-graph.dot
-dependency-cruiser/dependency-graph.svg
+configs/dependency-cruiser/dependency-graph.dot
+configs/dependency-cruiser/dependency-graph.svg
