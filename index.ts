@@ -19,8 +19,6 @@ async function main() {
 
 		const licenseResult = await welcome(launchParams);
 		await sendTelemetry(licenseResult);
-		// if (licenseResult.ok && licenseResult.payload.password && existsSync('premium.zip'))
-		// 	await decryptPremium(licenseResult.payload.password);
 
 		const selectedOption = await promptUserForOption();
 		console.log(`\u001b[0;35m${CommandOption[selectedOption]} started.\u001b[0m`);
