@@ -49,12 +49,11 @@ export async function actionMode(
 
 	let handler;
 	if ((await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok) {
-		//const { PREMIUM_HANDLERS } = await importIfExists<any>('premium/handlersList.js');
 		let PREMIUM_HANDLERS: any;
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
 			PREMIUM_HANDLERS = require('src/premium/handlersList').PREMIUM_HANDLERS;
-		} catch (err) {
+		} catch {
 			PREMIUM_HANDLERS = [];
 		}
 		(PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>).forEach((handler, group) => {
