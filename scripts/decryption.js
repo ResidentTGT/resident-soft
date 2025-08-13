@@ -1,11 +1,12 @@
 const { createCipheriv, createDecipheriv, createHmac, randomBytes, ScryptOptions, scryptSync } = require('crypto');
 
 const path = require('path');
-const readline = require('node:readline/promises');
 const fs = require('fs');
 const promises = require('fs/promises');
 const archiver = require('archiver');
 const extract = require('extract-zip');
+const { parse } = require('jsonc-parser');
+const { verifyLicense } = require('./licenses');
 
 const ALGO = 'aes-256-gcm';
 const IV_LEN = 12;
@@ -109,38 +110,42 @@ async function processDirectory(dir, transform) {
 	}
 }
 
+async function readLicense(filePath = 'launchParams.jsonc') {
+	const text = await promises.readFile(filePath, 'utf8');
+	const data = parse(text);
+	return data.LICENSE;
+}
+
 (async () => {
 	try {
-		const isEncryption = process.argv[2] === 'encryption';
-		const rootDir = path.resolve('./src/premium');
-		const filePath = path.resolve('./premium.zip');
-		console.log(`${isEncryption ? 'Encrypting' : 'Decrypting'} ${rootDir} ...`);
+		const licenseFromArg = process.argv[3];
 
-		if (!isEncryption) await unzipArchive(filePath, rootDir);
+		const licenseStr = licenseFromArg ?? (await readLicense());
 
-		const rl = readline.createInterface({
-			input: process.stdin,
-			output: process.stdout,
-		});
+		const license = await verifyLicense(licenseStr);
 
-		let key;
-		try {
-			key = await rl.question(
-				`\u001b[0;32mEnter the key for ${isEncryption ? 'encryption' : 'decryption'} of premium: \u001b[0m`,
-			);
-		} finally {
-			rl.close();
-		}
-		if (!key) throw new Error(`Key for ecnryption/decryption is required!`);
+		if (license.ok) {
+			console.log('License is ok.');
+			const isEncryption = process.argv[2] === 'encryption';
+			const rootDir = path.resolve('./src/premium');
+			const filePath = path.resolve('./premium.zip');
+			console.log(`${isEncryption ? 'Encrypting' : 'Decrypting'} ${rootDir} ...`);
 
-		const func = isEncryption ? (content) => encrypt(key, content) : (content) => decrypt(key, content);
-		await processDirectory(rootDir, func);
-		console.log(`✅  All files ${isEncryption ? 'encrypted' : 'decrypted'}.`);
-		if (isEncryption) {
-			await zipDirectory(rootDir, filePath);
-			await removeDirectory(rootDir);
+			if (!isEncryption) await unzipArchive(filePath, rootDir);
+
+			const func = isEncryption
+				? (content) => encrypt(license.payload.password, content)
+				: (content) => decrypt(license.payload.password, content);
+			await processDirectory(rootDir, func);
+			console.log(`✅  All files ${isEncryption ? 'encrypted' : 'decrypted'}.`);
+			if (isEncryption) {
+				await zipDirectory(rootDir, filePath);
+				await removeDirectory(rootDir);
+			} else {
+				await removeDirectory(filePath);
+			}
 		} else {
-			await removeDirectory(filePath);
+			console.log('No license or invalid.');
 		}
 	} catch (err) {
 		console.error('❌  Error:', err);

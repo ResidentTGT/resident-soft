@@ -6,7 +6,7 @@
 	"type": "commonjs",
 	"scripts": {
 		"build": "tsc && tsc-alias",
-		"start": "npm run build && node ./build/index.js ",
+		"start": "npm run decrypt_premium && npm run build && node ./build/index.js ",
 		"restart": "node ./build/index.js",
 		"bundle": "esbuild index.ts --bundle --platform=node --sourcemap --main-fields=module,main  --format=cjs --outfile=dist/index.js",
 		"create_sea_blob": "node --experimental-sea-config sea-config.json",
@@ -20,7 +20,7 @@
 		"prettier": "prettier --check  \"**/*.+(js|ts)\"",
 		"prettier-fix": "prettier --write \"**/*.+(js|ts)\"",
 		"encrypt_premium": "node ./scripts/decryption.js encryption",
-		"decrypt_premium": "node ./scripts/decryption.js",
+		"decrypt_premium": "node ./scripts/decryption.js decryption",
 		"secretlint": "npx secretlint \"**/*\"",
 		"typecheck": "tsc -p tsconfig.json --noEmit"
 	},

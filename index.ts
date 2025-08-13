@@ -6,7 +6,6 @@ import { LaunchParams } from '@utils/launchParams.type';
 import { parse } from 'jsonc-parser';
 import { welcome } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
-import { decryptPremium } from '@src/utils/decryption/premium';
 
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -19,7 +18,6 @@ async function main() {
 		const functionParams = parse(readFileSync('./functionParams.jsonc', 'utf-8'));
 
 		const licenseResult = await welcome(launchParams);
-		if (licenseResult.ok && licenseResult.payload.password) await decryptPremium(licenseResult.payload.password);
 		await sendTelemetry(licenseResult);
 
 		const selectedOption = await promptUserForOption();

@@ -41,9 +41,10 @@ jobs:
             # Install deps and build
             - name: Install & Build
               env:
-                  PASSWORD: ${{ secrets.ENCRYPTION_PREMIUM_KEY }}
+                  LICENSE: ${{ secrets.LICENSE }}
               run: |
                   npm ci
+                  npm run decrypt_premium $LICENSE
                   npm run sea_build
               shell: bash
 
@@ -78,6 +79,7 @@ jobs:
               if: matrix.os == 'windows-latest'
               shell: pwsh
               run: |
+                  Compress-Archive -Path "build/src/premium/*" -DestinationPath "premium.zip"
                   if (Test-Path package) { Remove-Item package -Recurse }
                   New-Item -ItemType Directory -Force -Path package | Out-Null
                   Copy-Item -Path secrets -Destination package -Recurse
@@ -91,6 +93,7 @@ jobs:
               if: matrix.os != 'windows-latest'
               shell: bash
               run: |
+                  zip -r premium.zip build/src/premium
                   mkdir -p package
                   cp -r secrets package
                   cp resident_app resident_app.sha256 launchParams.jsonc functionParams.jsonc networks.jsonc tokens.jsonc launchers/run_resident_app.sh premium.zip package/
