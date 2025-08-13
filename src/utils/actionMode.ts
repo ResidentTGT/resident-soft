@@ -5,6 +5,7 @@ import { Logger, MessageType } from './logger';
 import { ACTIONS, ActionsGroupName } from '@src/actions';
 
 import { FREE_HANDLERS } from '@src/free/handlersList';
+// import { PREMIUM_HANDLERS } from '@src/premium/handlersList';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { BaseHandler } from './handler';
@@ -51,15 +52,25 @@ export async function actionMode(
 
 	let handler;
 	if ((await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok) {
-		const { PREMIUM_HANDLERS } = await importIfExists<any>('premium/handlersList.js');
-
+		//const { PREMIUM_HANDLERS } = await importIfExists<any>('premium/handlersList.js');
+		let PREMIUM_HANDLERS: any;
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			PREMIUM_HANDLERS = require('@src/premium/handlersList').PREMIUM_HANDLERS;
+		} catch (err) {
+			// Файл отсутствует — просто игнорируем
+			PREMIUM_HANDLERS = [];
+		}
 		(PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>).forEach((handler, group) => {
 			allHandlers.set(group, handler);
 		});
 
 		handler = allHandlers.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
 	} else handler = FREE_HANDLERS.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
-	if (!handler) throw new Error(`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}!`);
+	if (!handler)
+		throw new Error(
+			`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}! Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
+		);
 
 	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {
 		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? ACCOUNTS.slice().shuffle() : ACCOUNTS.slice();
