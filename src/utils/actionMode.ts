@@ -85,7 +85,7 @@ async function importIfExists<T = any>(alias: string): Promise<T | null> {
 	} catch (err: any) {
 		if (err.code === 'ENOENT')
 			throw new Error(
-				`src/premium not allowed (${fullPath}). Try to decrypt folder. p.4 here https://app.gitbook.com/o/3HwDYb9tB16Ul4k3ZVEk/s/8kiCOy3tpim42O8yPbnQ/launch/for-developers`,
+				`src/premium not allowed (${fullPath}). Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
 			);
 
 		throw err;

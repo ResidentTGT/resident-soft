@@ -113,7 +113,7 @@ async function processDirectory(dir, transform) {
 	try {
 		const isEncryption = process.argv[2] === 'encryption';
 		const rootDir = path.resolve('./src/premium');
-		const filePath = path.resolve('./src/premium.zip');
+		const filePath = path.resolve('./premium.zip');
 		console.log(`${isEncryption ? 'Encrypting' : 'Decrypting'} ${rootDir} ...`);
 
 		if (!isEncryption) await unzipArchive(filePath, rootDir);

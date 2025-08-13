@@ -11,11 +11,10 @@ sQIDAQAB
 -----END PUBLIC KEY-----`;
 
 export type LicenseClaims = JWTPayload & {
-	sub?: string;
-	user?: string;
-	exp: number;
-	iss?: string;
-	aud?: string;
+	user: string;
+	plan: string;
+	issuer: string;
+	password?: string;
 };
 
 export type VerifyResult<T extends LicenseClaims = LicenseClaims> =
