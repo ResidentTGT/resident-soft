@@ -1,7 +1,7 @@
 // see sources: https://docs.browser.vision/api-reference/
 
 import axios from 'axios';
-import { Browser } from 'puppeteer';
+import { Browser, ResourceType } from 'puppeteer-core';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import BlockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
@@ -58,26 +58,7 @@ export abstract class Vision {
 		folderId: string,
 		profileId: string,
 		stealth = true,
-		blockResources: (
-			| 'image'
-			| 'font'
-			| 'document'
-			| 'stylesheet'
-			| 'media'
-			| 'script'
-			| 'texttrack'
-			| 'xhr'
-			| 'fetch'
-			| 'prefetch'
-			| 'eventsource'
-			| 'websocket'
-			| 'manifest'
-			| 'signedexchange'
-			| 'ping'
-			| 'cspviolationreport'
-			| 'preflight'
-			| 'other'
-		)[] = [],
+		blockResources: ResourceType[] = [],
 		_2captchaApiKey?: string,
 		launchArgs: string[] = DEFAULT_CHROMIUM_ARGS,
 	): Promise<Browser> {
@@ -91,7 +72,7 @@ export abstract class Vision {
 		if (blockResources.length)
 			puppeteer.use(
 				BlockResourcesPlugin({
-					blockedTypes: new Set(blockResources),
+					blockedTypes: new Set(blockResources as any),
 				}),
 			);
 		if (_2captchaApiKey)

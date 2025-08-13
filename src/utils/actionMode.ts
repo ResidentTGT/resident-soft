@@ -5,8 +5,6 @@ import { Logger, MessageType } from './logger';
 import { ACTIONS, ActionsGroupName } from '@src/actions';
 
 import { FREE_HANDLERS } from '@src/free/handlersList';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { BaseHandler } from './handler';
 import { verifyLicense } from './licenses';
 
@@ -51,15 +49,24 @@ export async function actionMode(
 
 	let handler;
 	if ((await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok) {
-		const { PREMIUM_HANDLERS } = await importIfExists<any>('premium/handlersList.js');
-
+		//const { PREMIUM_HANDLERS } = await importIfExists<any>('premium/handlersList.js');
+		let PREMIUM_HANDLERS: any;
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			PREMIUM_HANDLERS = require('src/premium/handlersList').PREMIUM_HANDLERS;
+		} catch (err) {
+			PREMIUM_HANDLERS = [];
+		}
 		(PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>).forEach((handler, group) => {
 			allHandlers.set(group, handler);
 		});
 
 		handler = allHandlers.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
 	} else handler = FREE_HANDLERS.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
-	if (!handler) throw new Error(`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}!`);
+	if (!handler)
+		throw new Error(
+			`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}! Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
+		);
 
 	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {
 		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? ACCOUNTS.slice().shuffle() : ACCOUNTS.slice();
@@ -74,30 +81,5 @@ export async function actionMode(
 		};
 
 		await handler.handleAction(params);
-	}
-}
-
-async function importIfExists<T = any>(alias: string): Promise<T | null> {
-	const fullPath = path.resolve(process.cwd(), `build/src/${alias}`);
-
-	try {
-		await fs.access(fullPath);
-	} catch (err: any) {
-		if (err.code === 'ENOENT')
-			throw new Error(
-				`src/premium not allowed (${fullPath}). Try to decrypt folder. p.4 here https://app.gitbook.com/o/3HwDYb9tB16Ul4k3ZVEk/s/8kiCOy3tpim42O8yPbnQ/launch/for-developers`,
-			);
-
-		throw err;
-	}
-
-	try {
-		const mod = await import(`../` + alias);
-
-		return (mod as { default?: T }).default ?? (mod as T);
-	} catch (err: any) {
-		if (err.code === 'ERR_MODULE_NOT_FOUND') throw new Error(`Couldnt load module: ${alias}`);
-
-		throw err;
 	}
 }

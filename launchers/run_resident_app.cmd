@@ -1,4 +1,4 @@
 @echo off
 
-set "NODE_OPTIONS=--disable-warning=DEP0040 --disable-warning=DEP0169"
+set "NODE_NO_WARNINGS=1"
 "%~dp0resident_app.exe" %*

@@ -41,10 +41,10 @@ jobs:
             # Install deps and build
             - name: Install & Build
               env:
-                  PASSWORD: ${{ secrets.ENCRYPTION_PREMIUM_KEY }}
+                  LICENSE: ${{ secrets.LICENSE }}
               run: |
                   npm ci
-                  echo "$PASSWORD" | npm run decrypt_premium
+                  npm run decrypt_premium encryption=false filePath=src/premium.zip folderPath=src/premium license=$LICENSE
                   npm run sea_build
               shell: bash
 

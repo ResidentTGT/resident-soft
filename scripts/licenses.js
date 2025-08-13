@@ -1,4 +1,7 @@
-import { importSPKI, jwtVerify, type JWTPayload } from 'jose';
+// licenses.js
+'use strict';
+
+const jose = require('jose');
 
 const PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0k9jf2Bj+hA44gkubQEi
@@ -10,42 +13,29 @@ rOYCq12JJkY8swYCtVXfS4nEto15FtxPSNPuk1CpgTEsfYLqum6H0l9sls+dPGj3
 sQIDAQAB
 -----END PUBLIC KEY-----`;
 
-export type LicenseClaims = JWTPayload & {
-	user: string;
-	plan: string;
-	issuer: string;
-	password?: string;
-};
-
-export type VerifyResult<T extends LicenseClaims = LicenseClaims> =
-	| { ok: true; payload: T; expiresAt: Date; expiresInSec: number }
-	| { ok: false; reason: 'no_token' | 'bad_format' | 'missing_exp' | 'expired_or_invalid'; error?: unknown };
-
-let pubKeyPromise: ReturnType<typeof importSPKI> | null = null;
+let pubKeyPromise = null;
 async function getPublicKey() {
-	return (pubKeyPromise ??= importSPKI(PUBLIC_KEY_PEM, 'RS256'));
+	return (pubKeyPromise ??= jose.importSPKI(PUBLIC_KEY_PEM, 'RS256'));
 }
 
-export interface VerifyOptions {
-	clockToleranceSec?: number; // default 30s
-}
-
-function normalizeToken(token: string): string | null {
-	const t = token?.trim();
+function normalizeToken(token) {
+	const t = (token || '').trim();
 	if (!t) return null;
 	return t.startsWith('Bearer ') ? t.slice(7).trim() : t;
 }
 
-export async function verifyLicense<T extends LicenseClaims = LicenseClaims>(
-	token: string | null | undefined,
-	opts: VerifyOptions = {},
-): Promise<VerifyResult<T>> {
+/**
+ * @param {string|null|undefined} token
+ * @param {{ clockToleranceSec?: number }} [opts]
+ * @returns {Promise<{ ok: true, payload: any, expiresAt: Date, expiresInSec: number } | { ok: false, reason: 'no_token'|'bad_format'|'missing_exp'|'expired_or_invalid', error?: any }>}
+ */
+async function verifyLicense(token, opts = {}) {
 	const raw = token ? normalizeToken(token) : null;
 	if (!raw) return { ok: false, reason: 'no_token' };
 
 	try {
 		const pubKey = await getPublicKey();
-		const { payload } = await jwtVerify(raw, pubKey, {
+		const { payload } = await jose.jwtVerify(raw, pubKey, {
 			algorithms: ['RS256'],
 			typ: 'JWT',
 			clockTolerance: opts.clockToleranceSec ?? 30,
@@ -59,7 +49,7 @@ export async function verifyLicense<T extends LicenseClaims = LicenseClaims>(
 		const expiresInSec = payload.exp - nowSec;
 		return {
 			ok: true,
-			payload: payload as T,
+			payload,
 			expiresAt: new Date(payload.exp * 1000),
 			expiresInSec,
 		};
@@ -67,3 +57,5 @@ export async function verifyLicense<T extends LicenseClaims = LicenseClaims>(
 		return { ok: false, reason: 'expired_or_invalid', error: err };
 	}
 }
+
+module.exports = { verifyLicense };
