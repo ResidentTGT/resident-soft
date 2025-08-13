@@ -27,7 +27,7 @@ async function processDirectory(dir: string, transform: any) {
 
 export async function decryptPremium(password: string) {
 	try {
-		const rootDir = path.resolve('.src/premium');
+		const rootDir = path.resolve('build/src/premium');
 		const filePath = path.resolve('./premium.zip');
 
 		await unzipArchive(filePath, rootDir);
