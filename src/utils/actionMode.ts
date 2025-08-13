@@ -5,9 +5,6 @@ import { Logger, MessageType } from './logger';
 import { ACTIONS, ActionsGroupName } from '@src/actions';
 
 import { FREE_HANDLERS } from '@src/free/handlersList';
-// import { PREMIUM_HANDLERS } from '@src/premium/handlersList';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { BaseHandler } from './handler';
 import { verifyLicense } from './licenses';
 
@@ -56,9 +53,8 @@ export async function actionMode(
 		let PREMIUM_HANDLERS: any;
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			PREMIUM_HANDLERS = require('@src/premium/handlersList').PREMIUM_HANDLERS;
+			PREMIUM_HANDLERS = require('src/premium/handlersList').PREMIUM_HANDLERS;
 		} catch (err) {
-			// Файл отсутствует — просто игнорируем
 			PREMIUM_HANDLERS = [];
 		}
 		(PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>).forEach((handler, group) => {
@@ -85,30 +81,5 @@ export async function actionMode(
 		};
 
 		await handler.handleAction(params);
-	}
-}
-
-async function importIfExists<T = any>(alias: string): Promise<T | null> {
-	const fullPath = path.resolve(process.cwd(), `build/src/${alias}`);
-
-	try {
-		await fs.access(fullPath);
-	} catch (err: any) {
-		if (err.code === 'ENOENT')
-			throw new Error(
-				`src/premium not allowed (${fullPath}). Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
-			);
-
-		throw err;
-	}
-
-	try {
-		const mod = await import(`../` + alias);
-
-		return (mod as { default?: T }).default ?? (mod as T);
-	} catch (err: any) {
-		if (err.code === 'ERR_MODULE_NOT_FOUND') throw new Error(`Couldnt load module: ${alias}`);
-
-		throw err;
 	}
 }

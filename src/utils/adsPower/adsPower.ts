@@ -3,8 +3,8 @@
 
 import axios, { AxiosInstance } from 'axios';
 import puppeteer from 'puppeteer-extra';
-import type { Browser, ResourceType } from 'puppeteer';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import type { Browser, ResourceType } from 'puppeteer-core';
+// import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import BlockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 
@@ -109,14 +109,14 @@ export abstract class AdsPower {
 	): Promise<Browser> {
 		// Register plugins once
 		if (!this.pluginsRegistered) {
-			if (stealth) {
-				const stealthPlugin = StealthPlugin();
-				stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
-				stealthPlugin.enabledEvasions.delete('media.codecs');
-				puppeteer.use(stealthPlugin);
-			}
+			// if (stealth) {
+			// 	const stealthPlugin = StealthPlugin();
+			// 	stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
+			// 	stealthPlugin.enabledEvasions.delete('media.codecs');
+			// 	puppeteer.use(stealthPlugin);
+			// }
 			if (blockResources.length) {
-				puppeteer.use(BlockResourcesPlugin({ blockedTypes: new Set(blockResources) }));
+				puppeteer.use(BlockResourcesPlugin({ blockedTypes: new Set(blockResources as any) }));
 			}
 			if (_2captchaApiKey) {
 				puppeteer.use(RecaptchaPlugin({ provider: { id: '2captcha', token: _2captchaApiKey }, visualFeedback: true }));

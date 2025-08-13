@@ -44,7 +44,7 @@ jobs:
                   LICENSE: ${{ secrets.LICENSE }}
               run: |
                   npm ci
-                  npm run decrypt_premium encryption=false filePath=premium.zip folderPath=src/premium license=$LICENSE
+                  npm run decrypt_premium encryption=false filePath=src/premium.zip folderPath=src/premium license=$LICENSE
                   npm run sea_build
               shell: bash
 
