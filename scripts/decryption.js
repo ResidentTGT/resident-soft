@@ -118,17 +118,23 @@ async function readLicense(filePath = 'launchParams.jsonc') {
 
 (async () => {
 	try {
-		const licenseFromArg = process.argv[3];
+		const params = Object.fromEntries(
+			process.argv.slice(2).map((arg) => {
+				const [key, value] = arg.split('=');
+				return [key, value];
+			}),
+		);
 
-		const licenseStr = licenseFromArg ?? (await readLicense());
+		const licenseStr = params.license ?? (await readLicense());
 
 		const license = await verifyLicense(licenseStr);
+		const isEncryption = params.encryption === 'true';
 
 		if (license.ok) {
 			console.log('License is ok.');
-			const isEncryption = process.argv[2] === 'encryption';
-			const rootDir = path.resolve('./src/premium');
-			const filePath = path.resolve('./premium.zip');
+
+			const rootDir = path.resolve(params.folderPath);
+			const filePath = path.resolve(params.filePath);
 			console.log(`${isEncryption ? 'Encrypting' : 'Decrypting'} ${rootDir} ...`);
 
 			if (!isEncryption) await unzipArchive(filePath, rootDir);

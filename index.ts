@@ -1,11 +1,12 @@
 import './src/extensions/array';
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
 import { LaunchParams } from '@utils/launchParams.type';
 import { parse } from 'jsonc-parser';
 import { welcome } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
+import { decryptPremium } from '@src/utils/decryption/premium';
 
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -19,6 +20,8 @@ async function main() {
 
 		const licenseResult = await welcome(launchParams);
 		await sendTelemetry(licenseResult);
+		if (licenseResult.ok && licenseResult.payload.password && existsSync('premium.zip'))
+			await decryptPremium(licenseResult.payload.password);
 
 		const selectedOption = await promptUserForOption();
 		console.log(`\u001b[0;35m${CommandOption[selectedOption]} started.\u001b[0m`);
