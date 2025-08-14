@@ -119,7 +119,7 @@ export class CommonHandler extends BaseHandler {
 					network.chainId,
 					ACCOUNTS_TO_DO,
 					FUNCTION_PARAMS.tokenNames,
-					`balances/${network.name}/${FUNCTION_PARAMS.tokenNames.join('_')}_${new Date().toISOString().replaceAll(':', '-')}`,
+					`balances/${network.name}/${new Date().toISOString().replaceAll(':', '-')}`,
 					SECRET_STORAGE.cmcApiKey,
 					FUNCTION_PARAMS.tokenAlert && FUNCTION_PARAMS.tokenAlert.symbol ? FUNCTION_PARAMS.tokenAlert : undefined,
 				);

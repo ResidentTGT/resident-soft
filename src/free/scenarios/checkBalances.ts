@@ -4,14 +4,22 @@ import { Evm } from '@src/free/modules/evm';
 import { ChainId, Network, Token } from '@utils/network';
 import { delay } from '@utils/delay';
 import { ethers } from 'ethers';
-import { StateStorage } from '@utils/state';
+import { State, StateStorage } from '@utils/state';
 import { CoinMarketCap, TokenPrice } from '@freeModules/coinMarketCap';
 import { ERC20_ABI } from '@utils/abi';
 import { SvmApi } from '@src/free/modules/svmApi';
 import { getExplorerUrl } from '@src/utils/getExplorerUrl';
+import { Workbook } from 'exceljs';
 
 interface NetworkToken extends Token {
 	decimals: number;
+}
+
+interface BalanceState {
+	sumTokensBalances: { token: string; balance: string; balanceInUsd: string }[];
+	tokensPrices: TokenPrice[];
+	tokenAlert?: { symbol: string; less: boolean; amountAlert: number; alertAccounts: string[] };
+	tokensBalances: { account: string; balances: { token: string; balance: string; balanceInUsd: string }[] }[];
 }
 
 export async function checkBalances(
@@ -41,12 +49,7 @@ export async function checkBalances(
 		t.decimals = svmApi ? await svmApi.getDecimals(t) : await Evm.getDecimals(network, t);
 	});
 
-	const state = StateStorage.load<{
-		sumTokensBalances: { token: string; balance: string; balanceInUsd: string }[];
-		tokensPrices: TokenPrice[];
-		tokenAlert?: { symbol: string; less: boolean; amountAlert: number; alertAccounts: string[] };
-		tokensBalances: { account: string; balances: { token: string; balance: string; balanceInUsd: string }[] }[];
-	}>(stateName, {
+	const state = StateStorage.load<BalanceState>(stateName, {
 		defaultState: {
 			tokensPrices: [],
 			sumTokensBalances: [],
@@ -177,10 +180,41 @@ export async function checkBalances(
 		}
 	}
 
+	await saveToExcel(state, stateName);
+
 	const finalMessage = state.sumTokensBalances
 		.map((s) => `${s.token}: ${(+s.balance).toFixed(5)} (${(+s.balanceInUsd).toFixed(2)}$)`)
 		.join(' | ');
 	await logger.log(finalMessage + `\nData saved to states/${stateName}.json`, MessageType.Notice);
+}
+
+async function saveToExcel(state: State<BalanceState>, stateName: string) {
+	const workbook = new Workbook();
+	const worksheet = workbook.addWorksheet('Balances');
+	worksheet.columns = [
+		{ header: 'Account', key: 'account', width: 15 },
+		...state.tokensBalances[0].balances.map((t) => {
+			return { header: t.token, key: t.token, width: 15 };
+		}),
+	];
+
+	state.tokensBalances.forEach((p: any) => {
+		for (const balance of p.balances) p[balance.token] = `${balance.balance} (${balance.balanceInUsd}$)`;
+		worksheet.addRow(p);
+	});
+	const sumRaw = worksheet.addRow({
+		account: 'SUM',
+		...state.sumTokensBalances.reduce((a, b) => ({ ...a, [b.token]: `${b.balance} (${b.balanceInUsd}$)` }), {}),
+	});
+
+	worksheet.eachRow((row) => {
+		row.font = { name: 'Calibri', size: 11 };
+	});
+	sumRaw.font.color = { argb: 'FF800080' };
+	worksheet.getRow(1).font.bold = true;
+
+	const path = `states/${stateName}.xlsx`;
+	await workbook.xlsx.writeFile(path);
 }
 
 export interface TokenBalance {
