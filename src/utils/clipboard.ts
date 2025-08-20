@@ -1,4 +1,4 @@
-import { ElementHandle, Page } from 'puppeteer-core';
+import { ElementHandle, Page } from 'rebrowser-puppeteer-core';
 import cp from 'copy-paste';
 
 export async function paste(page: Page, selector: string | ElementHandle, text: string) {

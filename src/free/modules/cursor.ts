@@ -1,6 +1,6 @@
 import { Random } from '@utils/random';
 import { GhostCursor, createCursor, getRandomPagePoint } from 'ghost-cursor';
-import { ElementHandle, Page } from 'puppeteer-core';
+import { ElementHandle, Page } from 'rebrowser-puppeteer-core';
 
 export abstract class Cursor {
 	static async click(cursor: GhostCursor, element: ElementHandle<Element> | undefined) {
