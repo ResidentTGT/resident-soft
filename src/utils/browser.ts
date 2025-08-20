@@ -1,4 +1,4 @@
-import { Browser, ElementHandle, Page } from 'puppeteer-core';
+import { Browser, ElementHandle, Page } from 'rebrowser-puppeteer-core';
 import { installMouseHelper } from 'ghost-cursor';
 
 export async function getExtensionPage(browser: Browser, url?: string): Promise<Page | undefined> {

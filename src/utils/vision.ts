@@ -1,9 +1,8 @@
 // see sources: https://docs.browser.vision/api-reference/
 
 import axios from 'axios';
-import { Browser, ResourceType } from 'puppeteer-core';
+import { Browser, ResourceType } from 'rebrowser-puppeteer-core';
 import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import BlockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 import { delay } from './delay';
@@ -62,12 +61,12 @@ export abstract class Vision {
 		_2captchaApiKey?: string,
 		launchArgs: string[] = DEFAULT_CHROMIUM_ARGS,
 	): Promise<Browser> {
-		if (stealth) {
-			const stealthPlugin = StealthPlugin();
-			stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
-			stealthPlugin.enabledEvasions.delete('media.codecs');
-			puppeteer.use(stealthPlugin);
-		}
+		// if (stealth) {
+		// 	const stealthPlugin = StealthPlugin();
+		// 	stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
+		// 	stealthPlugin.enabledEvasions.delete('media.codecs');
+		// 	puppeteer.use(stealthPlugin);
+		// }
 
 		if (blockResources.length)
 			puppeteer.use(

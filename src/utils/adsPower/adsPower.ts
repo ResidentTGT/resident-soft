@@ -1,10 +1,10 @@
-// File: adsPower.ts
 // LocalAPI documentation: https://github.com/AdsPower/localAPI
 
 import axios, { AxiosInstance } from 'axios';
-import puppeteer from 'puppeteer-extra';
-import type { Browser, ResourceType } from 'puppeteer-core';
-// import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { addExtra } from 'puppeteer-extra';
+import rebrowserPuppeteer from 'rebrowser-puppeteer-core';
+
+import type { Browser, ResourceType } from 'rebrowser-puppeteer-core';
 import BlockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
 import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 
@@ -107,14 +107,9 @@ export abstract class AdsPower {
 		_2captchaApiKey?: string,
 		launchArgs: string[] = DEFAULT_CHROMIUM_ARGS,
 	): Promise<Browser> {
+		const puppeteer = addExtra(rebrowserPuppeteer as any);
 		// Register plugins once
 		if (!this.pluginsRegistered) {
-			// if (stealth) {
-			// 	const stealthPlugin = StealthPlugin();
-			// 	stealthPlugin.enabledEvasions.delete('iframe.contentWindow');
-			// 	stealthPlugin.enabledEvasions.delete('media.codecs');
-			// 	puppeteer.use(stealthPlugin);
-			// }
 			if (blockResources.length) {
 				puppeteer.use(BlockResourcesPlugin({ blockedTypes: new Set(blockResources as any) }));
 			}
