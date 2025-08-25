@@ -2,6 +2,8 @@ import { ethers } from 'ethers';
 import { ChainId, Network } from '@utils/network';
 import { Logger, MessageType } from '@utils/logger';
 import Excel from 'exceljs';
+import path from 'node:path';
+import { promises as fs } from 'fs';
 //import { Keypair } from '@solana/web3.js';
 //const bip39 = require('bip39');
 
@@ -24,8 +26,11 @@ export async function generateWallets(amount: number, chainId = ChainId.Ethereum
 
 		worksheet.getRow(1).font = { bold: true };
 
-		const path = 'states/newEvmWallets.xlsx';
-		await workbook.xlsx.writeFile(path);
+		const outDir = path.resolve(process.cwd(), 'states');
+		await fs.mkdir(outDir, { recursive: true });
+		const outPath = path.join(outDir, 'newEvmWallets.xlsx');
+
+		await workbook.xlsx.writeFile(outPath);
 
 		await Logger.getInstance().log(`${amount} EVM wallets generated and saved to ${path}`, MessageType.Info);
 	} else if (chainId === ChainId.Solana) {
