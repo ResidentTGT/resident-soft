@@ -152,13 +152,12 @@ export class Bitget {
 					headers,
 				})
 			).data;
+
+			await Logger.getInstance().log(`Withdrawal succeed. ${body.size} ${token} to ${to}`);
 			return response;
 		} catch (e) {
-			throw new Error(`Withdrawal failed. ${e}`);
+			throw new Error(`Withdrawal ${body.size} ${token} to ${to} failed.\n${e}`);
 		}
-
-		//	if (response.msg === 'success') await Logger.getInstance().log(`Withdrawal succeed. ${body.size} ${token} to ${to}`);
-		//	else throw new Error(`Withdrawal failed. ${response.msg}`);
 	}
 
 	private _getChain(chainId: ChainId) {
