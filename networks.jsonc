@@ -234,4 +234,10 @@
 		"nativeCoin": "MON",
 		"rpc": ["https://testnet-rpc.monad.xyz"],
 	},
+	{
+		"chainId": 50104,
+		"name": "Sophon",
+		"nativeCoin": "SOPH",
+		"rpc": ["https://rpc.sophon.xyz"],
+	},
 ]

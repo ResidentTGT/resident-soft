@@ -24,6 +24,7 @@ export enum ActionsGroupName {
 	Shape = 'Shape',
 	Plasma = 'Plasma',
 	ZksyncLite = 'ZksyncLite',
+	Sophon = 'Sophon',
 }
 
 export enum ActionName {
@@ -299,5 +300,10 @@ export const ACTIONS: ActionsGroup[] = [
 		group: ActionsGroupName.Plasma,
 		premium: true,
 		actions: [{ action: ActionName.Deposit, isolated: true }],
+	},
+	{
+		group: ActionsGroupName.Sophon,
+		premium: true,
+		actions: [{ action: ActionName.Claim, isolated: true }],
 	},
 ];

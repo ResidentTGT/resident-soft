@@ -36,7 +36,8 @@ const EXPLORER_URLS = new Map<ChainId, string>()
 	.set(ChainId.Ronin, 'https://app.roninchain.com/')
 	.set(ChainId.Flow, 'https://evm.flowscan.io/')
 	.set(ChainId.Shape, 'https://shapescan.xyz/')
-	.set(ChainId.Abstract, 'https://abscan.org/');
+	.set(ChainId.Abstract, 'https://abscan.org/')
+	.set(ChainId.Sophon, 'https://explorer.sophon.xyz/');
 
 export function getExplorerUrl(chainId: ChainId, account?: Account, transactionHash?: string): string {
 	let url = ``;

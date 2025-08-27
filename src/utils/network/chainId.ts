@@ -52,4 +52,5 @@ export enum ChainId {
 	Shape = 360,
 	Abstract = 2741,
 	MonadTestnet = 10143,
+	Sophon = 50104,
 }
