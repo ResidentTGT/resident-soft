@@ -178,7 +178,7 @@
 		"chainId": "Solana",
 		"name": "Solana",
 		"nativeCoin": "SOL",
-		"rpc": ["https://solana.helius-rpc.com"],
+		"rpc": ["https://api.mainnet-beta.solana.com"],
 	},
 	{
 		"chainId": "Eclipse",

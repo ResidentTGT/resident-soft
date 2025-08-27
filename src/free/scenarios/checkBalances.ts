@@ -10,6 +10,7 @@ import { ERC20_ABI } from '@utils/abi';
 import { SvmApi } from '@src/free/modules/svmApi';
 import { getExplorerUrl } from '@src/utils/getExplorerUrl';
 import { Workbook } from 'exceljs';
+import { MissingFieldError } from '@src/utils/errors';
 
 interface NetworkToken extends Token {
 	decimals: number;
@@ -73,8 +74,7 @@ export async function checkBalances(
 	}
 
 	for (const account of accounts) {
-		if (!account.name || !account.wallets?.evm || !account.wallets.evm.address)
-			throw new Error(`There is no account.name or account.wallets.evm.address!`);
+		if (!account.name) throw new Error(`There is no account.name!`);
 		while (true) {
 			try {
 				const tokenBalances: TokenBalance[] = [];
@@ -85,6 +85,7 @@ export async function checkBalances(
 					let balance: string | undefined;
 
 					if (Network.isEvm(chainId)) {
+						if (!account.wallets?.evm?.address) throw new MissingFieldError(`wallets.evm.address`);
 						const provider = network.getProvider();
 						if (token.symbol === network.nativeCoin) {
 							balance = ethers.formatUnits(await provider.getBalance(account.wallets.evm.address), token.decimals);
@@ -96,8 +97,9 @@ export async function checkBalances(
 							);
 						}
 					} else if (Network.isSvm(chainId) && svmApi) {
+						if (!account.wallets?.solana?.address) throw new MissingFieldError(`wallets.solana.address`);
 						balance = ethers.formatUnits(
-							await svmApi.getBalance(account.wallets?.solana?.address as any, token.symbol),
+							await svmApi.getBalance(account.wallets.solana.address, token.symbol),
 							token.decimals,
 						);
 					}
