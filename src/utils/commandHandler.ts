@@ -9,6 +9,7 @@ import { actionMode } from '@utils/actionMode';
 import { convertFromCsvToCsv, convertSecretStorage } from '@utils/workWithSecrets';
 import { parse } from 'jsonc-parser';
 import { Logger } from '@utils/logger';
+import prompts, { PromptObject } from 'prompts';
 
 export enum CommandOption {
 	'Action Mode' = 1,
@@ -84,31 +85,36 @@ export class CommandHandler {
 	}
 }
 
-export async function promptUserForOption(): Promise<CommandOption> {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
+export async function promptUserForOption(): Promise<CommandOption | undefined> {
+	const q: PromptObject = {
+		type: 'select',
+		name: 'choice',
+		message: 'Select option:',
+		choices: [
+			{ title: '🚀 Run action', value: 'run' },
+			{ title: '🛡️  Encrypt accounts and secretStorage', value: 'encrypt' },
+			{ title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
+			{ title: '❌ Exit', value: 'exit' },
+		],
+		hint: 'arrows ↑↓, Enter — select',
+	};
+
+	const { choice } = await prompts(q, {
+		onCancel: () => {
+			console.log('\nCancel.');
+			process.exit(0);
+		},
 	});
 
-	try {
-		const options = Object.entries(CommandOption)
-			.filter(([key]) => isNaN(Number(key)))
-			.map(([name, value]) => ({ name, value }));
-
-		for (const { name, value } of options) {
-			console.log(`\u001b[0;32m${value}: ${name}\u001b[0m`);
-		}
-
-		const answer = await rl.question('\u001b[0;32mPlease choose an option: \u001b[0m');
-		const selectedOption = Number(answer) as CommandOption;
-
-		if (!Object.values(CommandOption).includes(selectedOption)) {
-			throw new Error(`Invalid option: ${answer}`);
-		}
-
-		return selectedOption;
-	} finally {
-		rl.close();
+	switch (choice) {
+		case 'run':
+			return CommandOption['Action Mode'];
+		case 'encrypt':
+			return CommandOption['Encrypt Accounts And SecretStorage'];
+		case 'decrypt':
+			return CommandOption['Decrypt Accounts And SecretStorage'];
+		default:
+			return;
 	}
 }
 
