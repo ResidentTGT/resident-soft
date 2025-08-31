@@ -21,6 +21,7 @@ async function main() {
 		await sendTelemetry(licenseResult);
 
 		const selectedOption = await promptUserForOption();
+		if (!selectedOption) process.exit(0);
 		console.log(`\u001b[0;35m${CommandOption[selectedOption]} started.\u001b[0m`);
 
 		let key;
