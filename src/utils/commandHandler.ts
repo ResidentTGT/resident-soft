@@ -92,7 +92,7 @@ export async function promptUserForOption(): Promise<CommandOption | undefined> 
 		message: 'Select option:',
 		choices: [
 			{ title: '🚀 Run action', value: 'run' },
-			{ title: '🛡️  Encrypt accounts and secretStorage', value: 'encrypt' },
+			{ title: '🛡️ Encrypt accounts and secretStorage', value: 'encrypt' },
 			{ title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
 			{ title: '❌ Exit', value: 'exit' },
 		],
