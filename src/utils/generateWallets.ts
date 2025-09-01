@@ -32,7 +32,7 @@ export async function generateWallets(amount: number, chainId = ChainId.Ethereum
 
 		await workbook.xlsx.writeFile(outPath);
 
-		await Logger.getInstance().log(`${amount} EVM wallets generated and saved to ${path}`, MessageType.Info);
+		await Logger.getInstance().log(`${amount} EVM wallets generated and saved to ${outPath}`, MessageType.Info);
 	} else if (chainId === ChainId.Solana) {
 		// for (let i = 0; i < amount; i++) {
 		// 	const wallet = ethers.Wallet.createRandom();
