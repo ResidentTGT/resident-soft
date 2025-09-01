@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
 import { LaunchParams } from '@utils/launchParams.type';
 import { parse } from 'jsonc-parser';
-import { welcome } from '@src/utils/welcome';
+import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
 
 process.on('unhandledRejection', async (error) => {
@@ -17,7 +17,8 @@ async function main() {
 		const launchParams = parse(readFileSync('./launchParams.jsonc', 'utf-8')) as LaunchParams;
 		const functionParams = parse(readFileSync('./functionParams.jsonc', 'utf-8'));
 
-		const licenseResult = await welcome(launchParams);
+		await welcomeMessage();
+		const licenseResult = await getVerifyLicenseMessage(launchParams);
 		await sendTelemetry(licenseResult);
 
 		const selectedOption = await promptUserForOption();

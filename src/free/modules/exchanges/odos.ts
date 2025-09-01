@@ -46,7 +46,8 @@ export abstract class Odos {
 				return;
 			}
 
-		const amountBn = amountOfToken1 ? ethers.parseUnits(amountOfToken1, decimals1) : balance;
+		const amountBn = amountOfToken1 ? ethers.parseUnits((+amountOfToken1).toFixed(decimals1), decimals1) : balance;
+
 		const amount = ethers.formatUnits(amountBn, decimals1);
 		if (balance < amountBn) {
 			throw new Error(
