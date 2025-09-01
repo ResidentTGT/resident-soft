@@ -155,8 +155,9 @@ export class Bitget {
 
 			await Logger.getInstance().log(`Withdrawal succeed. ${body.size} ${token} to ${to}`);
 			return response;
-		} catch (e) {
-			throw new Error(`Withdrawal ${body.size} ${token} to ${to} failed.\n${e}`);
+		} catch (e: any) {
+			const errorMsg = e.response?.data?.msg ?? '';
+			throw new Error(`Withdrawal ${body.size} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 

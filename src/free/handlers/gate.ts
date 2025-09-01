@@ -16,7 +16,7 @@ export class GateHandler extends BaseHandler {
 				const to = resolveAdresses(account, functionParams.to);
 
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
-				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(8);
+				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(6);
 				await new Gate(secretStorage.mainGateAccount).withdraw(
 					to,
 					functionParams.token,
