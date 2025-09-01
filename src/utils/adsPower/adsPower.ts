@@ -68,6 +68,10 @@ export abstract class AdsPower {
 				return response.data;
 			},
 			(error) => {
+				if (error.toString().includes('connect ECONNREFUSED 127.0.0.1:50325')) {
+					error.message = 'Connection refused. Check if AdsPower is open.';
+				}
+
 				if (error.response) {
 					const { status, statusText } = error.response;
 					return Promise.reject(new ApiError({ status, statusText }));
@@ -132,21 +136,27 @@ export abstract class AdsPower {
 			}
 		}
 
-		const browser = await puppeteer.connect({
-			browserWSEndpoint: sockets.ws.puppeteer,
-			defaultViewport: null,
-			protocolTimeout: 900000,
-		});
+		try {
+			const browser = await puppeteer.connect({
+				browserWSEndpoint: sockets.ws.puppeteer,
+				defaultViewport: null,
+				protocolTimeout: 900000,
+			});
 
-		// wait for connect (max 10 s)
-		const start = Date.now();
-		while (!browser.connected) {
-			if (Date.now() - start > 10000) {
-				throw new ApiError({ msg: 'Failed to connect to browser within 10 seconds' });
+			// wait for connect (max 10 s)
+			const start = Date.now();
+			while (!browser.connected) {
+				if (Date.now() - start > 10000) {
+					throw new ApiError({ msg: 'Failed to connect to browser within 10 seconds' });
+				}
+				await delayMs(100);
 			}
-			await delayMs(100);
+			return browser;
+		} catch (e: any) {
+			if (e.message?.includes('connect ECONNREFUSED 127.0.0.1'))
+				throw new Error(`Couldnt connect to AdsPower profile ${browserId}. Maybe it's closing? \n${e.message}`);
+			else throw e;
 		}
-		return browser;
 	}
 
 	// ------------------------------
