@@ -262,7 +262,7 @@ export function getEncryptedOrDecryptedAccounts(aesKey: string, accounts: Accoun
 
 			encryptedAccounts.push(accountCopy);
 		} catch (e) {
-			throw new Error(`Couldnt encrypt ${account.name}: ${e}`);
+			throw new Error(`Couldnt ${encryption ? 'encrypt' : 'decrypt'} ${account.name}: ${e}`);
 		}
 	}
 
