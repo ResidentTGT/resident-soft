@@ -29,7 +29,7 @@ export abstract class RouterNitro {
 		}
 
 		const tokenFrom = network.tokens.find((t) => t.symbol === tokenSymbol);
-		const networkTo = Network.getNetworkByChainId(toChainId);
+		const networkTo = await Network.getNetworkByChainId(toChainId);
 		const tokenTo = networkTo.tokens.find((t) => t.symbol === tokenSymbol);
 		if (!tokenFrom || !tokenTo) throw new Error();
 		const tokenFromAddress = tokenSymbol === 'ETH' ? '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' : tokenFrom.address;

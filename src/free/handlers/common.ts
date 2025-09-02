@@ -82,7 +82,7 @@ export class CommonHandler extends BaseHandler {
 	async executeJoint(params: ActionModeParams): Promise<void> {
 		const { ACCOUNTS_TO_DO, LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE } = params;
 
-		const network = Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
+		const network = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
 		switch (LAUNCH_PARAMS.ACTION_PARAMS.action) {
 			case ActionName.ShowWallets:
 				for (const acc of ACCOUNTS_TO_DO) {

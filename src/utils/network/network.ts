@@ -6,8 +6,8 @@ import http from 'http';
 import https from 'https';
 import { ChainId } from './chainId';
 import { Proxy } from '@utils/account';
-import Random from '@utils/random';
 import { parse } from 'jsonc-parser';
+import { Logger, MessageType } from '../logger';
 
 export interface Token {
 	symbol: string;
@@ -48,11 +48,33 @@ export class Network {
 		}
 	}
 
-	public static getNetworkByChainId(id: ChainId) {
+	public static async getNetworkByChainId(id: ChainId) {
 		const networkConfig = networksConfig.find((n) => n.chainId.toString() === id.toString());
 		if (!networkConfig) throw new Error(`There is no network configuration for chainId ${id}`);
+		const rpcs = networkConfig.rpc.shuffle();
+		const logger = await Logger.getInstance();
 
-		return new Network(id, networkConfig.name, networkConfig.nativeCoin, Random.choose(networkConfig.rpc), getTokens(id));
+		let selectedRpc = '';
+		if (Network.isEvm(id)) {
+			for (const rpc of rpcs) {
+				let provider;
+				try {
+					provider = new ethers.JsonRpcProvider(rpc, Number(id));
+					await provider.getBlockNumber();
+					selectedRpc = rpc;
+					await provider.destroy();
+					break;
+				} catch (err) {
+					await provider?.destroy();
+					await logger.log(`RPC ${rpc} connection failed (${networkConfig.name}):\n${String(err)}`, MessageType.Warn);
+				}
+			}
+			if (!selectedRpc) throw new Error(`There is no working rpc for ${networkConfig.name}!`);
+		} else {
+			selectedRpc = rpcs[0];
+		}
+
+		return new Network(id, networkConfig.name, networkConfig.nativeCoin, selectedRpc, getTokens(id));
 	}
 
 	public static isEvm(id: ChainId): boolean {

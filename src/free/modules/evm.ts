@@ -551,7 +551,7 @@ export class Evm {
 		delayInS = 10,
 		attemptsBeforeError = Number.MAX_SAFE_INTEGER,
 	): Promise<bigint> {
-		const network = Network.getNetworkByChainId(chainId);
+		const network = await Network.getNetworkByChainId(chainId);
 
 		let normBalance;
 		let balanceBn = BigInt(0);

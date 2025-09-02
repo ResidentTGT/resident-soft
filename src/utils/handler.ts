@@ -73,7 +73,7 @@ export abstract class BaseHandler implements Handler {
 						MessageType.Info,
 					);
 
-					const NETWORK = Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
+					const NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
 
 					if (LAUNCH_PARAMS.PROXY && account.proxy) {
 						if (LAUNCH_PARAMS.ROTATE_PROXY) await rotateProxy(account.proxy?.rotateUrl as any);

@@ -12,7 +12,7 @@ export async function checkNft(accounts: Account[], chainId: ChainId, nftContrac
 	for (const account of accounts) {
 		while (true) {
 			try {
-				const provider = Network.getNetworkByChainId(chainId).getProvider();
+				const provider = (await Network.getNetworkByChainId(chainId)).getProvider();
 				const contract = new ethers.Contract(nftContract, ERC721_ABI, provider);
 				if (!account.wallets?.evm?.address) throw new Error('There is no account.wallets.evm.address!');
 				const balance = await contract.balanceOf(account.wallets?.evm?.address);

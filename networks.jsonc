@@ -15,7 +15,11 @@
 		"chainId": 10,
 		"name": "Optimism Mainnet",
 		"nativeCoin": "ETH",
-		"rpc": ["https://mainnet.optimism.io"],
+		"rpc": [
+			"https://mainnet.optimism.io",
+			"https://optimism-mainnet.public.blastapi.io",
+			"https://optimism-public.nodies.app",
+		],
 	},
 	{
 		"chainId": 43114,

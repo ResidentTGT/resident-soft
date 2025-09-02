@@ -12,7 +12,7 @@ export async function waitNftBalance(
 	delayInS = 10,
 	attemptsBeforeError = Number.MAX_SAFE_INTEGER,
 ) {
-	const network = Network.getNetworkByChainId(chainId);
+	const network = await Network.getNetworkByChainId(chainId);
 
 	let normBalance;
 	let attempts = 0;

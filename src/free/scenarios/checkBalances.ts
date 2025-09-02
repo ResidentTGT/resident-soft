@@ -35,7 +35,7 @@ export async function checkBalances(
 	if (tokenAlert && !tokens.includes(tokenAlert.symbol)) throw new Error(`There is no ${tokenAlert.symbol} in tokens array!`);
 	const logger = Logger.getInstance();
 
-	const network = Network.getNetworkByChainId(chainId);
+	const network = await Network.getNetworkByChainId(chainId);
 
 	let svmApi: SvmApi | undefined;
 	if (Network.isSvm(chainId)) svmApi = new SvmApi(network);
@@ -80,7 +80,7 @@ export async function checkBalances(
 				const tokenBalances: TokenBalance[] = [];
 
 				for (const token of networkTokens) {
-					const network = Network.getNetworkByChainId(chainId);
+					const network = await Network.getNetworkByChainId(chainId);
 
 					let balance: string | undefined;
 

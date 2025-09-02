@@ -4,7 +4,7 @@ import { delay } from '@utils/delay';
 import { Logger } from '@utils/logger';
 
 export async function waitGasPrice(chainId: ChainId, gasPriceInGwei: number, delayInS = 30) {
-	const network = Network.getNetworkByChainId(chainId);
+	const network = await Network.getNetworkByChainId(chainId);
 	const provider = network.getProvider();
 
 	let normGas;
