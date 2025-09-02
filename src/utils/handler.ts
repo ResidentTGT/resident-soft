@@ -73,12 +73,12 @@ export abstract class BaseHandler implements Handler {
 						MessageType.Info,
 					);
 
-					const NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
-
 					if (LAUNCH_PARAMS.PROXY && account.proxy) {
 						if (LAUNCH_PARAMS.ROTATE_PROXY) await rotateProxy(account.proxy?.rotateUrl as any);
-						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(NETWORK, account.proxy);
+						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(LAUNCH_PARAMS.CHAIN_ID, account.proxy);
 					}
+
+					const NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
 
 					if (LAUNCH_PARAMS.WAIT_GAS_PRICE) await waitGasPrice(NETWORK.chainId, LAUNCH_PARAMS.WAIT_GAS_PRICE);
 
