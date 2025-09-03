@@ -2,14 +2,14 @@ import { Bot as TelegramBot } from 'grammy';
 import { delay } from './delay';
 import fs from 'fs';
 
-const RED_TEXT = '\u001b[0;31m';
-const RED_BOLD_TEXT = '\u001b[1;31m';
-const GREEN_TEXT = '\u001b[0;32m';
-const YELLOW_TEXT = '\u001b[0;33m';
-const BLUE_TEXT = '\u001b[0;34m';
-const PURPLE_TEXT = '\u001b[0;35m';
-const CYAN_TEXT = '\u001b[0;36m';
-const RESET = '\u001b[0m';
+export const RED_TEXT = '\u001b[0;31m';
+export const RED_BOLD_TEXT = '\u001b[1;31m';
+export const GREEN_TEXT = '\u001b[0;32m';
+export const YELLOW_TEXT = '\u001b[0;33m';
+export const BLUE_TEXT = '\x1b[38;2;132;169;255m';
+export const PURPLE_TEXT = '\u001b[0;35m';
+export const CYAN_TEXT = '\u001b[0;36m';
+export const RESET = '\u001b[0m';
 
 export enum MessageType {
 	Fatal,

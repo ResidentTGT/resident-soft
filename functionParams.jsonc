@@ -5,10 +5,10 @@
 			"tokenAlert": { "symbol": "", "less": true, "amountAlert": 100 },
 		},
 		"GenerateWallets": { "amount": 5 },
-		"RefuelGasZip": { "amount": [1, 0], "toChainIds": ["8453"] },
-		"RefuelManyGasZip": { "amount": [1, 0], "toChainIds": ["8453"], "addresses": ["0x..."] },
+		"RefuelGasZip": { "amount": [1, 0], "toChainIds": [8453] },
+		"RefuelManyGasZip": { "amount": [1, 0], "toChainIds": [8453], "addresses": ["0x..."] },
 		"RefuelRelayLink": { "amount": [0.0007, 0.0008], "toChainId": "Solana" },
-		"RefuelManyRelayLink": { "amount": [0.0007, 0.0008], "toChainId": "8453", "addresses": ["0x..."] },
+		"RefuelManyRelayLink": { "amount": [0.0007, 0.0008], "toChainId": 8453, "addresses": ["0x..."] },
 	},
 	"Evm": {
 		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "bitget-evm" },

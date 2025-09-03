@@ -67,7 +67,7 @@ export async function checkBalances(
 			cmcApiKey,
 		);
 	else {
-		await logger.log(`There is no cmcApiKey!`, MessageType.Warn);
+		await logger.log(`There is no cmcApiKey. Fill it in secretStorage.jsonc for getting tokens prices.`, MessageType.Warn);
 		state.tokensPrices = networkTokens.map((t) => {
 			return { symbol: t.symbol, price: 0 };
 		});

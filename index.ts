@@ -6,6 +6,7 @@ import { LaunchParams } from '@utils/launchParams.type';
 import { parse } from 'jsonc-parser';
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
+import { GREEN_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
 
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -23,7 +24,7 @@ async function main() {
 
 		const selectedOption = await promptUserForOption();
 		if (!selectedOption) process.exit(0);
-		console.log(`\u001b[0;35m${CommandOption[selectedOption]} started.\u001b[0m`);
+		console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
 
 		let key;
 		if (
@@ -41,7 +42,7 @@ async function main() {
 		process.exit(0);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.error(`\u001b[1;31mFatal error. ${message}\u001b[0m`);
+		console.error(`${RED_BOLD_TEXT}Fatal error. ${message}${RESET}`);
 		await waitForKeyPress();
 		process.exit(1);
 	}

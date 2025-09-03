@@ -7,6 +7,7 @@ import { ACTIONS, ActionsGroupName } from '@src/actions';
 import { FREE_HANDLERS } from '@src/free/handlersList';
 import { BaseHandler } from './handler';
 import { verifyLicense } from './licenses';
+import { Network } from './network';
 
 export interface ActionModeParams {
 	ACCOUNTS_TO_DO: Account[];
@@ -66,6 +67,12 @@ export async function actionMode(
 		throw new Error(
 			`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}! Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
 		);
+
+	Network.checkChainId(LAUNCH_PARAMS.CHAIN_ID);
+	const chainIdFields = Object.keys(FUNCTION_PARAMS)
+		.filter((k) => k.toUpperCase().includes('CHAINID'))
+		.map((k) => FUNCTION_PARAMS[k]);
+	for (const id of chainIdFields) Network.checkChainId(id);
 
 	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {
 		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? ACCOUNTS.slice().shuffle() : ACCOUNTS.slice();

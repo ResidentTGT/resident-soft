@@ -43,6 +43,11 @@ export class Network {
 		}
 	}
 
+	public static checkChainId(id: any) {
+		if (id === null || id === undefined || !ChainId[id])
+			throw new Error(`Invalid chainId: ${id}. Check allowed here: https://resident.gitbook.io/resident-soft/chain-ids`);
+	}
+
 	public static async getNetworkByChainId(id: ChainId) {
 		const networkConfig = networksConfig.find((n) => n.chainId.toString() === id.toString());
 		if (!networkConfig) throw new Error(`There is no network configuration for chainId ${id}`);

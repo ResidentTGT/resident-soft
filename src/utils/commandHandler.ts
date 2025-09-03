@@ -8,7 +8,7 @@ import { SecretStorage } from '@utils/secretStorage.type';
 import { actionMode } from '@utils/actionMode';
 import { convertFromCsvToCsv, convertSecretStorage } from '@utils/workWithSecrets';
 import { parse } from 'jsonc-parser';
-import { Logger } from '@utils/logger';
+import { GREEN_TEXT, Logger, RESET } from '@utils/logger';
 import prompts, { PromptObject } from 'prompts';
 
 export enum CommandOption {
@@ -125,7 +125,7 @@ export async function promptUserForKey(): Promise<string> {
 	});
 
 	try {
-		const answer = await rl.question('\u001b[0;32mEnter the key for encryption/decryption: \u001b[0m');
+		const answer = await rl.question(GREEN_TEXT + 'Enter the key for encryption/decryption: ' + RESET);
 		return answer;
 	} finally {
 		rl.close();
