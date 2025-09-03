@@ -9,6 +9,7 @@ import { OdosHandler } from './handlers/odos';
 import { BitgetHandler } from './handlers/bitget';
 import { BinanceHandler } from './handlers/binance';
 import { GateHandler } from './handlers/gate';
+import { CheckersHandler } from './handlers/checkers';
 
 export const FREE_HANDLERS = new Map<ActionsGroupName, BaseHandler>([
 	[ActionsGroupName.TEST, new TestHandler(ActionsGroupName.TEST)],
@@ -20,4 +21,5 @@ export const FREE_HANDLERS = new Map<ActionsGroupName, BaseHandler>([
 	[ActionsGroupName.Bitget, new BitgetHandler(ActionsGroupName.Bitget)],
 	[ActionsGroupName.Binance, new BinanceHandler(ActionsGroupName.Binance)],
 	[ActionsGroupName.Gate, new GateHandler(ActionsGroupName.Gate)],
+	[ActionsGroupName.Checkers, new CheckersHandler(ActionsGroupName.Checkers)],
 ]);

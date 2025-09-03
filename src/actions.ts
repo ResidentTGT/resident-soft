@@ -25,6 +25,7 @@ export enum ActionsGroupName {
 	Plasma = 'Plasma',
 	ZksyncLite = 'ZksyncLite',
 	Sophon = 'Sophon',
+	Checkers = 'Checkers',
 }
 
 export enum ActionName {
@@ -107,6 +108,7 @@ export enum ActionName {
 	LoginInRabby = 'LoginInRabby',
 	RestoreRabby = 'RestoreRabby',
 	SellCollectionByLink = 'SellCollectionByLink',
+	Linea = 'Linea',
 }
 
 export interface Action {
@@ -305,5 +307,10 @@ export const ACTIONS: ActionsGroup[] = [
 		group: ActionsGroupName.Sophon,
 		premium: true,
 		actions: [{ action: ActionName.Claim, isolated: true }],
+	},
+	{
+		group: ActionsGroupName.Checkers,
+		premium: false,
+		actions: [{ action: ActionName.Linea, isolated: false }],
 	},
 ];
