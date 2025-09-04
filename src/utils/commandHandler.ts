@@ -44,7 +44,7 @@ export class CommandHandler {
 				: this.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH,
 			this.launchParams.JOB_ACCOUNTS.map((a) => a.file),
 		);
-		const filteredAccs = filterAccounts(allAccounts, this.launchParams);
+		const filteredAccs = await filterAccounts(allAccounts, this.launchParams);
 		const accounts = this.aesKey ? getEncryptedOrDecryptedAccounts(this.aesKey, filteredAccs, false) : filteredAccs;
 
 		await actionMode(accounts, decryptedSecretStorage, this.launchParams, this.functionParams, this.aesKey);

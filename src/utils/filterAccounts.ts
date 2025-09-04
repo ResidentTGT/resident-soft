@@ -3,7 +3,7 @@ import { Account } from '@utils/account/models';
 import { LaunchParams } from '@utils/launchParams.type';
 import { getStandardState } from '@utils/state/getStandardState';
 
-export function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchParams): Account[] {
+export async function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchParams): Promise<Account[]> {
 	const allAccs: Account[] = [];
 
 	for (const jobAcc of LAUNCH_PARAMS.JOB_ACCOUNTS) {
@@ -36,7 +36,6 @@ export function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchPar
 					return allNames.includes(a.name);
 				});
 			}
-			//if (accounts.length !== allNames.length) throw new Error(`Some of accounts were not found!`);
 		}
 
 		accounts = accounts.filter(
@@ -47,9 +46,24 @@ export function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchPar
 				}),
 		);
 
+		const accountsWithoutState = accounts.length;
+		if (accountsWithoutState === 0) {
+			await Logger.getInstance().log(
+				`Selected 0 accounts. Check LAUNCH_PARAMS.jsonc or accounts files.`,
+				MessageType.Notice,
+			);
+		}
+
 		if (LAUNCH_PARAMS.TAKE_STATE && LAUNCH_PARAMS.STATE_NAME) {
 			const STANDARD_STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
+
 			accounts = accounts.filter((a) => (a.name ? !STANDARD_STATE.successes.includes(a.name) : true));
+			if (accounts.length === 0 && accountsWithoutState > accounts.length) {
+				await Logger.getInstance().log(
+					`All selected accounts (${accountsWithoutState}) have already been successfully completed. Check state "${LAUNCH_PARAMS.STATE_NAME}.json"`,
+					MessageType.Notice,
+				);
+			}
 		}
 
 		allAccs.push(...accounts);

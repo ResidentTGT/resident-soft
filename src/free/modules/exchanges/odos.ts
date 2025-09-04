@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Logger } from '@utils/logger';
+import { Logger, MessageType } from '@utils/logger';
 import { Evm } from '@src/free/modules/evm';
 import { ChainId, Network } from '@utils/network';
 import axios from 'axios';
@@ -67,44 +67,51 @@ export abstract class Odos {
 		await logger.log(`Start swapping ${amount} ${tokenSymbol1} to ${tokenSymbol2} on Odos ...`);
 
 		const provider = network.getProvider();
-		const quote = await Odos._getQuote(
-			wallet.address,
-			network,
-			token1.address,
-			token2.address,
-			amountBn.toString(),
-			slippageInPercent,
-		);
+		try {
+			const quote = await Odos._getQuote(
+				wallet.address,
+				network,
+				token1.address,
+				token2.address,
+				amountBn.toString(),
+				slippageInPercent,
+			);
 
-		const transactionResp = (await Odos._getTransactionData(wallet.address, quote.pathId)).transaction;
+			const transactionResp = (await Odos._getTransactionData(wallet.address, quote.pathId)).transaction;
 
-		const value = tokenSymbol1 === network.nativeCoin ? amountBn : BigInt(0);
+			const value = tokenSymbol1 === network.nativeCoin ? amountBn : BigInt(0);
 
-		const transaction = await Evm.generateTransactionRequest(
-			provider,
-			privateKey,
-			transactionResp.to,
-			value,
-			transactionResp.data,
-		);
-		transaction.maxFeePerGas = transaction.maxFeePerGas
-			? BigInt(Math.round(Number(transaction.maxFeePerGas) * 1.2))
-			: transaction.maxFeePerGas;
-		transaction.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
-			? BigInt(Math.round(Number(transaction.maxPriorityFeePerGas) * 1.2))
-			: transaction.maxPriorityFeePerGas;
-		transaction.gasPrice = transaction.gasPrice
-			? BigInt(Math.round(Number(transaction.gasPrice) * 1.2))
-			: transaction.gasPrice;
+			const transaction = await Evm.generateTransactionRequest(
+				provider,
+				privateKey,
+				transactionResp.to,
+				value,
+				transactionResp.data,
+			);
+			transaction.maxFeePerGas = transaction.maxFeePerGas
+				? BigInt(Math.round(Number(transaction.maxFeePerGas) * 1.2))
+				: transaction.maxFeePerGas;
+			transaction.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas
+				? BigInt(Math.round(Number(transaction.maxPriorityFeePerGas) * 1.2))
+				: transaction.maxPriorityFeePerGas;
+			transaction.gasPrice = transaction.gasPrice
+				? BigInt(Math.round(Number(transaction.gasPrice) * 1.2))
+				: transaction.gasPrice;
 
-		await Evm.makeTransaction(provider, privateKey, transaction);
+			await Evm.makeTransaction(provider, privateKey, transaction);
 
-		await logger.log(
-			`${amount} ${tokenSymbol1} swapped for ${ethers.formatUnits(
-				quote.outAmounts[0],
-				decimals2,
-			)} ${tokenSymbol2} on Odos.`,
-		);
+			await logger.log(
+				`${amount} ${tokenSymbol1} swapped for ${ethers.formatUnits(
+					quote.outAmounts[0],
+					decimals2,
+				)} ${tokenSymbol2} on Odos.`,
+			);
+		} catch (e: any) {
+			if (e.toString().includes('Request failed with status code 403'))
+				await logger.log(`Couldnt connect to Odos from restricted territory. Use proxy or VPN.`, MessageType.Error);
+
+			throw e;
+		}
 	}
 
 	private static async _getQuote(
