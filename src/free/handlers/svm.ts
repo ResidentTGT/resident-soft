@@ -13,6 +13,7 @@ export class SvmHandler extends BaseHandler {
 		const { account, network, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.SendToken: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.solana?.private) throw new MissingFieldError('wallets.solana.private');
 
 				const toAddr = resolveAdresses(account, functionParams.to);

@@ -17,6 +17,7 @@ export class CommonHandler extends BaseHandler {
 		const { account, network, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.RefuelGasZip: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatEther(await Evm.getBalance(network, wal.address, network.nativeCoin));
@@ -40,6 +41,7 @@ export class CommonHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.RefuelRelayLink: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatEther(await Evm.getBalance(network, wal.address, network.nativeCoin));

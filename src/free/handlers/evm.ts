@@ -16,6 +16,7 @@ export class EvmHandler extends BaseHandler {
 		const { account, secretStorage, network, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.SendToken: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const toAddr = resolveAdresses(account, functionParams.to);
 
@@ -55,6 +56,7 @@ export class EvmHandler extends BaseHandler {
 			}
 
 			case ActionName.Wrap: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
 				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(18);
@@ -62,6 +64,7 @@ export class EvmHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.Unwrap: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const amount =
 					!functionParams.amount || !functionParams.amount[1]
@@ -71,6 +74,7 @@ export class EvmHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.Approve: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
 				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toString();
@@ -84,6 +88,7 @@ export class EvmHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.MakeTransaction:
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				await Evm.generateAndMakeTransaction(
 					network.getProvider(),

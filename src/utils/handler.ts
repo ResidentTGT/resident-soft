@@ -2,7 +2,7 @@ import { ActionModeParams } from '@utils/actionMode';
 import { Account } from '@utils/account';
 import { ChainId, Network } from '@utils/network';
 import { SecretStorage } from '@utils/secretStorage.type';
-import { ActionName, ActionParams, ACTIONS, ActionsGroupName } from '@src/actions';
+import { Action, ActionName, ActionParams, ACTIONS, ActionsGroupName } from '@src/actions';
 import { delay } from './delay';
 import { Logger, MessageType } from './logger';
 import Random from './random';
@@ -15,7 +15,7 @@ import { getExplorerUrl } from './getExplorerUrl';
 export interface IsolatedHandlerParams {
 	account: Account;
 	secretStorage: SecretStorage;
-	network: Network;
+	network?: Network;
 	aesKey?: string;
 	actionParams: ActionParams;
 	functionParams: any;
@@ -55,6 +55,12 @@ export abstract class BaseHandler implements Handler {
 
 	async actionIsolated(actionModeParams: ActionModeParams): Promise<void> {
 		const { LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE, ITERATION, AES_KEY } = actionModeParams;
+
+		const action = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group)?.actions.find(
+			(a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action,
+		);
+		if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}`);
+
 		let ACCOUNTS_TO_DO = actionModeParams.ACCOUNTS_TO_DO.slice();
 
 		let fails: string[] = [];
@@ -69,7 +75,13 @@ export abstract class BaseHandler implements Handler {
 				const accountName = account.name ?? '';
 				try {
 					await Logger.getInstance().log(
-						this.generateAccountMessage(index, ACCOUNTS_TO_DO.length, account, LAUNCH_PARAMS.CHAIN_ID, `started`),
+						this.generateAccountMessage(
+							index,
+							ACCOUNTS_TO_DO.length,
+							account,
+							`started`,
+							this.getChainIdForLog(action, actionModeParams),
+						),
 						MessageType.Info,
 					);
 
@@ -78,9 +90,11 @@ export abstract class BaseHandler implements Handler {
 						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(LAUNCH_PARAMS.CHAIN_ID, account.proxy);
 					}
 
-					const NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
-
-					if (LAUNCH_PARAMS.WAIT_GAS_PRICE) await waitGasPrice(NETWORK.chainId, LAUNCH_PARAMS.WAIT_GAS_PRICE);
+					let NETWORK;
+					if (action.needNetwork) {
+						NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
+						if (LAUNCH_PARAMS.WAIT_GAS_PRICE) await waitGasPrice(NETWORK.chainId, LAUNCH_PARAMS.WAIT_GAS_PRICE);
+					}
 
 					const result = await this.executeIsolated({
 						account: account,
@@ -101,7 +115,13 @@ export abstract class BaseHandler implements Handler {
 						STATE.save();
 					}
 					await Logger.getInstance().log(
-						this.generateAccountMessage(index, ACCOUNTS_TO_DO.length, account, LAUNCH_PARAMS.CHAIN_ID, `finished`),
+						this.generateAccountMessage(
+							index,
+							ACCOUNTS_TO_DO.length,
+							account,
+							`finished`,
+							this.getChainIdForLog(action, actionModeParams),
+						),
 						MessageType.Info,
 					);
 					if (LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S[1] && index !== ACCOUNTS_TO_DO.length - 1) {
@@ -130,8 +150,8 @@ export abstract class BaseHandler implements Handler {
 							index,
 							ACCOUNTS_TO_DO.length,
 							account,
-							LAUNCH_PARAMS.CHAIN_ID,
 							`\nAction: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}\n${err.stack}`,
+							this.getChainIdForLog(action, actionModeParams),
 						),
 						MessageType.Error,
 					);
@@ -192,9 +212,24 @@ export abstract class BaseHandler implements Handler {
 		return message;
 	}
 
-	generateAccountMessage(index: number, totalAccounts: number, account: Account, chainId: ChainId, info: string): string {
-		const message = `${index + 1}/${totalAccounts} | ${account.name} (${getExplorerUrl(chainId, account)}): ${info}`;
+	generateAccountMessage(index: number, totalAccounts: number, account: Account, info: string, chainId?: ChainId): string {
+		const message = `${index + 1}/${totalAccounts} | ${account.name} ${chainId ? `(` + getExplorerUrl(chainId, account) + `)` : ''}: ${info}`;
 
 		return message;
+	}
+
+	getChainIdForLog(action: Action, actionModeParams: ActionModeParams): ChainId {
+		let chainId;
+		if (action.needNetwork) chainId = actionModeParams.LAUNCH_PARAMS.CHAIN_ID;
+		else {
+			if (actionModeParams.FUNCTION_PARAMS) {
+				const l = Object.keys(actionModeParams.FUNCTION_PARAMS)
+					.filter((k) => k.toUpperCase().includes('CHAINID'))
+					.map((k) => actionModeParams.FUNCTION_PARAMS[k]);
+				if (l[0]) chainId = l[0];
+			}
+		}
+
+		return chainId;
 	}
 }

@@ -11,6 +11,7 @@ export class OdosHandler extends BaseHandler {
 		const { account, network, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.Swap: {
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const amount =
 					!functionParams.amount || !functionParams.amount[1]
