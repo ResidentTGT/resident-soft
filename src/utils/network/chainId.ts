@@ -53,4 +53,6 @@ export enum ChainId {
 	Abstract = 2741,
 	MonadTestnet = 10143,
 	Sophon = 50104,
+	HyperEVM = 999,
+	Sei = 1329,
 }

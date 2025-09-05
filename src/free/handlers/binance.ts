@@ -4,7 +4,7 @@ import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
 
 import Random from '@src/utils/random';
 import { resolveAdresses } from '@src/utils/resolveAddresses';
-import { binanceWithdraw } from '@freeModules/exchanges/binance/withdraw';
+import { Binance } from '@freeModules/exchanges/binance';
 import { MissingFieldError } from '@src/utils/errors';
 
 export class BinanceHandler extends BaseHandler {
@@ -18,11 +18,10 @@ export class BinanceHandler extends BaseHandler {
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
 				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(6);
 
-				await binanceWithdraw(
+				await new Binance(secretStorage.mainBinanceAccount).withdraw(
 					functionParams.token,
 					to,
 					functionParams.toChainId,
-					secretStorage.mainBinanceAccount.api,
 					+amount,
 				);
 

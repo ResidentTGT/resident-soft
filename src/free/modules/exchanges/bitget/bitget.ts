@@ -156,7 +156,7 @@ export class Bitget {
 			await Logger.getInstance().log(`Withdrawal succeed. ${body.size} ${token} to ${to}`);
 			return response;
 		} catch (e: any) {
-			const errorMsg = e.response?.data?.msg ?? '';
+			const errorMsg = e.response?.data?.msg;
 			throw new Error(`Withdrawal ${body.size} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
@@ -187,6 +187,60 @@ export class Bitget {
 				break;
 			case ChainId.Solana:
 				chain = 'SOL';
+				break;
+			case ChainId.Aptos:
+				chain = 'Aptos';
+				break;
+			case ChainId.ArbitrumNova:
+				chain = 'ArbitrumNova';
+				break;
+			case ChainId.AvalancheC:
+				chain = 'AVAXC-Chain';
+				break;
+			case ChainId.Blast:
+				chain = 'Blast';
+				break;
+			case ChainId.Celo:
+				chain = 'CELO';
+				break;
+			case ChainId.Core:
+				chain = 'CoreDAO';
+				break;
+			case ChainId.Eclipse:
+				chain = 'Eclipse';
+				break;
+			case ChainId.Sonic:
+				chain = 'SONIC';
+				break;
+			case ChainId.Flow:
+				chain = 'Flow';
+				break;
+			case ChainId.HyperEVM:
+				chain = 'HYPE';
+				break;
+			case ChainId.Linea:
+				chain = 'LINEA';
+				break;
+			case ChainId.Ronin:
+				chain = 'RONIN';
+				break;
+			case ChainId.Scroll:
+				chain = 'SCROLL';
+				break;
+			case ChainId.Sophon:
+				chain = 'Sophon';
+				break;
+			case ChainId.Starknet:
+				chain = 'Starknet';
+				break;
+			case ChainId.Sui:
+				chain = 'SUI';
+				break;
+			case ChainId.ZksyncEra:
+				chain = 'zkSyncEra';
+				break;
+			case ChainId.Sei:
+				chain = 'SEIEVM';
 				break;
 		}
 

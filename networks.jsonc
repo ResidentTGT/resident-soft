@@ -244,4 +244,22 @@
 		"nativeCoin": "SOPH",
 		"rpc": ["https://rpc.sophon.xyz"],
 	},
+	{
+		"chainId": 999,
+		"name": "HyperEVM",
+		"nativeCoin": "HYPE",
+		"rpc": ["https://rpc.hyperliquid.xyz/evm"],
+	},
+	{
+		"chainId": 1329,
+		"name": "Sei",
+		"nativeCoin": "SEI",
+		"rpc": ["https://sei.therpc.io"],
+	},
+	{
+		"chainId": 146,
+		"name": "Sonic",
+		"nativeCoin": "S",
+		"rpc": ["https://rpc.soniclabs.com"],
+	},
 ]
