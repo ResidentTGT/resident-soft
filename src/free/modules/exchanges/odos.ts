@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Logger, MessageType } from '@utils/logger';
+import { Logger } from '@utils/logger';
 import { Evm } from '@src/free/modules/evm';
 import { ChainId, Network } from '@utils/network';
 import axios from 'axios';
@@ -31,7 +31,7 @@ export abstract class Odos {
 		tokenSymbol2: string,
 		amountOfToken1?: string,
 		slippageInPercent = 1,
-		minAmountForSwap?: string,
+		minAmountForSwap?: number,
 	) {
 		const wallet = new ethers.Wallet(privateKey);
 
@@ -48,7 +48,7 @@ export abstract class Odos {
 		const balance = await Evm.getBalance(network, wallet.address, token1.symbol);
 
 		if (!amountOfToken1 && minAmountForSwap)
-			if (balance < ethers.parseUnits(minAmountForSwap, decimals1)) {
+			if (balance < ethers.parseUnits(minAmountForSwap.toFixed(decimals1), decimals1)) {
 				await logger.log(
 					`Balance (${ethers.formatUnits(balance, decimals1)} ${token1.symbol}) is less than min amount for swap (${minAmountForSwap} ${token1.symbol})`,
 				);
@@ -69,7 +69,7 @@ export abstract class Odos {
 
 		if (tokenSymbol1 !== network.nativeCoin) {
 			const contractAddress = ODOS_ROUTER_CONTRACT_ADDRESSES.get(network.chainId);
-			if (!contractAddress) throw new Error(`There is no contract address for ${ChainId[+network.chainId]}`);
+			if (!contractAddress) throw new Error(`There is no contract address for ${network.name}`);
 			await Evm.approve(network, privateKey, contractAddress, tokenSymbol1, amount);
 		}
 
@@ -117,7 +117,7 @@ export abstract class Odos {
 			);
 		} catch (e: any) {
 			if (e.toString().includes('Request failed with status code 403'))
-				await logger.log(`Couldnt connect to Odos from restricted territory. Use proxy or VPN.`, MessageType.Error);
+				throw new Error(`Couldnt connect to Odos from restricted territory. Use proxy or VPN.\n${e}`);
 
 			throw e;
 		}

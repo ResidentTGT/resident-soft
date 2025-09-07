@@ -72,6 +72,7 @@ export async function actionMode(
 	const chainIdFields = Object.keys(FUNCTION_PARAMS)
 		.filter((k) => k.toUpperCase().includes('CHAINID'))
 		.map((k) => FUNCTION_PARAMS[k]);
+
 	for (const id of chainIdFields) Network.checkChainId(id);
 
 	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {

@@ -20,7 +20,7 @@ export abstract class Owlto {
 		const contract = new ethers.Interface(ABI as any);
 
 		const contractAddress = CONTRACTS.get(network.chainId);
-		if (!contractAddress) throw new Error(`There is no contract address of Owlto in ${ChainId[+network.chainId]}`);
+		if (!contractAddress) throw new Error(`There is no contract address of Owlto in ${network.name}`);
 
 		const data = contract.encodeFunctionData('checkIn', [+new Date().toISOString().split('T')[0].replaceAll('-', '')]);
 

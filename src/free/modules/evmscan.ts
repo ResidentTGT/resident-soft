@@ -66,7 +66,7 @@ export class Evmscan {
 		} else if (this._chainId === ChainId.Berachain) {
 			baseUrl = 'berascan.com';
 		} else {
-			throw new Error(`There is no scan url for ${ChainId[+this._chainId]}`);
+			throw new Error(`There is no scan url for ${this._chainId}`);
 		}
 
 		const endblock = 99999999;

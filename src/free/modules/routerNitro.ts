@@ -65,7 +65,7 @@ export abstract class RouterNitro {
 
 		await Evm.makeTransaction(provider, account.wallets.evm.private, transaction);
 
-		await Logger.getInstance().log(`${amount} ${network.nativeCoin} bridged from ${network.name} to ${ChainId[+toChainId]}`);
+		await Logger.getInstance().log(`${amount} ${network.nativeCoin} bridged from ${network.name} to ${toChainId}`);
 	}
 
 	private static async getQuote(

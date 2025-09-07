@@ -22,7 +22,7 @@ export class Gate {
 			const withdrawStatus = await this._getWithdrawStatus(token);
 
 			const chain = this._getChain(chainId);
-			if (!chain) throw new Error(`Couldnt find chain for ${ChainId[+chainId]}!`);
+			if (!chain) throw new Error(`Couldnt find chain for ${chainId}!`);
 			const fee = withdrawStatus[0].withdraw_fix_on_chains[chain];
 			const minAmount = +withdrawStatus[0].withdraw_amount_mini;
 			if (!fee) throw new Error(`Couldnt get fee for ${token} in ${chain}!`);

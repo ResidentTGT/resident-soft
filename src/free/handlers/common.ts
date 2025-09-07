@@ -31,7 +31,7 @@ export class CommonHandler extends BaseHandler {
 						network,
 						functionParams.toChainIds,
 						wal.address,
-						amount.toFixed(8),
+						amount.toFixed(6),
 					);
 				else {
 					await Logger.getInstance().log(`No funds (${bal} ${network.nativeCoin}) to refuel!`, MessageType.Warn);
@@ -64,7 +64,7 @@ export class CommonHandler extends BaseHandler {
 						account.wallets.evm.private,
 						network,
 						functionParams.toChainId,
-						amount.toFixed(8),
+						amount.toFixed(6),
 						destAddr,
 					);
 				} else {

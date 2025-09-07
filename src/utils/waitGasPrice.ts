@@ -17,7 +17,7 @@ export async function waitGasPrice(chainId: ChainId, gasPriceInGwei: number, del
 			if (gasPrice > gasPriceInGwei) {
 				await Logger.getInstance().log(
 					gasPrice
-						? `Gas price: ${gasPrice} gwei on ${ChainId[+chainId]}. Waiting for ${gasPriceInGwei} gwei...`
+						? `Gas price: ${gasPrice} gwei on ${network.name}. Waiting for ${gasPriceInGwei} gwei...`
 						: 'Couldnt get gas price! Trying again...',
 				);
 				await delay(delayInS);

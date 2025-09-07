@@ -46,7 +46,7 @@ export abstract class Sushi {
 		const contractAddress = SUSHI_ROUTER_CONTRACT_ADDRESSES.get(network.chainId);
 		if (!contractAddress) throw new Error();
 		if (tokenSymbol1 !== network.nativeCoin) {
-			if (!contractAddress) throw new Error(`There is no contract address for ${ChainId[+network.chainId]}`);
+			if (!contractAddress) throw new Error(`There is no contract address for ${network.name}`);
 			await Evm.approve(network, ACCOUNT.wallets.evm.private, contractAddress, tokenSymbol1, amount);
 		}
 

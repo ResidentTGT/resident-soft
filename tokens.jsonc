@@ -1,6 +1,6 @@
 [
 	{
-		"chainId": 1,
+		"chainId": "1",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "USDT", "address": "0xdac17f958d2ee523a2206206994597c13d831ec7" },
@@ -22,7 +22,7 @@
 		],
 	},
 	{
-		"chainId": 10,
+		"chainId": "10",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "OP", "address": "0x4200000000000000000000000000000000000042" },
@@ -38,7 +38,7 @@
 		],
 	},
 	{
-		"chainId": 42161,
+		"chainId": "42161",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "ARB", "address": "0x912CE59144191C1204E64559FE8253a0e49E6548" },
@@ -66,7 +66,7 @@
 		],
 	},
 	{
-		"chainId": 137,
+		"chainId": "137",
 		"tokens": [
 			{ "symbol": "MATIC", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "USDC", "address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" },
@@ -80,11 +80,11 @@
 		],
 	},
 	{
-		"chainId": 5,
+		"chainId": "5",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 324,
+		"chainId": "324",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WETH", "address": "0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91" },
@@ -102,7 +102,7 @@
 		],
 	},
 	{
-		"chainId": 56,
+		"chainId": "56",
 		"tokens": [
 			{ "symbol": "BNB", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "agEUR", "address": "0x12f31B73D812C6Bb0d735a218c086d44D5fe5f89" },
@@ -115,7 +115,7 @@
 		],
 	},
 	{
-		"chainId": 146,
+		"chainId": "146",
 		"tokens": [
 			{ "symbol": "S", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "COIN", "address": "0xfffFfff80e1291dbb712536EEbc9C27Ff274a78E" },
@@ -125,7 +125,7 @@
 		],
 	},
 	{
-		"chainId": 43114,
+		"chainId": "43114",
 		"tokens": [
 			{ "symbol": "AVAX", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "BTC.b", "address": "0x152b9d0fdc40c096757f570a51e494bd4b943e50" },
@@ -134,7 +134,7 @@
 		],
 	},
 	{
-		"chainId": 108,
+		"chainId": "108",
 		"tokens": [
 			{ "symbol": "APT", "address": "0x1::aptos_coin::AptosCoin" },
 			{ "symbol": "BTC.b", "address": "0x8b107b816356295ea62750020edea701bfc6d11575953d0e146c20d7b9409300::oft::BTCbOFT" },
@@ -173,18 +173,18 @@
 		],
 	},
 	{
-		"chainId": 101,
+		"chainId": "101",
 		"tokens": [
 			{ "symbol": "SUI", "address": "0x2::sui::SUI" },
 			{ "symbol": "USDC", "address": "0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC" },
 		],
 	},
 	{
-		"chainId": 7777777,
+		"chainId": "7777777",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 8453,
+		"chainId": "8453",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "DOG", "address": "0xAfb89a09D82FBDE58f18Ac6437B3fC81724e4dF6" },
@@ -204,11 +204,11 @@
 		],
 	},
 	{
-		"chainId": 42220,
+		"chainId": "42220",
 		"tokens": [{ "symbol": "CELO", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 59144,
+		"chainId": "59144",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "USDC", "address": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff" },
@@ -227,11 +227,11 @@
 		],
 	},
 	{
-		"chainId": 204,
+		"chainId": "204",
 		"tokens": [{ "symbol": "BNB", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 534352,
+		"chainId": "534352",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WETH", "address": "0x5300000000000000000000000000000000000004" },
@@ -242,34 +242,34 @@
 		],
 	},
 	{
-		"chainId": 122,
+		"chainId": "122",
 		"tokens": [{ "symbol": "FUSE", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 1666600000,
+		"chainId": "1666600000",
 		"tokens": [{ "symbol": "ONE", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 1284,
+		"chainId": "1284",
 		"tokens": [{ "symbol": "GLMR", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 42170,
+		"chainId": "42170",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 100,
+		"chainId": "100",
 		"tokens": [{ "symbol": "XDAI", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 169,
+		"chainId": "169",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "MANTA", "address": "0x95CeF13441Be50d20cA4558CC0a27B601aC544E5" },
 		],
 	},
 	{
-		"chainId": 1116,
+		"chainId": "1116",
 		"tokens": [
 			{ "symbol": "CORE", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "USDC", "address": "0xa4151B2B3e269645181dCcF2D426cE75fcbDeca9" },
@@ -277,7 +277,7 @@
 		],
 	},
 	{
-		"chainId": 81457,
+		"chainId": "81457",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "USDB", "address": "0x4300000000000000000000000000000000000003" },
@@ -298,11 +298,11 @@
 		],
 	},
 	{
-		"chainId": 11155111,
+		"chainId": "11155111",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 743111,
+		"chainId": "743111",
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WETH", "address": "0x0C8aFD1b58aa2A5bAd2414B861D8A7fF898eDC3A" },
@@ -312,7 +312,7 @@
 		],
 	},
 	{
-		"chainId": 8008135,
+		"chainId": "8008135",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
@@ -334,11 +334,11 @@
 		],
 	},
 	{
-		"chainId": 1868,
+		"chainId": "1868",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 80094,
+		"chainId": "80094",
 		"tokens": [
 			{ "symbol": "BERA", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "HONEY", "address": "0xFCBD14DC51f0A4d49d5E53C2E0950e0bC26d0Dce" },
@@ -352,14 +352,14 @@
 		],
 	},
 	{
-		"chainId": 2020,
+		"chainId": "2020",
 		"tokens": [
 			{ "symbol": "RON", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WRON", "address": "0xe514d9deb7966c8be0ca922de8a064264ea6bcd4" },
 		],
 	},
 	{
-		"chainId": 747,
+		"chainId": "747",
 		"tokens": [
 			{ "symbol": "FLOW", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WFLOW", "address": "0xd3bF53DAC106A0290B0483EcBC89d40FcC961f3e" },
@@ -367,19 +367,19 @@
 		],
 	},
 	{
-		"chainId": 360,
+		"chainId": "360",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 43111,
+		"chainId": "43111",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 2741,
+		"chainId": "2741",
 		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
 	},
 	{
-		"chainId": 50104,
+		"chainId": "50104",
 		"tokens": [{ "symbol": "SOPH", "address": "0x000000000000000000000000000000000000800A" }],
 	},
 ]

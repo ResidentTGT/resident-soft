@@ -47,8 +47,9 @@ export abstract class RelayLink {
 			await Evm.makeTransaction(provider, privateKey, transaction);
 
 			await Logger.getInstance().log(`Bridged.`);
-		} catch (e) {
-			console.log(e);
+		} catch (e: any) {
+			const errorMsg = e.response?.data?.message;
+			throw new Error(`Refuel ${amount} ${network.nativeCoin} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 
@@ -99,9 +100,10 @@ export abstract class RelayLink {
 		const relayTestChains = (await axios.get('https://api.testnets.relay.link/chains')).data.chains;
 		const allChains = [...relayChains, ...relayTestChains];
 
-		let chainIdToFind = +chainId;
+		let chainIdToFind;
 		if (chainId === ChainId.Solana) chainIdToFind = 792703809;
 		if (chainId === ChainId.Eclipse) chainIdToFind = 9286185;
+		chainIdToFind = +chainId;
 
 		if (!chainIdToFind) throw new Error(`Couldnt match string chainId ${chainId} with list in switch!`);
 		const relayChain = allChains.find((c) => c.id === chainIdToFind);

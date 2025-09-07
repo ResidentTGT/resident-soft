@@ -20,7 +20,7 @@ const networksConfig = parse(readFileSync('./networks.jsonc', 'utf-8')) as Netwo
 const tokensConfig = parse(readFileSync('./tokens.jsonc', 'utf-8')) as { chainId: number | string; tokens: Token[] }[];
 
 function getTokens(chainId: ChainId): Token[] {
-	const entry = tokensConfig.find((item) => item.chainId.toString() === chainId.toString());
+	const entry = tokensConfig.find((item) => item.chainId === chainId);
 	return entry ? entry.tokens : [];
 }
 
@@ -44,12 +44,12 @@ export class Network {
 	}
 
 	public static checkChainId(id: any) {
-		if (id === null || id === undefined || !ChainId[id])
+		if (id === null || id === undefined || (!Object.values(ChainId).includes(id) && !Object.values(ChainId).includes(id[0])))
 			throw new Error(`Invalid chainId: ${id}. Check allowed here: https://resident.gitbook.io/resident-soft/chain-ids`);
 	}
 
 	public static async getNetworkByChainId(id: ChainId) {
-		const networkConfig = networksConfig.find((n) => n.chainId.toString() === id.toString());
+		const networkConfig = networksConfig.find((n) => n.chainId === id);
 		if (!networkConfig) throw new Error(`There is no network configuration for chainId ${id}`);
 		const rpcs = networkConfig.rpc.shuffle();
 		const logger = await Logger.getInstance();
@@ -59,7 +59,7 @@ export class Network {
 			for (const rpc of rpcs) {
 				let provider;
 				try {
-					provider = new ethers.JsonRpcProvider(rpc, Number(id));
+					provider = new ethers.JsonRpcProvider(rpc, +id);
 					await provider.getBlockNumber();
 					selectedRpc = rpc;
 					await provider.destroy();

@@ -331,7 +331,7 @@ export class Evm {
 		if (transactionReceipt) {
 			const fee = ethers.formatEther(transactionReceipt.fee);
 			const explorerUrl = getExplorerUrl(
-				+(await provider.getNetwork()).chainId.toString(),
+				(await provider.getNetwork()).chainId.toString() as ChainId,
 				undefined,
 				transactionReceipt?.hash,
 			);
@@ -571,12 +571,12 @@ export class Evm {
 				} else {
 					if (attempts >= attemptsBeforeError) {
 						throw new Error(
-							`Couldnt wait ${waitingBalance} ${tokenSymbol} on ${ChainId[+chainId]} on (${address}) with ${attempts} attempts!`,
+							`Couldnt wait ${waitingBalance} ${tokenSymbol} on ${network.name} on (${address}) with ${attempts} attempts!`,
 						);
 					} else {
 						await Logger.getInstance().log(
 							`Balance on (${address}): ${currentBalance} ${tokenSymbol}. Waiting for ${waitingBalance} ${tokenSymbol} on ${
-								ChainId[+chainId]
+								network.name
 							}...`,
 						);
 						await delay(delayInS);
@@ -585,7 +585,7 @@ export class Evm {
 			} catch (e) {
 				if (attempts >= attemptsBeforeError) {
 					throw new Error(
-						`Couldnt wait ${waitingBalance} ${tokenSymbol} on ${ChainId[+chainId]} on (${address}) with ${attempts} attempts!`,
+						`Couldnt wait ${waitingBalance} ${tokenSymbol} on ${network.name} on (${address}) with ${attempts} attempts!`,
 					);
 				} else {
 					await Logger.getInstance().log(`Something went wrong! ${e} Trying again...`);

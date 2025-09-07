@@ -41,31 +41,34 @@ export class GasZip {
 		to: string,
 		value: string,
 	): Promise<TransactionResponse> {
-		await Logger.getInstance().log(
-			`Start refuel ${network.nativeCoin} from ${ChainId[+network.chainId]} to ${toChainIds} to ${to}`,
-		);
+		try {
+			await Logger.getInstance().log(`Start refuel ${network.nativeCoin} from ${network.name} to ${toChainIds} to ${to}`);
 
-		const gasZipChainIds = toChainIds.map((c) => {
-			const chain = OUTBOUND_CHAIN_IDS.get(c);
-			if (!chain) throw new Error(`Couldnt find chain for ${c}!`);
-			return chain;
-		});
+			const gasZipChainIds = toChainIds.map((c) => {
+				const chain = OUTBOUND_CHAIN_IDS.get(c);
+				if (!chain) throw new Error(`Couldnt find chain for ${c}!`);
+				return chain;
+			});
 
-		const data = encodeTransactionInput(to, gasZipChainIds);
+			const data = encodeTransactionInput(to, gasZipChainIds);
 
-		const provider = network.getProvider();
+			const provider = network.getProvider();
 
-		const transaction = await Evm.generateTransactionRequest(
-			provider,
-			privateKey,
-			CONTRACT_ADDRESS,
-			ethers.parseEther(value),
-			data,
-		);
+			const transaction = await Evm.generateTransactionRequest(
+				provider,
+				privateKey,
+				CONTRACT_ADDRESS,
+				ethers.parseEther(value),
+				data,
+			);
 
-		const resp = await Evm.makeTransaction(provider, privateKey, transaction);
+			const resp = await Evm.makeTransaction(provider, privateKey, transaction);
 
-		return resp;
+			return resp;
+		} catch (e: any) {
+			const errorMsg = e.response?.data?.message;
+			throw new Error(`Refuel ${value} ${network.nativeCoin} to ${to} failed.\n${errorMsg ?? e}`);
+		}
 	}
 
 	static async refuelManyWalletsFromOneWallet(

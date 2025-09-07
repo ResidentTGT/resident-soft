@@ -17,14 +17,13 @@ export abstract class Orbiter {
 		if (!ACCOUNT.wallets?.evm?.address) throw new Error('There is no account.wallets.evm.address!');
 		if (!ACCOUNT.wallets.evm.private) throw new Error('There is no account.wallets.evm.private in wallet!');
 
-		await Logger.getInstance().log(`Start bridging ${amount} ${network.nativeCoin} to ${ChainId[+toChainId]} ...`);
+		await Logger.getInstance().log(`Start bridging ${amount} ${network.nativeCoin} to ${toChainId} ...`);
 
 		const amountBn = ethers.parseEther((+amount).toFixed(6));
 
 		const contractAddress = CONTRACTS.get(network.chainId);
 		const addValue = VALUES.get(toChainId);
-		if (!contractAddress || !addValue)
-			throw new Error(`There is no contract address or addValue for ${ChainId[+network.chainId]}`);
+		if (!contractAddress || !addValue) throw new Error(`There is no contract address or addValue for ${network.name}`);
 		const value = ethers.formatEther(amountBn + BigInt(addValue));
 		await Evm.sendNative(ACCOUNT.wallets.evm.private, network, contractAddress, value);
 		await Logger.getInstance().log(`Bridged.`);

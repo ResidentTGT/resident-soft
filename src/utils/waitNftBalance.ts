@@ -26,17 +26,17 @@ export async function waitNftBalance(
 				normBalance = true;
 			} else {
 				if (attempts >= attemptsBeforeError) {
-					throw new Error(`Couldnt wait ${waitingBalance} NFT on ${ChainId[+chainId]} with ${attempts} attempts!`);
+					throw new Error(`Couldnt wait ${waitingBalance} NFT on ${network.name} with ${attempts} attempts!`);
 				} else {
 					await Logger.getInstance().log(
-						`Balance: ${balance} NFT. Waiting for ${waitingBalance} NFT on ${ChainId[+chainId]} ...`,
+						`Balance: ${balance} NFT. Waiting for ${waitingBalance} NFT on ${network.name} ...`,
 					);
 					await delay(delayInS);
 				}
 			}
 		} catch {
 			if (attempts >= attemptsBeforeError) {
-				throw new Error(`Couldnt wait ${waitingBalance} NFT on ${ChainId[+chainId]} with ${attempts} attempts!`);
+				throw new Error(`Couldnt wait ${waitingBalance} NFT on ${network.name} with ${attempts} attempts!`);
 			} else {
 				await Logger.getInstance().log('Couldnt get NFT balance! Trying again...');
 				await delay(delayInS);

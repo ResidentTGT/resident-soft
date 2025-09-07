@@ -42,7 +42,7 @@ const EXPLORER_URLS = new Map<ChainId, string>()
 export function getExplorerUrl(chainId: ChainId, account?: Account, transactionHash?: string): string {
 	let url = ``;
 	const baseUrl = EXPLORER_URLS.get(chainId);
-	if (!baseUrl) url = `There is no explorer for ${ChainId[+chainId]}!`;
+	if (!baseUrl) url = `There is no explorer for ${chainId}!`;
 	else {
 		if (Network.isEvm(chainId))
 			url = `${baseUrl}${transactionHash ? 'tx/' + transactionHash : 'address/' + account?.wallets?.evm?.address}`;
