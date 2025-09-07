@@ -7,11 +7,20 @@ import axios from 'axios';
 const ODOS_ROUTER_CONTRACT_ADDRESSES = new Map([
 	[ChainId.ZksyncEra, '0x4bba932e9792a2b917d47830c93a9bc79320e4f7'],
 	[ChainId.Arbitrum, '0xa669e7a0d4b3e4fa48af2de86bd4cd7126be4e13'],
-	[ChainId.Polygon, '0xa669e7a0d4b3e4fa48af2de86bd4cd7126be4e13'],
+	[ChainId.Polygon, '0x4E3288c9ca110bCC82bf38F09A7b425c095d92Bf'],
 	[ChainId.Base, '0x19ceead7105607cd444f5ad10dd51356436095a1'],
 	[ChainId.Ethereum, '0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559'],
 	[ChainId.Linea, '0x2d8879046f1559E53eb052E949e9544bCB72f414'],
 	[ChainId.Sonic, '0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D'],
+	[ChainId.Optimism, '0xCa423977156BB05b13A2BA3b76Bc5419E2fE9680'],
+	[ChainId.Bsc, '0x89b8AA89FDd0507a99d334CBe3C808fAFC7d850E'],
+	[ChainId.Sonic, '0xaC041Df48dF9791B0654f1Dbbf2CC8450C5f2e9D'],
+	[ChainId.Mantle, '0xD9F4e85489aDCD0bAF0Cd63b4231c6af58c26745'],
+	[ChainId.AvalancheC, '0x88de50B233052e4Fb783d4F6db78Cc34fEa3e9FC'],
+	[ChainId.Scroll, '0xbFe03C9E20a9Fc0b37de01A172F207004935E0b1'],
+	[ChainId.Unichain, '0x6409722F3a1C4486A3b1FE566cBDd5e9D946A1f3'],
+	[ChainId.Mode, '0x7E15EB462cdc67Cf92Af1f7102465a8F8c784874'],
+	[ChainId.Fraxtal, '0x56c85a254DD12eE8D9C04049a4ab62769Ce98210'],
 ]);
 
 export abstract class Odos {

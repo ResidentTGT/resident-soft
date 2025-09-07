@@ -55,4 +55,6 @@ export enum ChainId {
 	Sophon = 50104,
 	HyperEVM = 999,
 	Sei = 1329,
+	Mode = 34443,
+	Fraxtal = 252,
 }

@@ -262,4 +262,22 @@
 		"nativeCoin": "S",
 		"rpc": ["https://rpc.soniclabs.com"],
 	},
+	{
+		"chainId": 5000,
+		"name": "Mantle",
+		"nativeCoin": "MNT",
+		"rpc": ["https://rpc.mantle.xyz"],
+	},
+	{
+		"chainId": 34443,
+		"name": "Mode",
+		"nativeCoin": "ETH",
+		"rpc": ["https://mainnet.mode.network"],
+	},
+	{
+		"chainId": 252,
+		"name": "Fraxtal",
+		"nativeCoin": "FRAX",
+		"rpc": ["https://rpc.frax.com"],
+	},
 ]
