@@ -61,6 +61,18 @@ export function getEncryptedOrDecryptedSecretStorage(aesKey: string, storage: Se
 		},
 	};
 
+	newStorage.mainBybitAccount = {
+		email: storage.mainBybitAccount?.email ? func(aesKey, storage.mainBybitAccount.email) : '',
+		evmDepositAddress: storage.mainBybitAccount?.evmDepositAddress
+			? func(aesKey, storage.mainBybitAccount.evmDepositAddress)
+			: '',
+		api: {
+			apiKey: storage.mainBybitAccount?.api?.apiKey ? func(aesKey, storage.mainBybitAccount.api.apiKey) : '',
+			secretKey: storage.mainBybitAccount?.api?.secretKey ? func(aesKey, storage.mainBybitAccount.api.secretKey) : '',
+			passPhrase: storage.mainBybitAccount?.api?.passPhrase ? func(aesKey, storage.mainBybitAccount.api.passPhrase) : '',
+		},
+	};
+
 	newStorage.cmcApiKey = storage.cmcApiKey ? func(aesKey, storage.cmcApiKey) : '';
 	newStorage.rucaptchaApiKey = storage.rucaptchaApiKey ? func(aesKey, storage.rucaptchaApiKey) : '';
 	newStorage.capSolverApiKey = storage.capSolverApiKey ? func(aesKey, storage.capSolverApiKey) : '';

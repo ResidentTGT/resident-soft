@@ -34,6 +34,7 @@
 	"Bitget": { "Withdraw": { "amount": [1, 2], "token": "SOL", "to": "solana", "toChainId": "Solana" } },
 	"Gate": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
 	"Binance": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
+	"Bybit": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": 1 } },
 	"CommonUi": {
 		"OpenPages": {
 			"pageUrls": [

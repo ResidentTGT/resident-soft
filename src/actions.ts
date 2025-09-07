@@ -26,6 +26,7 @@ export enum ActionsGroupName {
 	ZksyncLite = 'ZksyncLite',
 	Sophon = 'Sophon',
 	Checkers = 'Checkers',
+	Bybit = 'Bybit',
 }
 
 export enum ActionName {
@@ -186,6 +187,11 @@ export const ACTIONS: ActionsGroup[] = [
 	},
 	{
 		group: ActionsGroupName.Gate,
+		premium: false,
+		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false }],
+	},
+	{
+		group: ActionsGroupName.Bybit,
 		premium: false,
 		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false }],
 	},

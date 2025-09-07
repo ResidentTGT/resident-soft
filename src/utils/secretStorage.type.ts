@@ -6,6 +6,7 @@ export interface SecretStorage {
 	mainOkxAccount?: Cex;
 	mainBitgetAccount?: Cex;
 	mainGateAccount?: Cex;
+	mainBybitAccount?: Cex;
 	cmcApiKey?: string;
 	rucaptchaApiKey?: string;
 	capSolverApiKey?: string;
