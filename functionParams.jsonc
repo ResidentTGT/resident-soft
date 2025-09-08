@@ -25,9 +25,9 @@
 		"Swap": {
 			"token1": "ETH",
 			"token2": "USDC",
-			"amount": [0.1, 0.2, 0.1, 0.2],
+			"amount": [0.000001, 0.000002],
 			"slippageInPercent": 3,
-			"minAmountForSwap": 0.001,
+			"minAmountForSwap": 0.000000001,
 		},
 	},
 	"Okx": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },

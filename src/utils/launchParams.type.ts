@@ -14,7 +14,7 @@ export interface LaunchParams {
 	ROTATE_PROXY: boolean;
 	TAKE_STATE: boolean;
 	STATE_NAME: string;
-	UNTIL_SUCCESS: boolean;
+	ATTEMPTS_UNTIL_SUCCESS: number;
 	WAIT_GAS_PRICE: number;
 	DELAY_BETWEEN_ACCS_IN_S: number[];
 	DELAY_AFTER_ERROR_IN_S: number;

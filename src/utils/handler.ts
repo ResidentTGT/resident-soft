@@ -56,6 +56,8 @@ export abstract class BaseHandler implements Handler {
 	async actionIsolated(actionModeParams: ActionModeParams): Promise<void> {
 		const { LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE, ITERATION, AES_KEY } = actionModeParams;
 
+		const logger = Logger.getInstance();
+
 		const action = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group)?.actions.find(
 			(a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action,
 		);
@@ -66,15 +68,17 @@ export abstract class BaseHandler implements Handler {
 		let fails: string[] = [];
 		const successes: string[] = [];
 		let finish;
-		while (!finish) {
-			await Logger.getInstance().log(
-				`Iteration ${ITERATION}. Accounts (${ACCOUNTS_TO_DO.length}): ${ACCOUNTS_TO_DO.map((a) => a.name).join(',')}`,
+		let attemptsUntilSuccess = 0;
+		while (!finish && attemptsUntilSuccess < LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS) {
+			attemptsUntilSuccess++;
+			await logger.log(
+				`Iteration ${ITERATION}. Attempt ${attemptsUntilSuccess}. Accounts (${ACCOUNTS_TO_DO.length}): ${ACCOUNTS_TO_DO.map((a) => a.name).join(',')}`,
 				MessageType.Info,
 			);
 			const createPromise = async (account: Account, index: number) => {
 				const accountName = account.name ?? '';
 				try {
-					await Logger.getInstance().log(
+					await logger.log(
 						this.generateAccountMessage(
 							index,
 							ACCOUNTS_TO_DO.length,
@@ -114,7 +118,7 @@ export abstract class BaseHandler implements Handler {
 						STATE.fails = STATE.fails.filter((f: string) => f !== accountName);
 						STATE.save();
 					}
-					await Logger.getInstance().log(
+					await logger.log(
 						this.generateAccountMessage(
 							index,
 							ACCOUNTS_TO_DO.length,
@@ -130,7 +134,7 @@ export abstract class BaseHandler implements Handler {
 							LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S[1],
 						);
 						if (!(result && (result as any).skipDelay)) {
-							await Logger.getInstance().log(`Waiting ${waiting} s. ...`);
+							await logger.log(`Waiting ${waiting} s. ...`);
 							await delay(waiting);
 						}
 					}
@@ -145,7 +149,7 @@ export abstract class BaseHandler implements Handler {
 							STATE.save();
 						}
 					}
-					await Logger.getInstance().log(
+					await logger.log(
 						this.generateAccountMessage(
 							index,
 							ACCOUNTS_TO_DO.length,
@@ -156,7 +160,7 @@ export abstract class BaseHandler implements Handler {
 						MessageType.Error,
 					);
 					if (LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S > 0) {
-						await Logger.getInstance().log(`Waiting ${LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S} s. ...`);
+						await logger.log(`Waiting ${LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S} s. ...`);
 						await delay(LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S);
 					}
 				}
@@ -189,14 +193,23 @@ export abstract class BaseHandler implements Handler {
 				}
 			}
 
-			if (!LAUNCH_PARAMS.UNTIL_SUCCESS) finish = true;
-			else if (ACCOUNTS_TO_DO.every((a) => successes.includes(a.name ?? ''))) finish = true;
-			else {
+			const allSuccess = ACCOUNTS_TO_DO.every((a) => successes.includes(a.name ?? ''));
+
+			if (attemptsUntilSuccess >= LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS && !allSuccess) {
+				await logger.log(
+					`Attempts are over. LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS: ${LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS}`,
+					MessageType.Warn,
+				);
+				finish = true;
+			} else if (allSuccess) {
+				await logger.log(`All accounts finished in ${attemptsUntilSuccess} attempts.`, MessageType.Info);
+				finish = true;
+			} else {
 				ACCOUNTS_TO_DO = ACCOUNTS_TO_DO.filter((a) => !successes.includes(a.name ?? ''));
 				await delay(1);
 			}
 		}
-		await Logger.getInstance().log(
+		await logger.log(
 			this.generateFinalMessage(ITERATION, successes, fails, JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)),
 			MessageType.Notice,
 		);
