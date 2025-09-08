@@ -7,22 +7,23 @@ import { ChainId, Network, Token } from '@utils/network';
 
 export class Evm {
 	static async approve(network: Network, privateKey: string, spender: string, tokenSymbol: string, amount: string) {
-		const ethersWallet = new ethers.Wallet(privateKey);
-		await Logger.getInstance().log(`Start approving ${amount} ${tokenSymbol} for ${spender} ...`);
-		const provider = network.getProvider();
-
 		const token = network.tokens.find((t) => t.symbol === tokenSymbol);
-		if (!token) {
-			throw new Error(`There is no ${tokenSymbol} in tokens list in ${network.name}`);
-		}
+		if (!token) throw new Error(`There is no ${tokenSymbol} in tokens list in ${network.name}`);
 
 		if (tokenSymbol === network.nativeCoin) {
 			await Logger.getInstance().log(`There is no need to approve native coin ${tokenSymbol}`);
 		} else {
+			const provider = network.getProvider();
 			const decimals = await this.getDecimals(network, token);
-			const amountBn = ethers.parseUnits(amount, decimals);
+
+			const fixedAmount = (+amount).toFixed(decimals);
+
+			await Logger.getInstance().log(`Start approving ${fixedAmount} ${tokenSymbol} for ${spender} ...`);
+
+			const amountBn = ethers.parseUnits(fixedAmount, decimals);
 
 			const tokenContract = new ethers.Interface(ERC20_ABI);
+			const ethersWallet = new ethers.Wallet(privateKey);
 			const allowance = await this.getAllowance(provider, ethersWallet.address, spender, token.address);
 
 			if (allowance < amountBn) {
@@ -32,7 +33,7 @@ export class Evm {
 
 				await this.makeTransaction(provider, privateKey, transaction);
 
-				await Logger.getInstance().log(`Approved ${amount} ${tokenSymbol} for ${spender}`);
+				await Logger.getInstance().log(`Approved ${fixedAmount} ${tokenSymbol} for ${spender}`);
 			} else {
 				await Logger.getInstance().log(
 					`Allowance (${ethers.formatUnits(
