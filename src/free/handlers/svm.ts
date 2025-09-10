@@ -30,11 +30,11 @@ export class SvmHandler extends BaseHandler {
 				const amount =
 					!functionParams.amount || !functionParams.amount[1]
 						? functionParams.token === network.nativeCoin
-							? bal - Random.float(0.0001, 0.0001)
+							? bal - Random.float(0.00001, 0.00001)
 							: bal
 						: Random.float(functionParams.amount[0], functionParams.amount[1]);
 
-				if (amount && bal <= +amount) throw new Error(`Not enough amount (${bal} ${token.symbol}) to send!`);
+				if (amount && bal < +amount) throw new Error(`Not enough amount (${bal} ${token.symbol}) to send!`);
 				await svmApi.transfer(account.wallets.solana.private, toAddr, amount, functionParams.token);
 
 				break;

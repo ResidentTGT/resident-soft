@@ -182,7 +182,7 @@
 		"chainId": "Solana",
 		"name": "Solana",
 		"nativeCoin": "SOL",
-		"rpc": ["https://api.mainnet-beta.solana.com"],
+		"rpc": ["https://solana-rpc.publicnode.com", "https://api.mainnet-beta.solana.com"],
 	},
 	{
 		"chainId": "Eclipse",

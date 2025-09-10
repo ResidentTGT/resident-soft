@@ -23,6 +23,9 @@ import {
 	IInstruction,
 	IAccountMeta,
 	IAccountLookupMeta,
+	compileTransactionMessage,
+	getCompiledTransactionMessageEncoder,
+	ReadonlyUint8Array,
 } from '@solana/web3.js';
 import {
 	fetchMint,
@@ -37,7 +40,7 @@ import { getTransferSolInstruction } from '@solana-program/system';
 import { ethers } from 'ethers';
 import { getExplorerUrl } from '@utils/getExplorerUrl';
 import { Token } from '@utils/network';
-
+import type { TransactionMessageBytesBase64 } from '@solana/transactions';
 //https://solana.com/ru/docs/clients/javascript-reference
 export class SvmApi {
 	private readonly _rpc;
@@ -122,15 +125,16 @@ export class SvmApi {
 	async transfer(privateKey: string, to: string, amount: number, tokenSymbol?: string): Promise<string> {
 		const walletKeyPair = await this.getKeypairFromPrivate(privateKey);
 
-		await Logger.getInstance().log(
-			`Start sending ${amount} ${tokenSymbol ?? this._network.nativeCoin} from ${walletKeyPair.address} to ${to} ...`,
-		);
-
 		let instructions = [];
 		if (tokenSymbol && tokenSymbol !== this._network.nativeCoin) {
 			const token = this._network.tokens.find((t) => t.symbol === tokenSymbol);
 			if (!token) throw new Error();
 			const decimals = await this.getDecimals(token);
+
+			await Logger.getInstance().log(
+				`Start sending ${amount.toFixed(decimals)} ${tokenSymbol} from ${walletKeyPair.address} to ${to} ...`,
+			);
+
 			const programAddress = await this.getProgramAddress(token.address);
 
 			const senderAccountAddr = await findAssociatedTokenPda({
@@ -181,14 +185,65 @@ export class SvmApi {
 				),
 			);
 		} else {
-			instructions = [
-				getTransferSolInstruction({
-					amount: ethers.parseUnits(amount.toFixed(9), 9),
-					destination: address(to),
-					source: walletKeyPair,
-				}),
-			];
+			await Logger.getInstance().log(
+				`Start sending ${amount.toFixed(9)} ${this._network.nativeCoin} from ${walletKeyPair.address} to ${to} ...`,
+			);
+			const payer = address(walletKeyPair.address);
+			const receiver = address(to);
+
+			const payerBalance = BigInt((await this._rpc.getBalance(payer, { commitment: 'processed' }).send()).value ?? 0);
+
+			const toInfo = await this._rpc.getAccountInfo(receiver, { commitment: 'processed' }).send();
+			const isNewReceiver = !toInfo.value;
+
+			let rentMin0 = 0n;
+			try {
+				const v = await this._rpc.getMinimumBalanceForRentExemption(rentMin0).send();
+				rentMin0 = BigInt(v ?? 0);
+			} catch {
+				rentMin0 = 0n;
+			}
+
+			const tmpIx = getTransferSolInstruction({ amount: 0n, destination: receiver, source: walletKeyPair });
+
+			const latestBlockhash = (await this._rpc.getLatestBlockhash({ commitment: 'confirmed' }).send()).value;
+
+			const feeMsgObj = pipe(
+				createTransactionMessage({ version: 0 }),
+				(tx) => setTransactionMessageFeePayer(payer, tx),
+				(tx) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, tx),
+				(tx) => appendTransactionMessageInstructions([tmpIx], tx),
+			);
+			const toB64 = (bytes: ReadonlyUint8Array | Uint8Array): TransactionMessageBytesBase64 => {
+				const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+				return Buffer.from(u8).toString('base64') as unknown as TransactionMessageBytesBase64;
+			};
+			const feeMsgB64 = toB64(pipe(feeMsgObj, compileTransactionMessage, getCompiledTransactionMessageEncoder().encode));
+
+			const feeResp = await this._rpc.getFeeForMessage(feeMsgB64).send();
+			const feeRaw = typeof feeResp === 'object' && feeResp && 'value' in feeResp ? (feeResp as any).value : feeResp;
+			const feeLamports = typeof feeRaw === 'bigint' ? feeRaw : BigInt((feeRaw ?? 5000) as number | string);
+
+			const requiredForReceiver = isNewReceiver ? rentMin0 : 0n;
+
+			const desiredLamports = BigInt(ethers.parseUnits(amount.toFixed(9), 9));
+			let lamportsToSend = desiredLamports;
+			if (lamportsToSend < requiredForReceiver) lamportsToSend = requiredForReceiver;
+
+			const maxSendable = payerBalance - feeLamports;
+			if (lamportsToSend > maxSendable) throw new Error(`Max sendable: ${maxSendable}`);
+
+			const postBalance = payerBalance - lamportsToSend - feeLamports;
+			if (postBalance > 0n && postBalance < rentMin0) {
+				lamportsToSend += postBalance;
+			}
+
+			if (maxSendable <= 0n)
+				throw new Error(`Not enough SOL for commission: need ~${feeLamports}, balance ${payerBalance}`);
+
+			instructions = [getTransferSolInstruction({ amount: lamportsToSend, destination: receiver, source: walletKeyPair })];
 		}
+
 		const signature = await this.makeTransaction(walletKeyPair, instructions);
 
 		return signature;
@@ -204,57 +259,7 @@ export class SvmApi {
 			(tx) => appendTransactionMessageInstructions(instructions, tx),
 		);
 
-		//const signedTransaction = await signTransactionMessageWithSigners(transactionMessage);
-
-		// const base64EncodedWireTransaction = getBase64EncodedWireTransaction(signedTransaction);
-		// const response = (
-		// 	await axios.post(
-		// 		this._network.getRpc(),
-		// 		{
-		// 			jsonrpc: '2.0',
-		// 			id: 'helius-example',
-		// 			method: 'getPriorityFeeEstimate',
-		// 			params: [
-		// 				{
-		// 					transaction: base64EncodedWireTransaction,
-		// 					options: {
-		// 						transactionEncoding: 'base64',
-		// 						recommended: true,
-		// 					},
-		// 				},
-		// 			],
-		// 		},
-		// 		{
-		// 			headers: { 'Content-Type': 'application/json' },
-		// 		},
-		// 	)
-		// ).data;
-
-		// console.log(response);
-		//const priorityFee = response.priorityFeeEstimate;
-		//await Logger.getInstance().log(`Setting priority fee to ${priorityFee}`);
-
-		// const getComputeUnitEstimateForTransactionMessage = getComputeUnitEstimateForTransactionMessageFactory({
-		// 	rpc: this._rpc,
-		// });
-		// let computeUnitsEstimate = await getComputeUnitEstimateForTransactionMessage(transactionMessage);
-		// computeUnitsEstimate = computeUnitsEstimate < 1000 ? 1000 : Math.ceil(computeUnitsEstimate * 3);
-		// await Logger.getInstance().log(`Setting compute units to ${computeUnitsEstimate}`);
-
-		//latestBlockhash = (await this._rpc.getLatestBlockhash({ commitment: 'processed' }).send()).value;
-
-		//const priceInstruction = getSetComputeUnitPriceInstruction({ microLamports: 4000000 });
-
-		const finalTransactionMessage = appendTransactionMessageInstructions(
-			[
-				//priceInstruction,
-				// getSetComputeUnitLimitInstruction({ units: computeUnitsEstimate })
-			],
-			transactionMessage,
-		);
-		//setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, finalTransactionMessage);
-
-		const finalSignedTransaction = await signTransactionMessageWithSigners(finalTransactionMessage);
+		const finalSignedTransaction = await signTransactionMessageWithSigners(transactionMessage);
 
 		const sendAndConfirmTransaction = sendAndConfirmTransactionFactory({
 			rpc: this._rpc,
