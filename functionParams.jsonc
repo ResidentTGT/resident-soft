@@ -11,7 +11,7 @@
 		"RefuelManyRelayLink": { "amount": [0.1, 0.2], "toChainId": "8453", "addresses": ["0x..."] },
 	},
 	"Evm": {
-		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "bitget-evm" },
+		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "bitget-evm", "minAmountToSend": 0.00001 },
 		"CheckNft": { "nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62" },
 		"Wrap": { "amount": [1, 0] },
 		"Unwrap": { "amount": [1, 0] },

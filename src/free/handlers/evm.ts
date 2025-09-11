@@ -10,6 +10,7 @@ import { Evmscan } from '@freeModules/evmscan';
 import { checkNft } from '@freeScenarios/evm';
 import { resolveAdresses } from '@src/utils/resolveAddresses';
 import { MissingFieldError } from '@src/utils/errors';
+import { Logger, MessageType } from '@src/utils/logger';
 
 export class EvmHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
@@ -34,9 +35,17 @@ export class EvmHandler extends BaseHandler {
 
 				if (amount && bal <= +amount) throw new Error(`Not enough amount (${bal} ${token.symbol}) to send!`);
 
-				if (functionParams.token === network.nativeCoin)
-					await Evm.sendNative(account.wallets.evm.private, network, toAddr, amount);
-				else await Evm.sendToken(account.wallets.evm.private, network, toAddr, functionParams.token, amount);
+				if (bal < functionParams.minAmountToSend) {
+					await Logger.getInstance().log(
+						`Balance (${bal} ${functionParams.token}) is less than minAmountToSend (${functionParams.minAmountToSend} ${token.symbol})!`,
+						MessageType.Warn,
+					);
+					return { skipDelay: true };
+				} else {
+					if (functionParams.token === network.nativeCoin)
+						await Evm.sendNative(account.wallets.evm.private, network, toAddr, amount);
+					else await Evm.sendToken(account.wallets.evm.private, network, toAddr, functionParams.token, amount);
+				}
 
 				break;
 			}
