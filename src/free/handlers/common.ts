@@ -117,14 +117,7 @@ export class CommonHandler extends BaseHandler {
 				);
 				break;
 			case ActionName.CheckBalances:
-				await checkBalances(
-					network.chainId,
-					ACCOUNTS_TO_DO,
-					FUNCTION_PARAMS.tokenNames,
-					`balances/${network.name}/${new Date().toISOString().replaceAll(':', '-')}`,
-					SECRET_STORAGE.cmcApiKey,
-					FUNCTION_PARAMS.tokenAlert && FUNCTION_PARAMS.tokenAlert.symbol ? FUNCTION_PARAMS.tokenAlert : undefined,
-				);
+				await checkBalances(ACCOUNTS_TO_DO, FUNCTION_PARAMS, SECRET_STORAGE.cmcApiKey);
 				break;
 			default:
 				this.unsupportedAction(params.LAUNCH_PARAMS.ACTION_PARAMS.action);
