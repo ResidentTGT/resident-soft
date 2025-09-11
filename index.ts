@@ -22,7 +22,7 @@ async function main() {
 		const licenseResult = await getVerifyLicenseMessage(launchParams);
 		await sendTelemetry(licenseResult);
 
-		const selectedOption = await promptUserForOption();
+		const selectedOption = await promptUserForOption(launchParams);
 		if (!selectedOption) process.exit(0);
 		console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
 

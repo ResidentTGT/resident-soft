@@ -85,13 +85,17 @@ export class CommandHandler {
 	}
 }
 
-export async function promptUserForOption(): Promise<CommandOption | undefined> {
+export async function promptUserForOption(launchParams: LaunchParams): Promise<CommandOption | undefined> {
+	const runAction =
+		launchParams.ACTION_PARAMS.group && launchParams.ACTION_PARAMS.action
+			? `🚀 ${launchParams.ACTION_PARAMS.group} -> ${launchParams.ACTION_PARAMS.action}`
+			: 'No action selected. Check launchParams.jsonc';
 	const q: PromptObject = {
 		type: 'select',
 		name: 'choice',
 		message: 'Select option:',
 		choices: [
-			{ title: '🚀 Run action', value: 'run' },
+			{ title: `${runAction}`, value: 'run' },
 			{ title: '🔑 Encrypt accounts and secretStorage', value: 'encrypt' },
 			{ title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
 			{ title: '❌ Exit', value: 'exit' },
