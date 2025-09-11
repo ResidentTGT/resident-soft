@@ -225,6 +225,7 @@
 			{ "symbol": "UNI", "address": "0x636B22bC471c955A8DB60f28D4795066a8201fa3" },
 			{ "symbol": "DAI", "address": "0x4AF15ec2A0BD43Db75dd04E62FAA3B8EF36b00d5" },
 			{ "symbol": "LXP", "address": "0xd83af4fbD77f3AB65C3B1Dc4B38D7e67AEcf599A" },
+			{ "symbol": "LINEA", "address": "0x1789e0043623282d5dcc7f213d703c6d8bafbb04" },
 		],
 	},
 	{

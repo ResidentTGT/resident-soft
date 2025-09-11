@@ -1,14 +1,16 @@
 import { ActionName } from '@src/actions';
 import { ActionModeParams } from '@src/utils/actionMode';
 import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
-import { checkLinea } from '../scenarios/checkers';
+import { checkLinea, claimLinea } from '../scenarios/checkers';
 
 export class CheckersHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
 		const { account, network, actionParams, functionParams } = params;
 
 		switch (actionParams.action) {
-			case ActionName.TEST:
+			case ActionName.Claim:
+				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
+				await claimLinea(account, network);
 				break;
 			default:
 				this.unsupportedAction(actionParams.action);

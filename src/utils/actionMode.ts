@@ -41,7 +41,7 @@ export async function actionMode(
 	const groupFParams = FUNCTION_PARAMS[LAUNCH_PARAMS.ACTION_PARAMS.group];
 	if (groupFParams && groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action]) {
 		FUNCTION_PARAMS = groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action];
-		message += ` | ${JSON.stringify(groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action])}`;
+		message += ` | ${JSON.stringify(groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action])}\n`;
 	}
 
 	await logger.log(message, MessageType.Info);

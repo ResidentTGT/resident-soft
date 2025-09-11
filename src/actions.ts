@@ -318,6 +318,9 @@ export const ACTIONS: ActionsGroup[] = [
 	{
 		group: ActionsGroupName.Checkers,
 		premium: false,
-		actions: [{ action: ActionName.Linea, isolated: false, needNetwork: true }],
+		actions: [
+			{ action: ActionName.Linea, isolated: false, needNetwork: true },
+			{ action: ActionName.Claim, isolated: true, needNetwork: true },
+		],
 	},
 ];

@@ -72,7 +72,7 @@ export abstract class BaseHandler implements Handler {
 		while (!finish && attemptsUntilSuccess < LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS) {
 			attemptsUntilSuccess++;
 			await logger.log(
-				`Iteration ${ITERATION}. Attempt ${attemptsUntilSuccess}. Accounts (${ACCOUNTS_TO_DO.length}): ${ACCOUNTS_TO_DO.map((a) => a.name).join(',')}`,
+				`Iteration ${ITERATION}. Attempt ${attemptsUntilSuccess}. Accounts (${ACCOUNTS_TO_DO.length}): ${ACCOUNTS_TO_DO.map((a) => a.name).join(',')}\n`,
 				MessageType.Info,
 			);
 			const createPromise = async (account: Account, index: number) => {

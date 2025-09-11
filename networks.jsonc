@@ -92,7 +92,7 @@
 		"chainId": "59144",
 		"name": "Linea",
 		"nativeCoin": "ETH",
-		"rpc": ["https://rpc.linea.build"],
+		"rpc": ["https://rpc.linea.build", "https://linea-rpc.publicnode.com", "https://1rpc.io/linea"],
 	},
 	{
 		"chainId": "1101",

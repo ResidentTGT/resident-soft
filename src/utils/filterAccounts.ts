@@ -5,6 +5,7 @@ import { getStandardState } from '@utils/state/getStandardState';
 
 export async function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchParams): Promise<Account[]> {
 	const allAccs: Account[] = [];
+	const logger = Logger.getInstance();
 
 	for (const jobAcc of LAUNCH_PARAMS.JOB_ACCOUNTS) {
 		let accounts: Account[] = [];
@@ -47,24 +48,27 @@ export async function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: Lau
 		);
 
 		const accountsWithoutState = accounts.length;
-		if (accountsWithoutState === 0) {
-			await Logger.getInstance().log(
-				`Selected 0 accounts. Check LAUNCH_PARAMS.jsonc or accounts files.`,
-				MessageType.Notice,
-			);
-		}
+		if (accountsWithoutState === 0)
+			await logger.log(`Selected 0 accounts. Check LAUNCH_PARAMS.jsonc or accounts files.\n`, MessageType.Notice);
 
 		if (LAUNCH_PARAMS.TAKE_STATE && LAUNCH_PARAMS.STATE_NAME) {
 			const STANDARD_STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
 
 			accounts = accounts.filter((a) => (a.name ? !STANDARD_STATE.successes.includes(a.name) : true));
-			if (accounts.length === 0 && accountsWithoutState > accounts.length) {
-				await Logger.getInstance().log(
-					`All selected accounts (${accountsWithoutState}) have already been successfully completed. Check state "${LAUNCH_PARAMS.STATE_NAME}.json"`,
-					MessageType.Notice,
-				);
+			if (accounts.length === 0) {
+				if (accountsWithoutState > accounts.length)
+					await logger.log(
+						`All selected accounts (${accountsWithoutState}) from ${jobAcc.file} (${accountsList.length} accs) have already been successfully completed. Check state "${LAUNCH_PARAMS.STATE_NAME}.json"\n`,
+						MessageType.Notice,
+					);
 			}
 		}
+
+		if (accounts.length !== 0)
+			await logger.log(
+				`Selected ${accounts.length} accounts from ${jobAcc.file} (${accountsList.length} accs)\n`,
+				MessageType.Info,
+			);
 
 		allAccs.push(...accounts);
 	}
