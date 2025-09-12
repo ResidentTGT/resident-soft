@@ -35,17 +35,24 @@
 			"minAmountForSwap": 0.000000001,
 		},
 	},
+	"Exchanges": {
+		"Withdraw": {
+			"exchanges": ["Bitget", "Bybit", "Okx", "Gate", "Binance"],
+			"amount": [0.000001, 0.000002],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "8453",
+		},
+	},
 	"Okx": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
 	"Bitget": { "Withdraw": { "amount": [1, 2], "token": "SOL", "to": "solana", "toChainId": "Solana" } },
 	"Gate": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
 	"Binance": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
 	"Bybit": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
+
 	"CommonUi": {
 		"OpenPages": {
-			"pageUrls": [
-				"https://opensea.io/",
-				// "https://mail.google.com/mail/u/0/#inbox"
-			],
+			"pageUrls": ["https://opensea.io/"],
 			"loginInRabby": true,
 			"loginInPetra": false,
 		},

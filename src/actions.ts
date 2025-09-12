@@ -27,6 +27,7 @@ export enum ActionsGroupName {
 	Sophon = 'Sophon',
 	Checkers = 'Checkers',
 	Bybit = 'Bybit',
+	Exchanges = 'Exchanges',
 }
 
 export enum ActionName {
@@ -322,5 +323,10 @@ export const ACTIONS: ActionsGroup[] = [
 			{ action: ActionName.Linea, isolated: false, needNetwork: true },
 			{ action: ActionName.Claim, isolated: true, needNetwork: true },
 		],
+	},
+	{
+		group: ActionsGroupName.Exchanges,
+		premium: false,
+		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false }],
 	},
 ];

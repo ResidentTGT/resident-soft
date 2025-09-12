@@ -168,7 +168,7 @@ export class Bitget {
 				chain = 'BERA';
 				break;
 			case ChainId.Ethereum:
-				chain = 'ERC20';
+				chain = 'ETH';
 				break;
 			case ChainId.Arbitrum:
 				chain = 'ArbitrumOne';
