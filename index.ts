@@ -14,15 +14,15 @@ process.on('unhandledRejection', async (error) => {
 });
 
 async function main() {
-	try {
-		const launchParams = parse(readFileSync('./launchParams.jsonc', 'utf-8')) as LaunchParams;
-		const functionParams = parse(readFileSync('./functionParams.jsonc', 'utf-8'));
+	await welcomeMessage();
+	const launchParams = parse(readFileSync('./launchParams.jsonc', 'utf-8')) as LaunchParams;
+	const functionParams = parse(readFileSync('./functionParams.jsonc', 'utf-8'));
 
-		await welcomeMessage();
-		const licenseResult = await getVerifyLicenseMessage(launchParams);
-		await sendTelemetry(licenseResult);
+	const licenseResult = await getVerifyLicenseMessage(launchParams);
+	await sendTelemetry(licenseResult);
 
-		while (true) {
+	while (true) {
+		try {
 			const selectedOption = await promptUserForOption(launchParams);
 			if (!selectedOption) process.exit(0);
 			console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
@@ -37,12 +37,14 @@ async function main() {
 
 			const commandHandler = new CommandHandler(launchParams, functionParams, key);
 			await commandHandler.executeCommand(selectedOption);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			console.error(`${RED_BOLD_TEXT}Fatal error. ${message}${RESET}`);
+			if (!message.includes('Couldnt decrypt')) {
+				await waitForKeyPress();
+				process.exit(1);
+			}
 		}
-	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
-		console.error(`${RED_BOLD_TEXT}Fatal error. ${message}${RESET}`);
-		await waitForKeyPress();
-		process.exit(1);
 	}
 }
 
