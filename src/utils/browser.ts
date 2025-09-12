@@ -15,20 +15,27 @@ export async function getElementProperty(element: ElementHandle<Element>, proper
 }
 
 export async function getPage(browser: Browser, url = '', mouseHelper = false) {
-	await browser.pages().then((pages) => {
+	await browser.pages().then(async (pages) => {
 		const existedPages = pages.filter((p) => p.url().includes(url));
 		if (existedPages.length) {
 			for (const page of existedPages) {
-				page.close();
+				await safeClosePage(page);
 			}
 		}
 	});
 
-	const page = await browser.newPage();
-	if (mouseHelper) await installMouseHelper(page);
-	await page.goto(url, { timeout: 60_000 });
+	try {
+		const page = await browser.newPage();
+		if (mouseHelper) await installMouseHelper(page);
+		await page.goto(url, { timeout: 60_000 });
 
-	return page;
+		return page;
+	} catch (e: any) {
+		if (e.toString().includes('net::ERR_TIMED_OUT at')) throw new Error(`Couldnt open page ${url} in 60s`);
+		else if (e.toString().includes('net::ERR_PROXY_CONNECTION_FAILED at'))
+			throw new Error(`Couldnt open page ${url}. Maybe need proxy?`);
+		else throw e;
+	}
 }
 
 export async function getElementByText(page: Page, selector: string, text?: string): Promise<ElementHandle<Element> | undefined> {
@@ -73,4 +80,58 @@ export async function clearLocalStorage(page: Page) {
 	await page.evaluate(() => {
 		localStorage.clear();
 	});
+}
+
+export async function safeClosePage(page: Page | null | undefined) {
+	if (!page) return;
+
+	let url = 'about:blank';
+	try {
+		url = page.url();
+	} catch {
+		/* ignore */
+	}
+
+	try {
+		if (typeof (page as any).isClosed === 'function' && page.isClosed()) {
+			return;
+		}
+	} catch {
+		/* ignore */
+	}
+
+	let isBrowserConnected = true;
+	try {
+		const browser = page.browser?.();
+		if (browser) {
+			if ('connected' in browser) {
+				isBrowserConnected = (browser as any).connected as boolean;
+			} else if (typeof (browser as any).isConnected === 'function') {
+				isBrowserConnected = (browser as any).isConnected() as boolean;
+			}
+		}
+	} catch {
+		/* ignore */
+	}
+
+	if (!isBrowserConnected) {
+		return;
+	}
+
+	try {
+		await page.close();
+	} catch (err) {
+		const msg = String(err);
+		if (
+			/Target\.closeTarget/.test(msg) ||
+			/Session closed/.test(msg) ||
+			/Target closed/.test(msg) ||
+			/Browser has been closed/.test(msg) ||
+			/WebSocket is not open/.test(msg) ||
+			/Connection closed/.test(msg)
+		) {
+			return;
+		}
+		throw err;
+	}
 }
