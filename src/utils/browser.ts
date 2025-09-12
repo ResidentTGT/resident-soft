@@ -15,17 +15,19 @@ export async function getElementProperty(element: ElementHandle<Element>, proper
 }
 
 export async function getPage(browser: Browser, url = '', mouseHelper = false) {
-	await browser.pages().then(async (pages) => {
-		const existedPages = pages.filter((p) => p.url().includes(url));
-		if (existedPages.length) {
-			for (const page of existedPages) {
-				await safeClosePage(page);
-			}
-		}
-	});
-
 	try {
 		const page = await browser.newPage();
+
+		await browser.pages().then(async (pages) => {
+			const existedPages = pages.filter((p) => p.url().includes(url));
+
+			if (existedPages.length) {
+				for (const page of existedPages) {
+					await safeClosePage(page);
+				}
+			}
+		});
+
 		if (mouseHelper) await installMouseHelper(page);
 		await page.goto(url, { timeout: 60_000 });
 
