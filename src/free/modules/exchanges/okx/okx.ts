@@ -105,60 +105,64 @@ export class Okx {
 	}
 
 	async withdraw(to: string, token: string, internal: boolean, amount?: number, chainId?: ChainId): Promise<void> {
-		let minFee = 0;
-		let minWithdrawableAmount = 0;
+		try {
+			let minFee = 0;
+			let minWithdrawableAmount = 0;
 
-		if (!internal) {
-			if (!chainId) throw new Error(`There is no network in params.`);
+			if (!internal) {
+				if (!chainId) throw new Error(`There is no network in params.`);
 
-			const canWithdraw = await this.getCanWithdraw(token, chainId);
-			if (!canWithdraw) throw new Error(`Withdrawal of ${token}-${this._getChain(chainId)} is suspended.`);
+				const canWithdraw = await this.getCanWithdraw(token, chainId);
+				if (!canWithdraw) throw new Error(`Withdrawal of ${token}-${this._getChain(chainId)} is suspended.`);
 
-			minFee = await this.getMinWithdrawalFee(token, chainId);
-			minWithdrawableAmount = await this.getMinWithdrawalAmount(token, chainId);
-		}
-
-		const balance = (await this.getBalances()).find((b) => b.ccy === token)?.availBal;
-		const maxWithdrawableAmount = balance ? +balance - minFee : 0;
-		const withdrawableAmount = amount ?? maxWithdrawableAmount;
-
-		if (withdrawableAmount < minWithdrawableAmount || withdrawableAmount > maxWithdrawableAmount) {
-			throw new Error(
-				`Amount of ${token} (${balance}) is less than min withdrawal amount or more than max withdrawal amount.`,
-			);
-		}
-
-		const requestUrl = `/api/v5/asset/withdrawal`;
-
-		let multiplier = 0.6;
-		let fee = 0;
-
-		while (multiplier <= 1) {
-			fee = minFee * multiplier;
-			const body = {
-				amt: withdrawableAmount,
-				fee: internal ? 0 : fee,
-				dest: internal ? '3' : '4',
-				ccy: token,
-				chain: !internal && chainId ? `${token}-${this._getChain(chainId)}` : undefined,
-				toAddr: to,
-			};
-
-			const headers = this.generateHeaders('POST', requestUrl, body);
-
-			const response = await axios.post(`https://www.okx.com${requestUrl}`, body, {
-				headers,
-			});
-			const code = +response.data.code;
-
-			if (code === 58211) {
-				multiplier = +(multiplier + 0.1).toFixed(1);
-			} else if (code === 0) {
-				await Logger.getInstance().log(`Withdrawal succeed. ${body.amt} ${token} to ${to}`);
-				break;
-			} else {
-				throw new Error(`Something went wrong.\n${JSON.stringify(response.data)}`);
+				minFee = await this.getMinWithdrawalFee(token, chainId);
+				minWithdrawableAmount = await this.getMinWithdrawalAmount(token, chainId);
 			}
+
+			const balance = (await this.getBalances()).find((b) => b.ccy === token)?.availBal;
+			const maxWithdrawableAmount = balance ? +balance - minFee : 0;
+			const withdrawableAmount = amount ?? maxWithdrawableAmount;
+
+			if (withdrawableAmount < minWithdrawableAmount || withdrawableAmount > maxWithdrawableAmount) {
+				throw new Error(
+					`Amount of ${token} (${balance}) is less than min withdrawal amount or more than max withdrawal amount.`,
+				);
+			}
+
+			const requestUrl = `/api/v5/asset/withdrawal`;
+
+			let multiplier = 0.6;
+			let fee = 0;
+
+			while (multiplier <= 1) {
+				fee = minFee * multiplier;
+				const body = {
+					amt: withdrawableAmount,
+					fee: internal ? 0 : fee,
+					dest: internal ? '3' : '4',
+					ccy: token,
+					chain: !internal && chainId ? `${token}-${this._getChain(chainId)}` : undefined,
+					toAddr: to,
+				};
+
+				const headers = this.generateHeaders('POST', requestUrl, body);
+
+				const response = await axios.post(`https://www.okx.com${requestUrl}`, body, {
+					headers,
+				});
+				const code = +response.data.code;
+
+				if (code === 58211) {
+					multiplier = +(multiplier + 0.1).toFixed(1);
+				} else if (code === 0) {
+					await Logger.getInstance().log(`Withdrawal succeed. ${body.amt} ${token} to ${to}`);
+					break;
+				} else {
+					throw new Error(`Something went wrong.\n${JSON.stringify(response.data)}`);
+				}
+			}
+		} catch (e: any) {
+			throw new Error(`Okx: withdrawal ${amount} ${token} to ${to} failed.\n${e}`);
 		}
 	}
 

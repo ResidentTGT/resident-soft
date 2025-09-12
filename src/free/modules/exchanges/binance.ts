@@ -101,7 +101,7 @@ export class Binance {
 			await Logger.getInstance().log(`Withdrawal succeed. ${wihdrawalAmount} ${token} to ${to}`);
 		} catch (e: any) {
 			const errorMsg = e.response?.data?.msg;
-			throw new Error(`Withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? e}`);
+			throw new Error(`Binance: withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 

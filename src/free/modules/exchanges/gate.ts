@@ -44,7 +44,7 @@ export class Gate {
 			await Logger.getInstance().log(`Withdrawal succeed. ${amountToWithdraw} ${token} to ${to}`);
 		} catch (e: any) {
 			const errorMsg = e.response?.data?.message;
-			throw new Error(`Withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? e}`);
+			throw new Error(`Gate: withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 

@@ -214,7 +214,7 @@ export class Bybit {
 			await Logger.getInstance().log(`Withdrawal succeed. ${amount} ${token} to ${to}`);
 		} else {
 			const errorMsg = resp.data?.retMsg;
-			throw new Error(`Withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? resp.data}`);
+			throw new Error(`Bybit: withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? resp.data}`);
 		}
 	}
 

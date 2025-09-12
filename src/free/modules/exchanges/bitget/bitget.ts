@@ -157,7 +157,7 @@ export class Bitget {
 			return response;
 		} catch (e: any) {
 			const errorMsg = e.response?.data?.msg;
-			throw new Error(`Withdrawal ${body.size} ${token} to ${to} failed.\n${errorMsg ?? e}`);
+			throw new Error(`Bitget: withdrawal ${body.size} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 
