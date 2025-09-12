@@ -8,7 +8,7 @@ import { SecretStorage } from '@utils/secretStorage.type';
 import { actionMode } from '@utils/actionMode';
 import { convertFromCsvToCsv, convertSecretStorage } from '@utils/workWithSecrets';
 import { parse } from 'jsonc-parser';
-import { GREEN_TEXT, Logger, RESET } from '@utils/logger';
+import { GREEN_TEXT, Logger } from '@utils/logger';
 import prompts, { PromptObject } from 'prompts';
 
 export enum CommandOption {
@@ -122,17 +122,34 @@ export async function promptUserForOption(launchParams: LaunchParams): Promise<C
 	}
 }
 
-export async function promptUserForKey(): Promise<string> {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	});
+export async function promptUserForKey(decryption: boolean): Promise<string> {
+	if (decryption) {
+		const response = await prompts({
+			type: 'password',
+			name: 'key',
+			message: GREEN_TEXT + 'Enter the key for decryption:',
+			mask: '*',
+		});
+		if (!response.key) throw new Error('Key for decryption is required!');
 
-	try {
-		const answer = await rl.question(GREEN_TEXT + 'Enter the key for encryption/decryption: ' + RESET);
-		return answer;
-	} finally {
-		rl.close();
+		return response.key;
+	} else {
+		const response = await prompts({
+			type: 'password',
+			name: 'key',
+			message: GREEN_TEXT + 'Enter the key for encryption:',
+			mask: '*',
+		});
+		if (!response.key) throw new Error('Key for encryption is required!');
+		const response2 = await prompts({
+			type: 'password',
+			name: 'key',
+			message: GREEN_TEXT + 'Repeat the key for encryption:',
+			mask: '*',
+		});
+		if (!response2.key) throw new Error('Key for encryption is required!');
+		if (response.key !== response2.key) throw new Error('Keys are not equal!');
+		return response.key;
 	}
 }
 
