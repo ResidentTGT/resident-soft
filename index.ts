@@ -22,24 +22,24 @@ async function main() {
 		const licenseResult = await getVerifyLicenseMessage(launchParams);
 		await sendTelemetry(licenseResult);
 
-		const selectedOption = await promptUserForOption(launchParams);
-		if (!selectedOption) process.exit(0);
-		console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
+		while (true) {
+			const selectedOption = await promptUserForOption(launchParams);
+			if (!selectedOption) process.exit(0);
+			console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
 
-		let key;
-		if (
-			(selectedOption === CommandOption['Action Mode'] && launchParams.USE_ENCRYPTION) ||
-			selectedOption === CommandOption['Decrypt Accounts And SecretStorage'] ||
-			selectedOption === CommandOption['Encrypt Accounts And SecretStorage']
-		) {
-			key = await promptUserForKey();
-			if (!key) throw new Error('Key for ecnryption/decryption is required!');
+			let key;
+			if (
+				(selectedOption === CommandOption['Action Mode'] && launchParams.USE_ENCRYPTION) ||
+				selectedOption === CommandOption['Decrypt Accounts And SecretStorage'] ||
+				selectedOption === CommandOption['Encrypt Accounts And SecretStorage']
+			) {
+				key = await promptUserForKey();
+				if (!key) throw new Error('Key for ecnryption/decryption is required!');
+			}
+
+			const commandHandler = new CommandHandler(launchParams, functionParams, key);
+			await commandHandler.executeCommand(selectedOption);
 		}
-
-		const commandHandler = new CommandHandler(launchParams, functionParams, key);
-		await commandHandler.executeCommand(selectedOption);
-		await waitForKeyPress();
-		process.exit(0);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		console.error(`${RED_BOLD_TEXT}Fatal error. ${message}${RESET}`);
