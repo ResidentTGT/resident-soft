@@ -32,7 +32,10 @@ export async function getPage(browser: Browser, url = '', mouseHelper = false) {
 		return page;
 	} catch (e: any) {
 		if (e.toString().includes('net::ERR_TIMED_OUT at')) throw new Error(`Couldnt open page ${url} in 60s`);
-		else if (e.toString().includes('net::ERR_PROXY_CONNECTION_FAILED at'))
+		else if (
+			e.toString().includes('net::ERR_PROXY_CONNECTION_FAILED at') ||
+			e.toString().includes('net::ERR_CONNECTION_RESET at')
+		)
 			throw new Error(`Couldnt open page ${url}. Maybe need proxy?`);
 		else throw e;
 	}
