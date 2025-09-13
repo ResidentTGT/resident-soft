@@ -8,6 +8,7 @@ import { AccountInformation } from './models/AccountInformation.interface';
 import { Asset, SubaccountAssets } from './models/Asset.inteface';
 import { Cex } from '@utils/account';
 import { MissingFieldError } from '@src/utils/errors';
+import { CoinInfo } from './models/CoinInfo.interface';
 
 export const BITGET_API_URL = 'https://api.bitget.com';
 
@@ -132,21 +133,52 @@ export class Bitget {
 		};
 	}
 
-	//для вывода нужно и айпишник, и вайтлисты адресов
-	async withdraw(to: string, token: string, internal: boolean, amount: number, chainId?: ChainId): Promise<void> {
-		const requestUrl = `/api/v2/spot/wallet/withdrawal`;
-
-		const body = {
-			coin: token,
-			transferType: internal ? 'internal_transfer' : 'on_chain',
-			address: to,
-			chain: chainId ? this._getChain(chainId) : undefined,
-			size: amount,
-		};
-
-		const headers = this.generateHeaders('POST', requestUrl, body);
-
+	async getCoinInfo(coin?: string): Promise<CoinInfo[]> {
 		try {
+			let requestUrl = '/api/v2/spot/public/coins';
+			if (coin) requestUrl += `?coin=${coin}`;
+			const headers = this.generateHeaders('GET', requestUrl);
+
+			const response = (
+				await axios.get(`${BITGET_API_URL}${requestUrl}`, {
+					headers,
+				})
+			).data;
+
+			if (response.msg !== 'success') throw new Error(`${response.msg}`);
+
+			return response.data;
+		} catch (e: any) {
+			const errorMsg = e.response?.data?.msg;
+			throw new Error(`Couldnt get coin info.\n${errorMsg ?? e}`);
+		}
+	}
+
+	async withdraw(to: string, token: string, internal: boolean, amount: number, chainId?: ChainId): Promise<void> {
+		try {
+			const chain = chainId ? this._getChain(chainId) : undefined;
+			if (chainId && !chain) throw new Error(`ChainId ${chainId} is not supported now.`);
+			if (chain) {
+				const coinInfo = (await this.getCoinInfo(token))[0].chains.find((c) => c.chain === chain);
+				if (!coinInfo) throw new Error(`There is no ${token}-${chain} on exchange!`);
+				if (!coinInfo.withdrawable) throw new Error(`${token}-${chain} is not withdrawable now!`);
+				await Logger.getInstance().log(
+					`Wihdrawal fee for ${token}-${chain}: ${coinInfo.withdrawFee} ${token}, min withdrawal amount: ${coinInfo.minWithdrawAmount} ${token}`,
+				);
+			}
+
+			const requestUrl = `/api/v2/spot/wallet/withdrawal`;
+
+			const body = {
+				coin: token,
+				transferType: internal ? 'internal_transfer' : 'on_chain',
+				address: to,
+				chain,
+				size: amount,
+			};
+
+			const headers = this.generateHeaders('POST', requestUrl, body);
+
 			const response = (
 				await axios.post(`${BITGET_API_URL}${requestUrl}`, body, {
 					headers,
@@ -157,7 +189,7 @@ export class Bitget {
 			return response;
 		} catch (e: any) {
 			const errorMsg = e.response?.data?.msg;
-			throw new Error(`Bitget: withdrawal ${body.size} ${token} to ${to} failed.\n${errorMsg ?? e}`);
+			throw new Error(`Bitget: withdrawal ${amount} ${token} to ${to} failed.\n${errorMsg ?? e}`);
 		}
 	}
 
