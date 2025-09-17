@@ -6,6 +6,8 @@ import { getExplorerUrl } from '@utils/getExplorerUrl';
 import { ChainId, Network, Token } from '@utils/network';
 
 export class Evm {
+	static Type0Networks = [ChainId.Bsc, ChainId.Scroll, ChainId.ArbitrumNova, ChainId.Harmony, ChainId.Fuse, ChainId.Core];
+
 	static async approve(network: Network, privateKey: string, spender: string, tokenSymbol: string, amount: string) {
 		const token = network.tokens.find((t) => t.symbol === tokenSymbol);
 		if (!token) throw new Error(`There is no ${tokenSymbol} in tokens list in ${network.name}`);
@@ -13,34 +15,45 @@ export class Evm {
 		if (tokenSymbol === network.nativeCoin) {
 			await Logger.getInstance().log(`There is no need to approve native coin ${tokenSymbol}`);
 		} else {
-			const provider = network.getProvider();
-			const decimals = await this.getDecimals(network, token);
+			try {
+				const provider = network.getProvider();
+				const decimals = await this.getDecimals(network, token);
 
-			const fixedAmount = (+amount).toFixed(decimals);
+				const amountBn = ethers.parseUnits(amount, decimals);
 
-			await Logger.getInstance().log(`Start approving ${fixedAmount} ${tokenSymbol} for ${spender} ...`);
+				const tokenContract = new ethers.Interface(ERC20_ABI);
+				const ethersWallet = new ethers.Wallet(privateKey);
+				const allowance = await this.getAllowance(provider, ethersWallet.address, spender, token.address);
 
-			const amountBn = ethers.parseUnits(fixedAmount, decimals);
+				if (allowance < amountBn) {
+					await Logger.getInstance().log(`Start approving ${amount} ${tokenSymbol} for ${spender} ...`);
 
-			const tokenContract = new ethers.Interface(ERC20_ABI);
-			const ethersWallet = new ethers.Wallet(privateKey);
-			const allowance = await this.getAllowance(provider, ethersWallet.address, spender, token.address);
+					const data = tokenContract.encodeFunctionData('approve', [spender, amountBn]);
 
-			if (allowance < amountBn) {
-				const data = tokenContract.encodeFunctionData('approve', [spender, amountBn]);
+					const transaction = await Evm.generateTransactionRequest(
+						provider,
+						privateKey,
+						token.address,
+						BigInt(0),
+						data,
+					);
 
-				const transaction = await Evm.generateTransactionRequest(provider, privateKey, token.address, BigInt(0), data);
+					await this.makeTransaction(provider, privateKey, transaction);
 
-				await this.makeTransaction(provider, privateKey, transaction);
+					await Logger.getInstance().log(`Approved ${amount} ${tokenSymbol} for ${spender}`);
+				} else {
+					await Logger.getInstance().log(
+						`Allowance (${ethers.formatUnits(
+							allowance,
+							decimals,
+						)} ${tokenSymbol}) is more or equal than amount (${amount} ${tokenSymbol})`,
+					);
+				}
+			} catch (e: any) {
+				if (e.toString().includes('too many decimals for format'))
+					throw new Error(`Wrong amount (${amount}) for approve. Too many decimals.\n${e}`);
 
-				await Logger.getInstance().log(`Approved ${fixedAmount} ${tokenSymbol} for ${spender}`);
-			} else {
-				await Logger.getInstance().log(
-					`Allowance (${ethers.formatUnits(
-						allowance,
-						decimals,
-					)} ${tokenSymbol}) is more or equal than amount (${amount} ${tokenSymbol})`,
-				);
+				throw e;
 			}
 		}
 	}
@@ -203,18 +216,18 @@ export class Evm {
 		const transaction = await Evm.generateTransactionRequest(network.getProvider(), privateKey, to, BigInt(0));
 
 		if (!transaction.gasLimit) throw new Error('There is no transaction.gasLimit!');
-		if (network.chainId !== ChainId.Optimism && network.chainId !== ChainId.Bsc && network.chainId !== ChainId.Core) {
+		if (network.chainId !== ChainId.Optimism && !this.Type0Networks.includes(network.chainId)) {
 			if (!transaction.maxFeePerGas) throw new Error('There is no transaction.maxFeePerGas!');
 		}
 
 		let transactionFee;
 		if (network.chainId === ChainId.Optimism)
 			transactionFee = await Evm.calculateOptimismTransactionFee(network.getProvider(), ethersWallet, transaction);
-		else if (network.chainId === ChainId.Bsc || network.chainId === ChainId.Core)
-			transactionFee = BigInt(transaction.gasLimit ?? 0) * BigInt(transaction.gasPrice ?? 0);
+		else if (this.Type0Networks.includes(network.chainId))
+			transactionFee = BigInt(transaction.gasLimit) * BigInt(transaction.gasPrice ?? 0) + ethers.parseEther('0.000001');
 		else {
 			transactionFee =
-				BigInt(transaction.gasLimit ?? 0) *
+				BigInt(transaction.gasLimit) *
 				(BigInt(transaction.maxFeePerGas ?? 0) + BigInt(transaction.maxPriorityFeePerGas ?? 0));
 		}
 
@@ -378,16 +391,7 @@ export class Evm {
 
 		const feeData = await provider.getFeeData();
 
-		if (
-			[
-				BigInt(ChainId.Bsc),
-				BigInt(ChainId.Scroll),
-				BigInt(ChainId.ArbitrumNova),
-				BigInt(ChainId.Harmony),
-				BigInt(ChainId.Fuse),
-				BigInt(ChainId.Core),
-			].includes(network)
-		) {
+		if (this.Type0Networks.map((n) => BigInt(n)).includes(network)) {
 			transactionRequest.type = 0;
 			transactionRequest.gasPrice = feeData.gasPrice;
 		} else {

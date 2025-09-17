@@ -86,7 +86,10 @@ export class EvmHandler extends BaseHandler {
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
-				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toString();
+				const token = network.tokens.find((t) => t.symbol === functionParams.tokenSymbol);
+				if (!token) throw new Error(`There is no ${functionParams.tokenSymbol} in network tokens!`);
+				const decimals = await Evm.getDecimals(network, token);
+				const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(decimals);
 				await Evm.approve(
 					network,
 					account.wallets.evm.private,

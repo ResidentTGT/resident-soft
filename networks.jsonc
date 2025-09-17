@@ -116,7 +116,7 @@
 		"chainId": "534352",
 		"name": "Scroll",
 		"nativeCoin": "ETH",
-		"rpc": ["https://scroll.blockpi.network/v1/rpc/public"],
+		"rpc": ["https://scroll-mainnet.public.blastapi.io"],
 	},
 	{
 		"chainId": "122",
