@@ -15,6 +15,7 @@ export const SHEETS: Sheet[] = [
 		columns: [
 			{ header: 'Account', key: 'name', width: 17 },
 			{ header: 'Adspower Browser Id', key: 'browser.id' },
+			{ header: 'Proxy Type', key: 'proxy.type' },
 			{ header: 'Proxy Ip', key: 'proxy.ip' },
 			{ header: 'Proxy Port', key: 'proxy.port' },
 			{ header: 'Proxy Login', key: 'proxy.login' },

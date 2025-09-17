@@ -3,5 +3,6 @@ export interface Proxy {
 	port?: string;
 	login?: string;
 	password?: string;
+	type?: string;
 	rotateUrl?: string;
 }
