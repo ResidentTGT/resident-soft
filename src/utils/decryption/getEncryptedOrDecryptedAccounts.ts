@@ -257,6 +257,7 @@ export function getEncryptedOrDecryptedAccounts(aesKey: string, accounts: Accoun
 					login: accountCopy.proxy.login ? func(aesKey, accountCopy.proxy.login) : undefined,
 					password: accountCopy.proxy.password ? func(aesKey, accountCopy.proxy.password) : undefined,
 					rotateUrl: accountCopy.proxy.rotateUrl ? func(aesKey, accountCopy.proxy.rotateUrl) : undefined,
+					type: accountCopy.proxy.type,
 				};
 			}
 

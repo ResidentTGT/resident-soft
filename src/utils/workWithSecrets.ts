@@ -49,6 +49,30 @@ export async function convertFromCsvToJsonAccounts(filePath: string, writeToFile
 
 	workbook.eachSheet((worksheet: Worksheet) => {
 		const columns = SHEETS.find((sheet) => sheet.name === worksheet.name)?.columns;
+		if (!columns) throw new Error(`Unknown sheet "${worksheet.name}" in file: ${filePath}`);
+
+		const headerRow = worksheet.getRow(1);
+		const actualHeaders: string[] = [];
+		headerRow.eachCell({ includeEmpty: false }, (cell) => {
+			const v = cell.value;
+			if (v !== null && v !== undefined && v.toString().trim() !== '') {
+				actualHeaders.push(v.toString().trim());
+			}
+		});
+
+		const expectedHeaders = columns.map((c) => c.header);
+		if (actualHeaders.length !== expectedHeaders.length || expectedHeaders.join(',') !== actualHeaders.join(',')) {
+			const missing = expectedHeaders.filter((h) => !actualHeaders.includes(h));
+			const extra = actualHeaders.filter((h) => !expectedHeaders.includes(h));
+			throw new Error(
+				`File: ${filePath}, sheet "${worksheet.name}": header columns count mismatch.` +
+					`\nExpected ${expectedHeaders.length}: [${expectedHeaders.join(', ')}]` +
+					`\nGot ${actualHeaders.length}: [${actualHeaders.join(', ')}].` +
+					(missing.length ? `\nMissing: [${missing.join(', ')}]. ` : '') +
+					(extra.length ? `\nExtra: [${extra.join(', ')}].` : ''),
+			);
+		}
+
 		worksheet.eachRow((row, rowNumber) => {
 			if (rowNumber === 1) return;
 
