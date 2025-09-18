@@ -25,15 +25,25 @@ export class EvmHandler extends BaseHandler {
 				if (!token) throw new Error(`No ${functionParams.token} in ${network.name} tokens`);
 
 				const decimals = await Evm.getDecimals(network, token);
-				const amount =
-					!functionParams.amount || !functionParams.amount[1]
-						? undefined
-						: Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(decimals);
-
 				const wallet = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatUnits(await Evm.getBalance(network, wallet.address, token.symbol), decimals);
 
-				if (amount && bal <= +amount) throw new Error(`Not enough amount (${bal} ${token.symbol}) to send!`);
+				const isAmount = functionParams.amount && functionParams.amount[0] !== undefined && functionParams.amount[1];
+
+				let amount;
+				if (isAmount) {
+					amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(decimals);
+				} else {
+					if (functionParams.minBalanceToKeep[1]) {
+						const keep = Random.float(functionParams.minBalanceToKeep[0], functionParams.minBalanceToKeep[1]).toFixed(
+							decimals,
+						);
+						amount = (bal - +keep).toFixed(decimals);
+					}
+				}
+
+				if (amount && (bal <= +amount || +amount <= 0))
+					throw new Error(`Not enough balance (${bal} ${token.symbol}) to send!`);
 
 				if (bal < functionParams.minAmountToSend) {
 					await Logger.getInstance().log(

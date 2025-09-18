@@ -21,23 +21,36 @@ export class CommonHandler extends BaseHandler {
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatEther(await Evm.getBalance(network, wal.address, network.nativeCoin));
-				const amount =
-					!functionParams.amount || !functionParams.amount[1]
-						? bal - 0.00001
-						: Random.float(functionParams.amount[0], functionParams.amount[1]);
-				if (amount > 0 && bal > amount)
-					await GasZip.refuel(
-						account.wallets.evm.private,
-						network,
-						functionParams.toChainIds,
-						wal.address,
-						amount.toFixed(6),
+
+				const isAmount = functionParams.amount && functionParams.amount[0] !== undefined && functionParams.amount[1];
+
+				let amount;
+				if (isAmount) {
+					amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(6);
+				} else {
+					if (functionParams.minBalanceToKeep[1]) {
+						const keep = Random.float(functionParams.minBalanceToKeep[0], functionParams.minBalanceToKeep[1]).toFixed(
+							18,
+						);
+						amount = (bal - +keep).toFixed(6);
+					}
+				}
+
+				if (!amount) amount = (bal - 0.00001).toFixed(6);
+
+				if (bal <= +amount || +amount <= 0)
+					throw new Error(`Not enough balance (${bal} ${network.nativeCoin}) to refuel!`);
+
+				if (amount < functionParams.minAmountToSend) {
+					await Logger.getInstance().log(
+						`Balance (${bal} ${network.nativeCoin}) is less than minAmountToSend (${functionParams.minAmountToSend} ${network.nativeCoin})!`,
+						MessageType.Warn,
 					);
-				else {
-					await Logger.getInstance().log(`No funds (${bal} ${network.nativeCoin}) to refuel!`, MessageType.Warn);
 					return { skipDelay: true };
 				}
-				//return {};
+
+				await GasZip.refuel(account.wallets.evm.private, network, functionParams.toChainIds, wal.address, amount);
+
 				break;
 			}
 			case ActionName.RefuelRelayLink: {
@@ -45,32 +58,47 @@ export class CommonHandler extends BaseHandler {
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatEther(await Evm.getBalance(network, wal.address, network.nativeCoin));
-				const amount =
-					!functionParams.amount || !functionParams.amount[1]
-						? bal - 0.00001
-						: Random.float(functionParams.amount[0], functionParams.amount[1]);
-				if (amount > 0 && bal > amount) {
-					let destAddr;
-					if (Network.isEvm(functionParams.toChainId)) {
-						if (!account.wallets?.evm?.address) throw new MissingFieldError('wallets.evm.address');
-						destAddr = account.wallets.evm.address;
-					}
-					if (Network.isSvm(functionParams.toChainId)) {
-						if (!account.wallets?.solana?.address) throw new MissingFieldError('wallets.solana.address');
-						destAddr = account.wallets.solana.address;
-					}
-					if (!destAddr) throw new Error('There is no destination address!');
-					await RelayLink.refuel(
-						account.wallets.evm.private,
-						network,
-						functionParams.toChainId,
-						amount.toFixed(6),
-						destAddr,
-					);
+
+				const isAmount = functionParams.amount && functionParams.amount[0] !== undefined && functionParams.amount[1];
+
+				let amount;
+				if (isAmount) {
+					amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(6);
 				} else {
-					await Logger.getInstance().log(`No funds (${bal} ${network.nativeCoin}) to refuel!`, MessageType.Warn);
+					if (functionParams.minBalanceToKeep[1]) {
+						const keep = Random.float(functionParams.minBalanceToKeep[0], functionParams.minBalanceToKeep[1]).toFixed(
+							18,
+						);
+						amount = (bal - +keep).toFixed(6);
+					}
+				}
+
+				if (!amount) amount = (bal - 0.00001).toFixed(6);
+
+				if (bal <= +amount || +amount <= 0)
+					throw new Error(`Not enough balance (${bal} ${network.nativeCoin}) to refuel!`);
+
+				if (amount < functionParams.minAmountToSend) {
+					await Logger.getInstance().log(
+						`Balance (${bal} ${network.nativeCoin}) is less than minAmountToSend (${functionParams.minAmountToSend} ${network.nativeCoin})!`,
+						MessageType.Warn,
+					);
 					return { skipDelay: true };
 				}
+
+				let destAddr;
+				if (Network.isEvm(functionParams.toChainId)) {
+					if (!account.wallets?.evm?.address) throw new MissingFieldError('wallets.evm.address');
+					destAddr = account.wallets.evm.address;
+				}
+				if (Network.isSvm(functionParams.toChainId)) {
+					if (!account.wallets?.solana?.address) throw new MissingFieldError('wallets.solana.address');
+					destAddr = account.wallets.solana.address;
+				}
+				if (!destAddr) throw new Error('There is no destination address!');
+
+				await RelayLink.refuel(account.wallets.evm.private, network, functionParams.toChainId, amount, destAddr);
+
 				break;
 			}
 

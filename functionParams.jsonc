@@ -10,13 +10,29 @@
 			],
 		},
 		"GenerateWallets": { "amount": 5 },
-		"RefuelGasZip": { "amount": [0.1, 0.2], "toChainIds": ["10"] },
+		"RefuelGasZip": {
+			"amount": [0, 0],
+			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"minAmountToSend": 0.000001,
+			"toChainIds": ["8453"],
+		},
 		"RefuelManyGasZip": { "amount": [0.1, 0.2], "toChainIds": ["10"], "addresses": ["0x..."] },
-		"RefuelRelayLink": { "amount": [0.1, 0.2], "toChainId": "10" },
+		"RefuelRelayLink": {
+			"amount": [1, 2],
+			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"minAmountToSend": 0.000001,
+			"toChainId": "8453",
+		},
 		"RefuelManyRelayLink": { "amount": [0.1, 0.2], "toChainId": "8453", "addresses": ["0x..."] },
 	},
 	"Evm": {
-		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "bitget-evm", "minAmountToSend": 0.00001 },
+		"SendToken": {
+			"token": "ETH",
+			"amount": [0, 0.001],
+			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"minAmountToSend": 0.000001,
+			"to": "evm",
+		},
 		"CheckNft": { "nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62" },
 		"Wrap": { "amount": [1, 0] },
 		"Unwrap": { "amount": [1, 0] },
@@ -24,7 +40,13 @@
 		"MakeTransaction": { "contractAddress": "0x005E2c2a327cEBE03409221cb37Abf4911AFF791", "data": "0x1249c58b", "value": 0 },
 	},
 	"Svm": {
-		"SendToken": { "token": "ETH", "amount": [1, 0], "to": "" },
+		"SendToken": {
+			"token": "SOL",
+			"amount": [0, 0],
+			"minBalanceToKeep": [0.003, 0.004], // works if amount [0, 0]
+			"minAmountToSend": 0.000001,
+			"to": "solana",
+		},
 	},
 	"Odos": {
 		"Swap": {

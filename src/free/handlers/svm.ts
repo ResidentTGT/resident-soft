@@ -7,6 +7,7 @@ import { SvmApi } from '@src/free/modules/svmApi';
 import { ActionModeParams } from '@src/utils/actionMode';
 import { resolveAdresses } from '@src/utils/resolveAddresses';
 import { MissingFieldError } from '@src/utils/errors';
+import { Logger, MessageType } from '@src/utils/logger';
 
 export class SvmHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
@@ -24,18 +25,37 @@ export class SvmHandler extends BaseHandler {
 				const token = network.tokens.find((t) => t.symbol === functionParams.token);
 				if (!token) throw new Error(`There is no ${functionParams.token} in network tokens!`);
 				const decimals = await svmApi.getDecimals(token);
-
 				const bal = +(await ethers.formatUnits(balBn, decimals));
 
-				const amount =
-					!functionParams.amount || !functionParams.amount[1]
-						? functionParams.token === network.nativeCoin
-							? bal - Random.float(0.00001, 0.00001)
-							: bal
-						: Random.float(functionParams.amount[0], functionParams.amount[1]);
+				const isAmount = functionParams.amount && functionParams.amount[0] !== undefined && functionParams.amount[1];
+
+				let amount;
+				if (isAmount) {
+					amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(decimals);
+				} else {
+					if (functionParams.minBalanceToKeep[1]) {
+						const keep = Random.float(functionParams.minBalanceToKeep[0], functionParams.minBalanceToKeep[1]).toFixed(
+							decimals,
+						);
+						amount = (bal - +keep).toFixed(decimals);
+					}
+				}
+
+				if (!amount) amount = functionParams.token === network.nativeCoin ? bal - 0.00001 : bal;
+
+				if (amount && (bal <= +amount || +amount <= 0))
+					throw new Error(`Not enough balance (${bal} ${token.symbol}) to send!`);
+
+				if (amount < functionParams.minAmountToSend) {
+					await Logger.getInstance().log(
+						`Balance (${bal} ${functionParams.token}) is less than minAmountToSend (${functionParams.minAmountToSend} ${token.symbol})!`,
+						MessageType.Warn,
+					);
+					return { skipDelay: true };
+				}
 
 				if (amount && bal < +amount) throw new Error(`Not enough amount (${bal} ${token.symbol}) to send!`);
-				await svmApi.transfer(account.wallets.solana.private, toAddr, amount, functionParams.token);
+				await svmApi.transfer(account.wallets.solana.private, toAddr, +amount, functionParams.token);
 
 				break;
 			}
