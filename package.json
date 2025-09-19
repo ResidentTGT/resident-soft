@@ -1,6 +1,6 @@
 {
 	"name": "Resident Soft",
-	"version": "0.0.48",
+	"version": "0.0.49",
 	"description": "",
 	"main": "index.ts",
 	"type": "commonjs",

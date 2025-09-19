@@ -216,6 +216,10 @@ export abstract class AdsPower {
 		await Logger.getInstance().log(ids.join('\n'), MessageType.Trace, true);
 		return ids;
 	}
+
+	public static async stopProfile(profileId: string): Promise<void> {
+		await this.http.get('browser/stop', { params: { user_id: profileId } });
+	}
 }
 
 // Further ideas:

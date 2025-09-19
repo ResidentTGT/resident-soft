@@ -199,4 +199,10 @@ export abstract class Vision {
 
 		return profile;
 	}
+
+	public static async stopProfile(folderId: string, profileId: string): Promise<void> {
+		const url = DEFAULT_LOCALAPI_URL + `stop/${folderId}/${profileId}`;
+
+		await axios.get(url, {});
+	}
 }
