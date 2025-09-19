@@ -79,10 +79,12 @@
 			"loginInPetra": false,
 		},
 		"RestoreMetamask": { "browser": "Vision", "closeBrowser": true },
+		"LoginInMetamask": { "browser": "Vision" },
 		"RestorePetra": { "browser": "Vision", "closeBrowser": true },
 		"RestoreBackpack": { "browser": "Vision", "closeBrowser": true },
 		"RestoreArgent": { "browser": "Vision", "closeBrowser": true },
 		"RestoreRabby": { "browser": "Vision", "closeBrowser": true },
+		"LoginInRabby": { "browser": "Vision" },
 	},
 	"AdsPower": {
 		"GetProfiles": { "count": 1000 },
