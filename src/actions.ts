@@ -28,6 +28,8 @@ export enum ActionsGroupName {
 	Checkers = 'Checkers',
 	Bybit = 'Bybit',
 	Exchanges = 'Exchanges',
+	AdsPower = 'AdsPower',
+	Vision = 'Vision',
 }
 
 export enum ActionName {
@@ -221,7 +223,6 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: true,
 		actions: [
 			{ action: ActionName.OpenPages, isolated: true, needNetwork: false },
-			{ action: ActionName.GetProfiles, isolated: false, needNetwork: false },
 			{ action: ActionName.LoginInMetamask, isolated: true, needNetwork: false },
 			{ action: ActionName.RestoreMetamask, isolated: true, needNetwork: false },
 			{ action: ActionName.RestorePetra, isolated: true, needNetwork: false },
@@ -328,5 +329,15 @@ export const ACTIONS: ActionsGroup[] = [
 		group: ActionsGroupName.Exchanges,
 		premium: false,
 		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false }],
+	},
+	{
+		group: ActionsGroupName.AdsPower,
+		premium: true,
+		actions: [{ action: ActionName.GetProfiles, isolated: false, needNetwork: false }],
+	},
+	{
+		group: ActionsGroupName.Vision,
+		premium: true,
+		actions: [{ action: ActionName.GetProfiles, isolated: true, needNetwork: false }],
 	},
 ];

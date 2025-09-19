@@ -71,26 +71,29 @@
 	"Gate": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
 	"Binance": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
 	"Bybit": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
-
 	"CommonUi": {
 		"OpenPages": {
+			"browser": "Vision",
 			"pageUrls": ["https://opensea.io/"],
 			"loginInRabby": true,
 			"loginInPetra": false,
 		},
+		"RestoreMetamask": { "browser": "Vision", "closeBrowser": true },
+		"RestorePetra": { "browser": "Vision", "closeBrowser": true },
+		"RestoreBackpack": { "browser": "Vision", "closeBrowser": true },
+		"RestoreArgent": { "browser": "Vision", "closeBrowser": true },
+		"RestoreRabby": { "browser": "Vision", "closeBrowser": true },
+	},
+	"AdsPower": {
 		"GetProfiles": { "count": 1000 },
-		"RestoreMetamask": { "closeBrowser": true },
-		"RestorePetra": { "closeBrowser": true },
-		"RestoreBackpack": { "closeBrowser": true },
-		"RestoreArgent": { "closeBrowser": true },
-		"RestoreRabby": { "closeBrowser": true },
 	},
 	"Opensea": {
-		"OpenseaBuyByLink": { "links": ["https://opensea.io/item/base/..."] },
-		"SweepByLink": { "links": ["https://opensea.io/collection/unioverse-heroes-2"], "count": 2 },
-		"SellCollectionByLink": { "link": "https://opensea.io/collection/unioverse-heroes-2" },
+		"OpenseaBuyByLink": { "browser": "Vision", "links": ["https://opensea.io/item/base/..."] },
+		"SweepByLink": { "browser": "Vision", "links": ["https://opensea.io/collection/unioverse-heroes-2"], "count": 2 },
+		"SellCollectionByLink": { "browser": "Vision", "link": "https://opensea.io/collection/unioverse-heroes-2" },
+		"ClaimUi": { "browser": "Vision" },
 	},
-	"Browser": {},
+
 	"Twitter": {},
 	"Discord": {},
 

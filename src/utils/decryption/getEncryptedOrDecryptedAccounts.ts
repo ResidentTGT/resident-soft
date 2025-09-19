@@ -8,6 +8,14 @@ export function getEncryptedOrDecryptedAccounts(aesKey: string, accounts: Accoun
 		try {
 			const accountCopy: Account = Object.assign({}, account);
 
+			if (accountCopy.vision) {
+				accountCopy.vision = {
+					token: accountCopy.vision.token ? func(aesKey, accountCopy.vision.token) : undefined,
+					folderId: accountCopy.vision.folderId,
+					profileId: accountCopy.vision.profileId,
+				};
+			}
+
 			if (accountCopy.wallets) {
 				if (accountCopy.wallets.evm) {
 					accountCopy.wallets.evm = {

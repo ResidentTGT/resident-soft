@@ -1,5 +1,29 @@
 import { Browser, ElementHandle, Page } from 'rebrowser-puppeteer-core';
 import { installMouseHelper } from 'ghost-cursor';
+import { Account } from '@utils/account';
+import { AdsPower } from './adsPower';
+import { MissingFieldError } from './errors';
+import { Vision } from './vision';
+
+const ALLOWED_BROWSERS = ['AdsPower', 'Vision'];
+
+export async function getBrowser(browserName: string, account: Account): Promise<Browser> {
+	if (!browserName || !ALLOWED_BROWSERS.includes(browserName))
+		throw new Error(`Browser ${browserName} is not allowed! Allowed browsers: ${ALLOWED_BROWSERS.join(', ')}`);
+
+	let browser;
+	if (browserName === 'AdsPower') {
+		if (!account.adsPower?.profileId) throw new MissingFieldError('adsPower.profileId');
+		browser = await AdsPower.openBrowser(account.adsPower.profileId);
+	} else {
+		if (!account.vision?.token) throw new MissingFieldError('vision.token');
+		if (!account.vision?.folderId) throw new MissingFieldError('vision.folderId');
+		if (!account.vision?.profileId) throw new MissingFieldError('vision.profileId');
+		browser = await Vision.openBrowser(account.vision.token, account.vision.folderId, account.vision.profileId, []);
+	}
+
+	return browser;
+}
 
 export async function getExtensionPage(browser: Browser, url?: string): Promise<Page | undefined> {
 	let page: Page | undefined = undefined;

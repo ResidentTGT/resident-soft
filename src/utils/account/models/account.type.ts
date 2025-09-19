@@ -6,12 +6,13 @@ import { Wallet } from './wallet.type';
 
 export interface Account {
 	name: string;
-	browser?: {
-		id?: string;
+	adsPower?: {
+		profileId?: string;
 	};
-	seeds?: {
-		'12'?: string;
-		'24'?: string;
+	vision?: {
+		token?: string;
+		folderId?: string;
+		profileId?: string;
 	};
 	wallets?: {
 		evm?: Wallet;

@@ -14,7 +14,10 @@ export const SHEETS: Sheet[] = [
 		name: 'Account',
 		columns: [
 			{ header: 'Account', key: 'name', width: 17 },
-			{ header: 'Adspower Browser Id', key: 'browser.id' },
+			{ header: 'Adspower Browser Id', key: 'adsPower.profileId' },
+			{ header: 'Vision Token', key: 'vision.token' },
+			{ header: 'Vision Folder Id', key: 'vision.folderId' },
+			{ header: 'Vision Profile Id', key: 'vision.profileId' },
 			{ header: 'Proxy Type', key: 'proxy.type' },
 			{ header: 'Proxy Ip', key: 'proxy.ip' },
 			{ header: 'Proxy Port', key: 'proxy.port' },

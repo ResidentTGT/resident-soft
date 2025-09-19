@@ -10,7 +10,7 @@ import RecaptchaPlugin from 'puppeteer-extra-plugin-recaptcha';
 
 import { Profile } from './models';
 import { Logger, MessageType } from '@utils/logger';
-import { delayMs } from '@utils/delay';
+import { delay, delayMs } from '@utils/delay';
 import Excel from 'exceljs';
 
 // ------------------------------
@@ -181,16 +181,25 @@ export abstract class AdsPower {
 		const pageCount = Math.ceil(totalCount / pageSize);
 		const profiles: Profile[] = [];
 		for (let page = 1; page <= pageCount; page++) {
-			profiles.push(...(await this.getProfiles(page, pageSize)));
+			try {
+				const newProfiles = await this.getProfiles(page, pageSize);
+				profiles.push(...newProfiles);
+			} catch (e) {
+				await Logger.getInstance().log(
+					`Couldnt get AdsPower profiles (page: ${page}). Trying again...\n${e}`,
+					MessageType.Warn,
+				);
+				await delay(5);
+			}
 		}
-
+		console.log(profiles.length);
 		if (saveToFile && profiles.length) {
 			const workbook = new Excel.Workbook();
 			const sheet = workbook.addWorksheet('Profiles');
 			sheet.columns = Object.keys(profiles[0]).map((key) => ({ header: key, key, width: 15 }));
 			profiles.forEach((p) => sheet.addRow(p));
 			sheet.getRow(1).font = { bold: true };
-			await workbook.xlsx.writeFile('profiles.xlsx');
+			await workbook.xlsx.writeFile('adspower_profiles.xlsx');
 		}
 		return profiles;
 	}
