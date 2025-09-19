@@ -87,6 +87,12 @@
 	"AdsPower": {
 		"GetProfiles": { "count": 1000 },
 	},
+	"Vision": {
+		"GetProfiles": {
+			"token": "",
+			"folderId": "",
+		},
+	},
 	"Opensea": {
 		"OpenseaBuyByLink": { "browser": "Vision", "links": ["https://opensea.io/item/base/..."] },
 		"SweepByLink": { "browser": "Vision", "links": ["https://opensea.io/collection/unioverse-heroes-2"], "count": 2 },

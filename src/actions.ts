@@ -338,6 +338,6 @@ export const ACTIONS: ActionsGroup[] = [
 	{
 		group: ActionsGroupName.Vision,
 		premium: true,
-		actions: [{ action: ActionName.GetProfiles, isolated: true, needNetwork: false }],
+		actions: [{ action: ActionName.GetProfiles, isolated: false, needNetwork: false }],
 	},
 ];
