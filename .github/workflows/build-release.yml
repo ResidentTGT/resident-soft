@@ -85,7 +85,7 @@ jobs:
                   Copy-Item -Path secrets -Destination package -Recurse
                   Copy-Item -Path "resident_app.exe","resident_app.exe.sha256","launchParams.jsonc","functionParams.jsonc","networks.jsonc","tokens.jsonc","launchers/run_resident_app.cmd" -Destination package
                   mkdir -Force 'package/frontend'
-                  Copy-Item 'frontend/*' 'package/frontend' -Recurse -Force
+                  Copy-Item 'frontend/dist' 'package/frontend' -Recurse -Force
                   Push-Location package
                   Compress-Archive -Path * -DestinationPath "../${{ matrix.zip_name }}"
                   Pop-Location
@@ -99,7 +99,7 @@ jobs:
                   cp -r secrets package
                   cp resident_app resident_app.sha256 launchParams.jsonc functionParams.jsonc networks.jsonc tokens.jsonc launchers/run_resident_app.sh package/
                   mkdir package/frontend
-                  cp -r frontend/* package/frontend
+                  cp -r frontend/dist package/frontend
                   cd package
                   zip -r "../${{ matrix.zip_name }}" .
 

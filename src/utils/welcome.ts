@@ -1,6 +1,6 @@
 import { LaunchParams } from './launchParams.type';
 import { LicenseClaims, verifyLicense, VerifyResult } from './licenses';
-import { PURPLE_TEXT, RED_TEXT, RESET, YELLOW_TEXT, GREEN_TEXT } from './logger';
+import { PURPLE_TEXT, RED_TEXT, RESET, YELLOW_TEXT } from './logger';
 
 const purple = `\x1b[38;2;118;84;173m`;
 
@@ -17,10 +17,6 @@ export async function welcomeMessage(): Promise<void> {
 
 	console.log(YELLOW_TEXT + `Documentation: https://resident.gitbook.io/resident-soft` + RESET);
 	console.log(YELLOW_TEXT + `Source code: https://github.com/ResidentTGT/resident-soft\n` + RESET);
-
-	console.log(
-		`${GREEN_TEXT}Configs editor available at: http://localhost:3000/\n⚠️ After pressing any key, editing will be disabled!${RESET}\n`,
-	);
 }
 
 export async function getVerifyLicenseMessage(launchParams: LaunchParams): Promise<VerifyResult<LicenseClaims>> {
