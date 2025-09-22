@@ -7,7 +7,11 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 
 const ROOT = process.cwd();
-const TS_PROJECT = path.join(ROOT, 'tsconfig.json');
+const TS_PROJECTS = [
+	path.join(ROOT, 'tsconfig.json'), // бэкенд
+	path.join(ROOT, 'frontend', 'tsconfig.app.json'), // React app
+	path.join(ROOT, 'frontend', 'tsconfig.node.json'), // Vite config
+];
 
 const parserOptionsBlock = {
 	files: ['**/*.{ts,tsx}'],
@@ -16,7 +20,7 @@ const parserOptionsBlock = {
 			...globals.node,
 		},
 		parserOptions: {
-			project: [TS_PROJECT],
+			project: [TS_PROJECTS],
 			tsconfigRootDir: ROOT,
 			sourceType: 'module',
 			ecmaVersion: 'latest',

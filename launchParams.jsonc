@@ -1,9 +1,8 @@
 {
 	"ACTION_PARAMS": {
 		"group": "Common",
-		"action": "CheckBalances",
+		"action": "CheckBalances"
 	},
-
 	"SHUFFLE_ACCOUNTS": false,
 	"TAKE_STATE": false,
 	"STATE_NAME": "refuel",
@@ -13,30 +12,27 @@
 			"start": 1,
 			"end": 500,
 			"include": [],
-			"exclude": [],
-		},
+			"exclude": []
+		}
 	],
-
-	"DELAY_BETWEEN_ACCS_IN_S": [1, 5],
+	"DELAY_BETWEEN_ACCS_IN_S": [
+		1,
+		5
+	],
 	"DELAY_AFTER_ERROR_IN_S": 1,
-
 	"ATTEMPTS_UNTIL_SUCCESS": 1,
 	"NUMBER_OF_THREADS": 1,
 	"NUMBER_OF_EXECUTIONS": 1,
-
 	"CHAIN_ID": "1",
 	"WAIT_GAS_PRICE": 0,
-
 	"PROXY": false,
 	"ROTATE_PROXY": false,
-
 	"USE_ENCRYPTION": false,
 	"ENCRYPTION": {
 		"ACCOUNTS_ENCRYPTED_PATH": "secrets/accounts/encrypted",
 		"ACCOUNTS_DECRYPTED_PATH": "secrets/accounts/decrypted",
 		"SECRET_STORAGE_ENCRYPTED_PATH": "secrets/secretStorage/encrypted/secretStorage.jsonc",
-		"SECRET_STORAGE_DECRYPTED_PATH": "secrets/secretStorage/decrypted/secretStorage.jsonc",
+		"SECRET_STORAGE_DECRYPTED_PATH": "secrets/secretStorage/decrypted/secretStorage.jsonc"
 	},
-
-	"LICENSE": "",
+	"LICENSE": ""
 }

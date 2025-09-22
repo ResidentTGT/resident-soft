@@ -4,110 +4,305 @@
 			"networks": [
 				{
 					"chainId": "8453",
-					"tokenNames": ["ETH"],
-					"tokenAlert": { "symbol": "", "less": true, "amountAlert": 100 },
-				},
-			],
+					"tokenNames": [
+						"ETH"
+					],
+					"tokenAlert": {
+						"symbol": "",
+						"less": true,
+						"amountAlert": 100
+					}
+				}
+			]
 		},
-		"GenerateWallets": { "amount": 5 },
+		"GenerateWallets": {
+			"amount": 5
+		},
 		"RefuelGasZip": {
-			"amount": [0, 0],
-			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"amount": [
+				0,
+				0
+			],
+			"minBalanceToKeep": [
+				0,
+				0
+			],
 			"minAmountToSend": 0.000001,
-			"toChainIds": ["8453"],
+			"toChainIds": [
+				"8453"
+			]
 		},
-		"RefuelManyGasZip": { "amount": [0.1, 0.2], "toChainIds": ["10"], "addresses": ["0x..."] },
+		"RefuelManyGasZip": {
+			"amount": [
+				0.1,
+				0.2
+			],
+			"toChainIds": [
+				"10"
+			],
+			"addresses": [
+				"0x..."
+			]
+		},
 		"RefuelRelayLink": {
-			"amount": [1, 2],
-			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"amount": [
+				1,
+				2
+			],
+			"minBalanceToKeep": [
+				0,
+				0
+			],
 			"minAmountToSend": 0.000001,
-			"toChainId": "8453",
+			"toChainId": "8453"
 		},
-		"RefuelManyRelayLink": { "amount": [0.1, 0.2], "toChainId": "8453", "addresses": ["0x..."] },
+		"RefuelManyRelayLink": {
+			"amount": [
+				0.1,
+				0.2
+			],
+			"toChainId": "8453",
+			"addresses": [
+				"0x..."
+			]
+		}
 	},
 	"Evm": {
 		"SendToken": {
 			"token": "ETH",
-			"amount": [0, 0.001],
-			"minBalanceToKeep": [0, 0], // works if amount [0, 0]
+			"amount": [
+				0,
+				0.001
+			],
+			"minBalanceToKeep": [
+				0,
+				0
+			],
 			"minAmountToSend": 0.000001,
-			"to": "evm",
+			"to": "evm"
 		},
-		"CheckNft": { "nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62" },
-		"Wrap": { "amount": [1, 0] },
-		"Unwrap": { "amount": [1, 0] },
-		"Approve": { "tokenSymbol": "USDT", "spender": "0x...", "amount": [1, 1] },
-		"MakeTransaction": { "contractAddress": "0x005E2c2a327cEBE03409221cb37Abf4911AFF791", "data": "0x1249c58b", "value": 0 },
+		"CheckNft": {
+			"nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62"
+		},
+		"Wrap": {
+			"amount": [
+				1,
+				0
+			]
+		},
+		"Unwrap": {
+			"amount": [
+				1,
+				0
+			]
+		},
+		"Approve": {
+			"tokenSymbol": "USDT",
+			"spender": "0x...",
+			"amount": [
+				1,
+				1
+			]
+		},
+		"MakeTransaction": {
+			"contractAddress": "0x005E2c2a327cEBE03409221cb37Abf4911AFF791",
+			"data": "0x1249c58b",
+			"value": 0
+		}
 	},
 	"Svm": {
 		"SendToken": {
 			"token": "SOL",
-			"amount": [0, 0],
-			"minBalanceToKeep": [0.003, 0.004], // works if amount [0, 0]
+			"amount": [
+				0,
+				0
+			],
+			"minBalanceToKeep": [
+				0.003,
+				0.004
+			],
 			"minAmountToSend": 0.000001,
-			"to": "solana",
-		},
+			"to": "solana"
+		}
 	},
 	"Odos": {
 		"Swap": {
 			"token1": "ETH",
 			"token2": "USDC",
-			"amount": [0.000001, 0.000002],
+			"amount": [
+				0.000001,
+				0.000002
+			],
 			"slippageInPercent": 3,
-			"minAmountForSwap": 0.000000001,
-		},
+			"minAmountForSwap": 1e-9
+		}
 	},
 	"Exchanges": {
 		"Withdraw": {
-			"exchanges": ["Bitget", "Bybit", "Okx", "Gate", "Binance"],
-			"amount": [0.000001, 0.000002],
+			"exchanges": [
+				"Bitget",
+				"Bybit",
+				"Okx",
+				"Gate",
+				"Binance"
+			],
+			"amount": [
+				0.000001,
+				0.000002
+			],
 			"token": "ETH",
 			"to": "evm",
-			"toChainId": "8453",
-		},
+			"toChainId": "8453"
+		}
 	},
-	"Okx": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
-	"Bitget": { "Withdraw": { "amount": [1, 2], "token": "SOL", "to": "solana", "toChainId": "Solana" } },
-	"Gate": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
-	"Binance": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
-	"Bybit": { "Withdraw": { "amount": [0.005, 0.006], "token": "ETH", "to": "evm", "toChainId": "1" } },
+	"Okx": {
+		"Withdraw": {
+			"amount": [
+				0.005,
+				0.006
+			],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "1"
+		}
+	},
+	"Bitget": {
+		"Withdraw": {
+			"amount": [
+				1,
+				2
+			],
+			"token": "SOL",
+			"to": "solana",
+			"toChainId": "Solana"
+		}
+	},
+	"Gate": {
+		"Withdraw": {
+			"amount": [
+				0.005,
+				0.006
+			],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "1"
+		}
+	},
+	"Binance": {
+		"Withdraw": {
+			"amount": [
+				0.005,
+				0.006
+			],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "1"
+		}
+	},
+	"Bybit": {
+		"Withdraw": {
+			"amount": [
+				0.005,
+				0.006
+			],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "1"
+		}
+	},
 	"CommonUi": {
 		"OpenPages": {
 			"browser": "Vision",
-			"pageUrls": ["https://opensea.io/"],
+			"pageUrls": [
+				"https://opensea.io/"
+			],
 			"loginInRabby": true,
-			"loginInPetra": false,
+			"loginInPetra": false
 		},
-		"RestoreMetamask": { "browser": "Vision", "closeBrowser": true },
-		"LoginInMetamask": { "browser": "Vision" },
-		"RestorePetra": { "browser": "Vision", "closeBrowser": true },
-		"RestoreBackpack": { "browser": "Vision", "closeBrowser": true },
-		"RestoreArgent": { "browser": "Vision", "closeBrowser": true },
-		"RestoreRabby": { "browser": "Vision", "closeBrowser": true },
-		"LoginInRabby": { "browser": "Vision" },
+		"RestoreMetamask": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
+		"LoginInMetamask": {
+			"browser": "Vision"
+		},
+		"RestorePetra": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
+		"RestoreBackpack": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
+		"RestoreArgent": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
+		"RestoreRabby": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
+		"LoginInRabby": {
+			"browser": "Vision"
+		}
 	},
 	"AdsPower": {
-		"GetProfiles": { "count": 1000 },
+		"GetProfiles": {
+			"count": 1000
+		}
 	},
 	"Vision": {
 		"GetProfiles": {
 			"token": "",
-			"folderId": "",
-		},
+			"folderId": ""
+		}
 	},
 	"Opensea": {
-		"OpenseaBuyByLink": { "browser": "Vision", "links": ["https://opensea.io/item/base/..."] },
-		"SweepByLink": { "browser": "Vision", "links": ["https://opensea.io/collection/unioverse-heroes-2"], "count": 2 },
-		"SellCollectionByLink": { "browser": "Vision", "link": "https://opensea.io/collection/unioverse-heroes-2" },
-		"ClaimUi": { "browser": "Vision" },
+		"OpenseaBuyByLink": {
+			"browser": "Vision",
+			"links": [
+				"https://opensea.io/item/base/..."
+			]
+		},
+		"SweepByLink": {
+			"browser": "Vision",
+			"links": [
+				"https://opensea.io/collection/unioverse-heroes-2"
+			],
+			"count": 2
+		},
+		"SellCollectionByLink": {
+			"browser": "Vision",
+			"link": "https://opensea.io/collection/unioverse-heroes-2"
+		},
+		"ClaimUi": {
+			"browser": "Vision"
+		}
 	},
-
 	"Twitter": {},
 	"Discord": {},
-
-	"Berachain": { "FlyTradeSwap": { "tokenSymbol1": "HONEY", "tokenSymbol2": "BERA", "amount": [1, 0] } },
-
-	"TEST": { "TEST": {} },
-	"Plasma": { "Deposit": { "token": "USDT", "amount": "0.01" } },
-	"ZksyncLite": { "SendToken": { "to": "0x..." } },
+	"Berachain": {
+		"FlyTradeSwap": {
+			"tokenSymbol1": "HONEY",
+			"tokenSymbol2": "BERA",
+			"amount": [
+				1,
+				0
+			]
+		}
+	},
+	"TEST": {
+		"TEST": {}
+	},
+	"Plasma": {
+		"Deposit": {
+			"token": "USDT",
+			"amount": "0.01"
+		}
+	},
+	"ZksyncLite": {
+		"SendToken": {
+			"to": "0x..."
+		}
+	}
 }

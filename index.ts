@@ -1,12 +1,12 @@
 import './src/extensions/array';
 
-import { readFileSync } from 'fs';
 import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
-import { LaunchParams } from '@utils/launchParams.type';
-import { parse } from 'jsonc-parser';
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
 import { GREEN_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
+import { readConfigs } from '@src/server/config-io';
+import { startHttpServer } from '@src/server/http';
+import { selectionGate } from '@src/server/selection';
 
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -14,9 +14,18 @@ process.on('unhandledRejection', async (error) => {
 });
 
 async function main() {
+	await startHttpServer();
+
 	await welcomeMessage();
-	const launchParams = parse(readFileSync('./launchParams.jsonc', 'utf-8')) as LaunchParams;
-	const functionParams = parse(readFileSync('./functionParams.jsonc', 'utf-8'));
+
+	void waitForKeyPress('Press ENTER to continue with current config OR use the web UI ...').then(() =>
+		selectionGate.choose('terminal', readConfigs()),
+	);
+
+	await selectionGate.waitForChoice();
+
+	const snapshot = selectionGate.getSnapshot() ?? readConfigs();
+	const { launchParams, functionParams } = snapshot;
 
 	const licenseResult = await getVerifyLicenseMessage(launchParams);
 	await sendTelemetry(licenseResult);
