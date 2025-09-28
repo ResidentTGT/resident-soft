@@ -19,7 +19,7 @@ async function main() {
 	await welcomeMessage();
 
 	void waitForKeyPress(
-		`${GREEN_TEXT}Configs editor available at: http://localhost:3000/\n\n${GREEN_TEXT}⚠️  Press ENTER to continue with current config OR use the web UI\n${RESET}`,
+		`${GREEN_TEXT}Configs editor available at: http://localhost:3000/\n\n${GREEN_TEXT}⚠️  Press ENTER to continue with current config\n${RESET}`,
 	).then(() => selectionGate.choose('terminal', readConfigs()));
 
 	await selectionGate.waitForChoice();

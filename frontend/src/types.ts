@@ -4,9 +4,8 @@ export interface SelectionStatus {
 	frozen: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type LaunchParams = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 export type FunctionParams = any;
 
 export interface Configs {
