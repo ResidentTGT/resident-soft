@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getConfigs, postConfigs } from '../api/client';
 import { fetchActions } from '../services/actions';
-import type { ActionsGroup, LaunchParamsState } from '../types/config';
 import { functionParamSchemas } from '../services/functionParamSchemas';
+import type { LaunchParams } from '../../../src/utils/launchParams.type';
+import type { ActionsGroup } from '../../../src/actions';
 
 export function useConfigState() {
-	const [launchParams, setLaunchParams] = useState<LaunchParamsState>({});
+	const [launchParams, setLaunchParams] = useState<LaunchParams>();
 	const [functionParams, setFunctionParams] = useState<Record<string, any>>({});
 	const [actions, setActions] = useState<ActionsGroup[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export function useConfigState() {
 	}, []);
 
 	const formInvalid = useMemo(() => {
-		const ap = launchParams.ACTION_PARAMS;
+		const ap = launchParams?.ACTION_PARAMS;
 		if (!ap || !ap.group || !ap.action) return true;
 
 		const nums: [any, number][] = [
@@ -71,7 +72,7 @@ export function useConfigState() {
 	}, [launchParams, functionParams]);
 
 	async function save() {
-		if (formInvalid) return;
+		if (formInvalid || !launchParams) return;
 		setSaving(true);
 		try {
 			await postConfigs({ launchParams, functionParams });

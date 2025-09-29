@@ -1,10 +1,10 @@
-export type SelectionBy = 'ui' | 'terminal' | null;
+import { type Selector } from '../../src/server/selection';
+import { type LaunchParams } from '../../src/utils/launchParams.type';
+
 export interface SelectionStatus {
-	chosenBy: SelectionBy;
+	chosenBy: Selector;
 	frozen: boolean;
 }
-
-export type LaunchParams = any;
 
 export type FunctionParams = any;
 

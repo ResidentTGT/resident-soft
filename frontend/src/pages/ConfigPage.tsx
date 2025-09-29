@@ -2,7 +2,8 @@ import React from 'react';
 import { Box, Button, Container, Paper, Stack, Typography, Grid } from '@mui/material';
 import LaunchParamsForm from '../components/forms/LaunchParamsForm';
 import FunctionParamsForm from '../components/forms/FunctionParamsForm';
-import type { ActionsGroup, LaunchParamsState } from '../types/config';
+import type { ActionsGroup } from '../../../src/actions';
+import type { LaunchParams } from '../../../src/utils/launchParams.type';
 
 export default function ConfigPage({
 	launchParams,
@@ -14,8 +15,8 @@ export default function ConfigPage({
 	saving,
 	formInvalid,
 }: {
-	launchParams: LaunchParamsState;
-	setLaunchParams: React.Dispatch<React.SetStateAction<LaunchParamsState>>;
+	launchParams?: LaunchParams;
+	setLaunchParams: React.Dispatch<React.SetStateAction<LaunchParams | undefined>>;
 	functionParams: Record<string, any>;
 	setFunctionParams: React.Dispatch<React.SetStateAction<Record<string, any>>>;
 	actions: ActionsGroup[];
@@ -35,7 +36,7 @@ export default function ConfigPage({
 				</Grid>
 				<Grid item xs={12} md={6}>
 					<FunctionParamsForm
-						action={launchParams.ACTION_PARAMS?.action}
+						action={launchParams?.ACTION_PARAMS?.action}
 						values={functionParams}
 						onChange={(patch) => setFunctionParams((p) => ({ ...p, ...patch }))}
 					/>

@@ -1,20 +1,22 @@
 import React from 'react';
 import { Paper, Typography, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
-import type { ActionsGroup, LaunchParamsState } from '../../types/config';
+
 import ActionSelector from './fields/ActionSelector';
 import DelayArrayInput from './fields/DelayArrayInput';
+import type { ActionsGroup } from '../../../../src/actions';
+import type { LaunchParams } from '../../../../src/utils/launchParams.type';
 
 export default function LaunchParamsForm({
 	values,
 	onChange,
 	actions,
 }: {
-	values: LaunchParamsState;
-	onChange: (patch: Partial<LaunchParamsState>) => void;
+	values: LaunchParams;
+	onChange: (patch: Partial<LaunchParams>) => void;
 	actions: ActionsGroup[];
 }) {
-	const setField = (key: keyof LaunchParamsState, val: any) => onChange({ [key]: val });
-	const setEncField = (key: keyof NonNullable<LaunchParamsState['ENCRYPTION']>, val: any) => {
+	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
+	const setEncField = (key: keyof NonNullable<LaunchParams['ENCRYPTION']>, val: any) => {
 		onChange({ ENCRYPTION: { ...(values.ENCRYPTION ?? {}), [key]: val } });
 	};
 
