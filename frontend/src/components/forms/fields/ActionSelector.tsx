@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import type { ActionsGroup } from '../../../../../src/actions';
-import type { LaunchParams } from '../../../../../src/utils/launchParams.type';
+import type { LaunchParams } from '../../../../../src/utils/types/launchParams.type';
 
 export default function ActionSelector({
 	actions,

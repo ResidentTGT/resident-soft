@@ -18,19 +18,22 @@ import {
 import ActionSelector from './fields/ActionSelector';
 import DelayArrayInput from './fields/DelayArrayInput';
 import type { ActionsGroup } from '../../../../src/actions';
-import type { LaunchParams } from '../../../../src/utils/launchParams.type';
+import type { LaunchParams } from '../../../../src/utils/types/launchParams.type';
 import { type NetworkConfig } from '../../../../src/utils/network';
+import AccountsSelector from './fields/AccountsSelector';
 
 export default function LaunchParamsForm({
 	launchParams,
 	onChange,
 	actions,
 	networks,
+	accountsFiles,
 }: {
 	launchParams: LaunchParams;
 	onChange: (patch: Partial<LaunchParams>) => void;
 	actions: ActionsGroup[];
 	networks: NetworkConfig[];
+	accountsFiles: string[];
 }) {
 	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
 	const setEncField = (key: keyof NonNullable<LaunchParams['ENCRYPTION']>, val: any) => {
@@ -50,11 +53,17 @@ export default function LaunchParamsForm({
 				value={launchParams.ACTION_PARAMS}
 				onChange={(next) => onChange({ ACTION_PARAMS: next })}
 			/>
+			<Divider sx={{ my: 2 }} />
+			<AccountsSelector
+				files={accountsFiles}
+				value={launchParams.JOB_ACCOUNTS}
+				onChange={(accs) => onChange({ JOB_ACCOUNTS: accs })}
+			/>
 
 			<Divider sx={{ my: 2 }} />
 
-			<Grid container spacing={2}>
-				<Grid sx={{ xs: 12, sm: 6 }}>
+			<Grid container spacing={2} sx={{ mb: 2 }}>
+				<Grid sx={{ xs: 12, sm: 6, width: '30%' }}>
 					<TextField
 						label="Количество запусков"
 						type="number"
@@ -64,7 +73,7 @@ export default function LaunchParamsForm({
 						onChange={(e) => setField('NUMBER_OF_EXECUTIONS', e.target.value === '' ? undefined : +e.target.value)}
 					/>
 				</Grid>
-				<Grid sx={{ xs: 12, sm: 6 }}>
+				<Grid sx={{ xs: 12, sm: 6, width: '30%' }}>
 					<TextField
 						label="Количество потоков"
 						type="number"
@@ -74,21 +83,20 @@ export default function LaunchParamsForm({
 						onChange={(e) => setField('NUMBER_OF_THREADS', e.target.value === '' ? undefined : +e.target.value)}
 					/>
 				</Grid>
-				<Grid container spacing={2} width={'100%'}>
-					<Grid sx={{ xs: 12, sm: 6 }}>
-						<TextField
-							label="Попыток до успеха"
-							type="number"
-							size="small"
-							fullWidth
-							value={launchParams.ATTEMPTS_UNTIL_SUCCESS ?? ''}
-							onChange={(e) =>
-								setField('ATTEMPTS_UNTIL_SUCCESS', e.target.value === '' ? undefined : +e.target.value)
-							}
-						/>
-					</Grid>
-				</Grid>
 
+				<Grid sx={{ xs: 12, sm: 6, width: '30%' }}>
+					<TextField
+						label="Попыток до успеха"
+						type="number"
+						size="small"
+						fullWidth
+						value={launchParams.ATTEMPTS_UNTIL_SUCCESS ?? ''}
+						onChange={(e) => setField('ATTEMPTS_UNTIL_SUCCESS', e.target.value === '' ? undefined : +e.target.value)}
+					/>
+				</Grid>
+			</Grid>
+
+			<Grid container spacing={2} sx={{ mb: 2 }}>
 				<Grid sx={{ xs: 12, sm: 6 }}>
 					<FormControl fullWidth size="small">
 						<InputLabel>Выбор сети (CHAIN_ID)</InputLabel>
@@ -115,6 +123,8 @@ export default function LaunchParamsForm({
 						onChange={(e) => setField('WAIT_GAS_PRICE', e.target.value === '' ? undefined : +e.target.value)}
 					/>
 				</Grid>
+			</Grid>
+			<Grid container spacing={2}>
 				<FormControlLabel
 					sx={{ width: '100%' }}
 					control={
@@ -179,7 +189,6 @@ export default function LaunchParamsForm({
 							value={launchParams.DELAY_BETWEEN_ACCS_IN_S}
 							onChange={(next) => setField('DELAY_BETWEEN_ACCS_IN_S', next)}
 						/>
-
 						<Grid sx={{ xs: 12, sm: 6 }}>
 							<TextField
 								label="Задержка после ошибки, с"
@@ -214,7 +223,7 @@ export default function LaunchParamsForm({
 							onChange={(e) => setField('USE_ENCRYPTION', e.target.checked)}
 						/>
 					}
-					label="Использовать шифрование аккаунтов"
+					label="Использовать зашифрованные аккаунты"
 				/>
 				{launchParams.USE_ENCRYPTION && (
 					<Grid container spacing={2}>

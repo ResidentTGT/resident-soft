@@ -1,4 +1,4 @@
-import { LaunchParams } from './launchParams.type';
+import { LaunchParams } from './types/launchParams.type';
 import { LicenseClaims, verifyLicense, VerifyResult } from './licenses';
 import { PURPLE_TEXT, RED_TEXT, RESET, YELLOW_TEXT } from './logger';
 

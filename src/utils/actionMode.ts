@@ -1,6 +1,6 @@
 import { SecretStorage } from '@utils/secretStorage.type';
 import { Account } from '@utils/account';
-import { LaunchParams } from '@utils/launchParams.type';
+import { LaunchParams } from '@utils/types/launchParams.type';
 import { Logger, MessageType } from './logger';
 import { ACTIONS, ActionsGroupName } from '@src/actions';
 

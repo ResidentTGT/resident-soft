@@ -1,6 +1,6 @@
 import { ChainId } from '@utils/network';
 import { JobAccount } from '@utils/job';
-import { ActionName, ActionsGroupName } from '../actions';
+import { ActionName, ActionsGroupName } from '../../actions';
 
 export interface LaunchParams {
 	ACTION_PARAMS: {

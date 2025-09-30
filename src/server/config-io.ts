@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { parse } from 'jsonc-parser';
+import { LaunchParams } from '@utils/types/launchParams.type';
 
 const ROOT = process.cwd(); // рядом с exe/запуском
 const LAUNCH = path.join(ROOT, 'launchParams.jsonc');
@@ -11,7 +12,7 @@ function readJsonc(file: string) {
 	return parse(raw);
 }
 
-export function readConfigs() {
+export function readConfigs(): { launchParams: LaunchParams; functionParams: any } {
 	const launchParams = fs.existsSync(LAUNCH) ? readJsonc(LAUNCH) : {};
 	const functionParams = fs.existsSync(FUNCP) ? readJsonc(FUNCP) : {};
 	return { launchParams, functionParams };

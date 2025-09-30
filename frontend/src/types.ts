@@ -1,5 +1,5 @@
 import { type Selector } from '../../src/server/selection';
-import { type LaunchParams } from '../../src/utils/launchParams.type';
+import { type LaunchParams } from '../../src/utils/types/launchParams.type';
 
 export interface SelectionStatus {
 	chosenBy: Selector;

@@ -3,9 +3,9 @@ import { Box, Button, Container, Paper, Stack, Typography, Grid, Alert, Circular
 import LaunchParamsForm from '../components/forms/LaunchParamsForm';
 import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
-import type { LaunchParams } from '../../../src/utils/launchParams.type';
+import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { getActions, getConfigs, getNetworks, postConfigs } from '../api/client';
+import { getAccountsFiles, getActions, getConfigs, getNetworks, postConfigs } from '../api/client';
 import { functionParamSchemas } from '../services/functionParamSchemas';
 import type { NetworkConfig } from '../../../src/utils/network';
 
@@ -14,6 +14,7 @@ export default function ConfigPage() {
 	const [functionParams, setFunctionParams] = useState<Record<string, any>>({});
 	const [actions, setActions] = useState<ActionsGroup[]>([]);
 	const [networks, setNetworks] = useState<NetworkConfig[]>([]);
+	const [accsFiles, setAccsFiles] = useState<string[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [saved, setSaved] = useState<'idle' | 'process'>('idle');
 	const [toast, setToast] = useState<{
@@ -27,10 +28,16 @@ export default function ConfigPage() {
 	useEffect(() => {
 		(async () => {
 			try {
-				const [cfg, acts, ntwrks] = await Promise.all([getConfigs(), getActions(), getNetworks()]);
+				const [cfg, acts, ntwrks, accs] = await Promise.all([
+					getConfigs(),
+					getActions(),
+					getNetworks(),
+					getAccountsFiles(),
+				]);
 				setLaunchParams(cfg.launchParams);
 				setFunctionParams(cfg.functionParams);
 				setActions(acts);
+				setAccsFiles(accs);
 				setNetworks(ntwrks);
 			} catch (e) {
 				console.error(e);
@@ -103,20 +110,23 @@ export default function ConfigPage() {
 	return (
 		<>
 			<Container maxWidth="lg" sx={{ py: 2 }}>
-				<Grid container spacing={2} sx={{ mt: 0 }}>
-					<Grid size={{ xs: 12, md: 6 }}>
+				<Grid container spacing={2} sx={{ mt: 0, alignItems: 'stretch' }}>
+					<Grid size={{ xs: 12, sm: 6 }}>
 						<LaunchParamsForm
 							launchParams={launchParams}
 							onChange={(patch) => setLaunchParams((p) => ({ ...p, ...patch }) as any)}
 							actions={actions}
 							networks={networks}
+							accountsFiles={accsFiles}
 						/>
 					</Grid>
-					<Grid size={{ xs: 12, md: 6 }}>
+					<Grid size={{ xs: 12, sm: 6 }}>
 						<FunctionParamsForm
-							action={launchParams?.ACTION_PARAMS?.action}
+							group={launchParams.ACTION_PARAMS.group}
+							action={launchParams.ACTION_PARAMS.action}
 							values={functionParams}
 							onChange={(patch) => setFunctionParams((p) => ({ ...p, ...patch }))}
+							networks={networks}
 						/>
 					</Grid>
 				</Grid>

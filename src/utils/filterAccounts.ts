@@ -1,6 +1,6 @@
 import { Logger, MessageType } from '@utils/logger';
 import { Account } from '@utils/account/models';
-import { LaunchParams } from '@utils/launchParams.type';
+import { LaunchParams } from '@utils/types/launchParams.type';
 import { getStandardState } from '@utils/state/getStandardState';
 
 export async function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: LaunchParams): Promise<Account[]> {

@@ -1,6 +1,6 @@
 import readline from 'node:readline/promises';
 import { readFileSync } from 'fs';
-import { LaunchParams } from '@utils/launchParams.type';
+import { LaunchParams } from '@utils/types/launchParams.type';
 import { getAllAccounts } from '@utils/getAllAccounts';
 import { getEncryptedOrDecryptedAccounts, getEncryptedOrDecryptedSecretStorage } from '@utils/decryption';
 import { filterAccounts } from '@utils/filterAccounts';
