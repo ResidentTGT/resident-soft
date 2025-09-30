@@ -7,6 +7,7 @@ import { GREEN_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
 import { readConfigs } from '@src/server/config-io';
 import { startHttpServer } from '@src/server/http';
 import { selectionGate } from '@src/server/selection';
+import { Network } from '@src/utils/network';
 
 process.on('unhandledRejection', async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
@@ -14,6 +15,8 @@ process.on('unhandledRejection', async (error) => {
 });
 
 async function main() {
+	await Network.loadNetworksAndTokensConfigs();
+
 	await startHttpServer();
 
 	await welcomeMessage();

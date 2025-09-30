@@ -1,33 +1,29 @@
 import { ethers } from 'ethers';
-import { readFileSync } from 'fs';
 import { ChainId } from './chainId';
-import { parse } from 'jsonc-parser';
 import { Logger, MessageType } from '../logger';
+import { parse } from 'jsonc-parser';
+import fs from 'fs';
 
 export interface Token {
 	symbol: string;
 	address: string;
 }
 
-interface NetworkConfig {
+export interface NetworkConfig {
 	chainId: number | string;
 	name: string;
 	nativeCoin: string;
 	rpc: string[];
 }
 
-const networksConfig = parse(readFileSync('./networks.jsonc', 'utf-8')) as NetworkConfig[];
-const tokensConfig = parse(readFileSync('./tokens.jsonc', 'utf-8')) as { chainId: number | string; tokens: Token[] }[];
-
-function getTokens(chainId: ChainId): Token[] {
-	const entry = tokensConfig.find((item) => item.chainId === chainId);
-	return entry ? entry.tokens : [];
-}
-
 export class Network {
 	readonly chainId: ChainId;
 	readonly name: string;
 	readonly nativeCoin: string;
+
+	static networksConfig: NetworkConfig[] = [];
+	static tokensConfig: { chainId: string; tokens: Token[] }[] = [];
+
 	rpc?: string;
 	readonly tokens: Token[] = [];
 	provider?: ethers.JsonRpcProvider;
@@ -48,8 +44,17 @@ export class Network {
 			throw new Error(`Invalid chainId: ${id}. Check allowed here: https://resident.gitbook.io/resident-soft/chain-ids`);
 	}
 
+	public static loadNetworksAndTokensConfigs() {
+		this.networksConfig = parse(fs.readFileSync('./networks.jsonc', 'utf-8')) as NetworkConfig[];
+		this.tokensConfig = parse(fs.readFileSync('./tokens.jsonc', 'utf-8')) as { chainId: string; tokens: Token[] }[];
+	}
+
+	public static getAllNetworksConfigs() {
+		return this.networksConfig;
+	}
+
 	public static async getNetworkByChainId(id: ChainId) {
-		const networkConfig = networksConfig.find((n) => n.chainId === id);
+		const networkConfig = this.networksConfig.find((n) => n.chainId === id);
 		if (!networkConfig) throw new Error(`There is no network configuration for chainId ${id}`);
 		const rpcs = networkConfig.rpc.shuffle();
 		const logger = await Logger.getInstance();
@@ -74,7 +79,7 @@ export class Network {
 			selectedRpc = rpcs[0];
 		}
 
-		return new Network(id, networkConfig.name, networkConfig.nativeCoin, selectedRpc, getTokens(id));
+		return new Network(id, networkConfig.name, networkConfig.nativeCoin, selectedRpc, this.getTokens(id));
 	}
 
 	public static isEvm(id: ChainId): boolean {
@@ -85,6 +90,11 @@ export class Network {
 	public static isSvm(id: ChainId): boolean {
 		const svm = [ChainId.Solana, ChainId.Eclipse];
 		return svm.includes(id);
+	}
+
+	public static getTokens(chainId: ChainId): Token[] {
+		const entry = this.tokensConfig.find((item) => item.chainId === chainId);
+		return entry ? entry.tokens : [];
 	}
 
 	public getProvider(): ethers.JsonRpcProvider {

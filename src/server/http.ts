@@ -5,6 +5,8 @@ import * as sea from 'node:sea';
 import fs from 'node:fs';
 
 import { selectionGate } from './selection';
+import { ACTIONS } from '@src/actions';
+import { Network } from '@src/utils/network';
 
 export async function startHttpServer() {
 	const app = express();
@@ -43,6 +45,22 @@ export async function startHttpServer() {
 		const ok = selectionGate.choose(by, snapshot);
 		if (!ok) return res.status(409).json({ error: 'Already chosen', ...selectionGate.getStatus() });
 		return res.json({ ok: true, ...selectionGate.getStatus() });
+	});
+
+	app.get('/api/actions', (_req, res) => {
+		try {
+			res.json(ACTIONS);
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.get('/api/networks', (_req, res) => {
+		try {
+			res.json(Network.getAllNetworksConfigs());
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
 	});
 
 	// Раздача UI: SEA или с диска

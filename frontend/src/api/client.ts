@@ -1,3 +1,5 @@
+import type { ActionsGroup } from '../../../src/actions';
+import type { NetworkConfig } from '../../../src/utils/network';
 import type { SelectionStatus, Configs } from '../types';
 
 export async function getSelection(): Promise<SelectionStatus> {
@@ -31,5 +33,17 @@ export async function postConfigs(payload: Configs) {
 	});
 	if (r.status === 423) throw Object.assign(new Error('Configs are locked by selection'), { code: 423 });
 	if (!r.ok) throw new Error(`Configs save failed: ${r.status}`);
+	return r.json();
+}
+
+export async function getActions(): Promise<ActionsGroup[]> {
+	const r = await fetch('/api/actions');
+	if (!r.ok) throw new Error(`Actions fetch failed: ${r.status}`);
+	return r.json();
+}
+
+export async function getNetworks(): Promise<NetworkConfig[]> {
+	const r = await fetch('/api/networks');
+	if (!r.ok) throw new Error(`Networks fetch failed: ${r.status}`);
 	return r.json();
 }

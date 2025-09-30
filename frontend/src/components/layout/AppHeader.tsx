@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppBar, Tabs, Tab, Toolbar as MuiToolbar, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { titleSx, toolbarSx } from './AppHeader.styles';
 
 export default function AppHeader() {
 	const location = useLocation();
@@ -8,8 +9,8 @@ export default function AppHeader() {
 
 	return (
 		<AppBar position="sticky">
-			<MuiToolbar sx={{ gap: 3 }}>
-				<Typography variant="h6" sx={{ flexShrink: 0 }}>
+			<MuiToolbar sx={toolbarSx}>
+				<Typography variant="h6" sx={titleSx}>
 					Resident Soft
 				</Typography>
 				<Tabs value={value} textColor="inherit" indicatorColor="secondary">

@@ -1,24 +1,34 @@
 import React from 'react';
-import { TextField } from '@mui/material';
+import { Grid, TextField } from '@mui/material';
 
 export default function DelayArrayInput({ value, onChange }: { value?: number[]; onChange: (next?: number[]) => void }) {
-	return (
-		<TextField
-			label="Задержки между аккаунтами (с), через запятую"
-			size="small"
-			fullWidth
-			value={(value ?? []).join(', ')}
-			onChange={(e) => {
-				const raw = e.target.value;
-				const arr = raw
-					.split(',')
-					.map((s) => s.trim())
-					.filter((s) => s.length > 0)
-					.map((s) => Number(s))
-					.filter((n) => !Number.isNaN(n) && n >= 0);
-				onChange(arr.length ? arr : undefined);
-			}}
-			placeholder="например: 2, 5, 10"
-		/>
+	return value ? (
+		<Grid container spacing={2} alignItems="center">
+			<Grid sx={{ width: '50%' }}>Задержка между аккаунтами, с</Grid>
+			<Grid sx={{ width: '20%' }}>
+				<TextField
+					label="От"
+					size="small"
+					fullWidth
+					value={value[0]}
+					onChange={(e) => {
+						onChange([+e.target.value, value[1]]);
+					}}
+				/>
+			</Grid>
+			<Grid sx={{ width: '20%' }}>
+				<TextField
+					label="До"
+					size="small"
+					fullWidth
+					value={value[1]}
+					onChange={(e) => {
+						onChange([value[0], +e.target.value]);
+					}}
+				/>
+			</Grid>
+		</Grid>
+	) : (
+		''
 	);
 }
