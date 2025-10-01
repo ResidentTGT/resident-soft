@@ -14,7 +14,41 @@ export default function ActionSelector({
 }) {
 	const selectedGroup = value?.group;
 	const selectedAction = value?.action;
-	const currentGroup = actions.find((g) => g.group === selectedGroup);
+
+	const allowedGroups = React.useMemo(() => actions.filter((g) => g.allowed), [actions]);
+
+	const currentGroup = React.useMemo(
+		() => allowedGroups.find((g) => g.group === selectedGroup),
+		[allowedGroups, selectedGroup],
+	);
+
+	const allowedActionsInGroup = React.useMemo(() => (currentGroup?.actions ?? []).filter((a) => a.allowed), [currentGroup]);
+
+	React.useEffect(() => {
+		if (!selectedGroup) return;
+
+		if (!currentGroup) {
+			const g0 = allowedGroups[0];
+			if (!g0) {
+				if (value) onChange(undefined);
+				return;
+			}
+			const a0 = (g0.actions || []).find((a) => a.allowed)?.action;
+			const next = a0
+				? { group: g0.group as any, action: a0 as any }
+				: { group: g0.group as any, action: undefined as any };
+
+			if (value?.group !== next.group || value?.action !== next.action) onChange(next);
+			return;
+		}
+
+		const actionStillAllowed = allowedActionsInGroup.some((a) => a.action === selectedAction);
+		if (!actionStillAllowed) {
+			const a0 = allowedActionsInGroup[0]?.action;
+			const next = { group: currentGroup.group as any, action: (a0 ?? undefined) as any };
+			if (value?.group !== next.group || value?.action !== next.action) onChange(next);
+		}
+	}, [selectedGroup, selectedAction, currentGroup, allowedGroups, allowedActionsInGroup, onChange, value]);
 
 	return (
 		<Grid container spacing={2}>
@@ -23,36 +57,41 @@ export default function ActionSelector({
 					<InputLabel>Группа действий</InputLabel>
 					<Select
 						label="Группа действий"
-						value={selectedGroup}
+						value={selectedGroup ?? ''}
 						onChange={(e) => {
 							const group = e.target.value as string;
-							const firstAction = actions.find((g) => g.group === group)?.actions?.[0]?.action;
-							onChange({ group: group as any, action: firstAction as any });
+							const groupObj = allowedGroups.find((g) => g.group === group);
+							const firstAllowedAction = groupObj?.actions?.find((a) => a.allowed)?.action;
+							onChange({
+								group: group as any,
+								action: (firstAllowedAction ?? undefined) as any,
+							});
 						}}
 					>
-						{actions.map((g) => (
+						{allowedGroups.map((g) => (
 							<MenuItem key={g.group} value={g.group}>
-								{g.group} {g.premium ? ' (Premium)' : ''}
+								{g.name || g.group} {g.premium ? '(PREMIUM)' : ''}
 							</MenuItem>
 						))}
 					</Select>
 				</FormControl>
 			</Grid>
+
 			<Grid sx={{ xs: 12, sm: 6 }}>
-				<FormControl fullWidth size="small" disabled={!selectedGroup}>
+				<FormControl fullWidth size="small" disabled={!currentGroup}>
 					<InputLabel>Действие</InputLabel>
 					<Select
 						label="Действие"
-						value={selectedAction}
+						value={selectedAction ?? ''}
 						onChange={(e) => {
 							const action = e.target.value as string;
-							const group = selectedGroup;
-							onChange({ group: group as any, action: action as any });
+							if (!currentGroup) return;
+							onChange({ group: currentGroup.group as any, action: action as any });
 						}}
 					>
-						{(currentGroup?.actions ?? []).map((a) => (
+						{allowedActionsInGroup.map((a) => (
 							<MenuItem key={a.action} value={a.action}>
-								{a.action}
+								{a.name || a.action}
 							</MenuItem>
 						))}
 					</Select>

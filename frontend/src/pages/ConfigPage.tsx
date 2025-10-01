@@ -122,9 +122,8 @@ export default function ConfigPage() {
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<FunctionParamsForm
-							group={launchParams.ACTION_PARAMS.group}
-							action={launchParams.ACTION_PARAMS.action}
-							values={functionParams}
+							actionParams={launchParams.ACTION_PARAMS}
+							functionParams={functionParams}
 							onChange={(patch) => setFunctionParams((p) => ({ ...p, ...patch }))}
 							networks={networks}
 						/>
