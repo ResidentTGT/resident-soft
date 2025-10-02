@@ -63,6 +63,14 @@ export async function startHttpServer() {
 		}
 	});
 
+	app.get('/api/tokens', (_req, res) => {
+		try {
+			res.json(Network.getAllTokensConfigs());
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
 	app.get('/api/accsfiles', (_req, res) => {
 		try {
 			const snapshot = readConfigs();

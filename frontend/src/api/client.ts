@@ -1,5 +1,6 @@
 import type { ActionsGroup } from '../../../src/actions';
 import type { NetworkConfig } from '../../../src/utils/network';
+import type { TokenConfig } from '../../../src/utils/network/network';
 import type { SelectionStatus, Configs } from '../types';
 
 export async function getSelection(): Promise<SelectionStatus> {
@@ -51,5 +52,11 @@ export async function getNetworks(): Promise<NetworkConfig[]> {
 export async function getAccountsFiles(): Promise<string[]> {
 	const r = await fetch('/api/accsfiles');
 	if (!r.ok) throw new Error(`Accounts files fetch failed: ${r.status}`);
+	return r.json();
+}
+
+export async function getTokens(): Promise<TokenConfig[]> {
+	const r = await fetch('/api/tokens');
+	if (!r.ok) throw new Error(`Tokens fetch failed: ${r.status}`);
 	return r.json();
 }

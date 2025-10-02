@@ -13,15 +13,15 @@ import {
 	Stack,
 	Button,
 	Box,
-	IconButton,
 	Grid,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 import type { ActionParams } from '../../../../src/actions';
-import type { NetworkConfig } from '../../../../src/utils/network';
+import type { ChainId, NetworkConfig } from '../../../../src/utils/network';
 import type { JSX } from 'react';
+import type { TokenConfig } from '../../../../src/utils/network/network';
 
 /* ========================== базовые типы ========================== */
 
@@ -31,6 +31,7 @@ interface FormCtx {
 	params: Record<string, any>;
 	set: (name: string, value: any) => void;
 	networks: NetworkConfig[];
+	tokens: TokenConfig[];
 }
 
 /* ========================== утилиты ========================== */
@@ -52,28 +53,23 @@ function setParam(fp: FunctionParamsTree | undefined, actionParams: ActionParams
 	return { ...root, [actionParams.group]: byGroup };
 }
 
-/* ========================== маленькие поля ========================== */
+/* ========================== маленькие поля (каждое — СВОЯ строка) ========================== */
 
 function NumField({
 	label,
 	value,
 	onChange,
-	xs = 12,
-	md = 6,
 }: {
 	label: string;
 	value: number | undefined;
 	onChange: (v: number | undefined) => void;
-	xs?: number;
-	md?: number;
 }) {
 	return (
-		<Grid sx={{ xs, md }}>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 			<TextField
 				label={label}
 				type="number"
 				size="small"
-				fullWidth
 				value={value ?? ''}
 				onChange={(e) => onChange(toNum(e.target.value))}
 			/>
@@ -85,23 +81,18 @@ function StrField({
 	label,
 	value,
 	onChange,
-	xs = 12,
-	md = 6,
 	placeholder,
 }: {
 	label: string;
 	value: string | undefined;
 	onChange: (v: string | undefined) => void;
-	xs?: number;
-	md?: number;
 	placeholder?: string;
 }) {
 	return (
-		<Grid sx={{ xs, md }}>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 			<TextField
 				label={label}
 				size="small"
-				fullWidth
 				placeholder={placeholder}
 				value={value ?? ''}
 				onChange={(e) => onChange(e.target.value || undefined)}
@@ -110,21 +101,9 @@ function StrField({
 	);
 }
 
-function BoolField({
-	label,
-	checked,
-	onChange,
-	xs = 12,
-	md = 6,
-}: {
-	label: string;
-	checked: boolean;
-	onChange: (v: boolean) => void;
-	xs?: number;
-	md?: number;
-}) {
+function BoolField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
 	return (
-		<Grid sx={{ xs, md }}>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 			<FormControlLabel
 				control={<Checkbox checked={!!checked} onChange={(e) => onChange(e.target.checked)} />}
 				label={label}
@@ -133,6 +112,7 @@ function BoolField({
 	);
 }
 
+/** Блок-строка с двумя полями: from/to */
 function RangeField({
 	labelFrom,
 	labelTo,
@@ -146,10 +126,30 @@ function RangeField({
 }) {
 	const [a, b] = value ?? [];
 	return (
-		<>
-			<NumField label={labelFrom} value={a} onChange={(v) => onChange([v, b])} />
-			<NumField label={labelTo} value={b} onChange={(v) => onChange([a, v])} />
-		</>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
+			<Grid container spacing={2}>
+				<Grid sx={{ xs: 12, md: 6 }}>
+					<TextField
+						label={labelFrom}
+						type="number"
+						size="small"
+						fullWidth
+						value={a ?? ''}
+						onChange={(e) => onChange([toNum(e.target.value), b])}
+					/>
+				</Grid>
+				<Grid sx={{ xs: 12, md: 6 }}>
+					<TextField
+						label={labelTo}
+						type="number"
+						size="small"
+						fullWidth
+						value={b ?? ''}
+						onChange={(e) => onChange([a, toNum(e.target.value)])}
+					/>
+				</Grid>
+			</Grid>
+		</Grid>
 	);
 }
 
@@ -178,11 +178,10 @@ function CsvField({
 	};
 
 	return (
-		<Grid sx={{ xs: 12 }}>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 			<TextField
 				label={label}
 				size="small"
-				fullWidth
 				placeholder={placeholder ?? 'a, b, c  |  1, 2, 3'}
 				value={text}
 				onChange={(e) => setText(e.target.value)}
@@ -207,14 +206,14 @@ function ChainIdSelect({
 }: {
 	label: string;
 	value: number | string | undefined;
-	onChange: (v: number | string | undefined) => void;
+	onChange: (v: ChainId) => void;
 	networks: NetworkConfig[];
 }) {
 	return (
-		<Grid sx={{ xs: 12, md: 6 }}>
-			<FormControl size="small" fullWidth>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
+			<FormControl size="small">
 				<InputLabel>{label}</InputLabel>
-				<Select label={label} value={(value as any) ?? ''} onChange={(e) => onChange(e.target.value as any)}>
+				<Select label={label} value={value} onChange={(e) => onChange(e.target.value as ChainId)}>
 					{networks.map((n) => (
 						<MenuItem key={String(n.chainId)} value={n.chainId}>
 							{n.name}
@@ -239,8 +238,8 @@ function ChainIdMulti({
 }) {
 	const vals = Array.isArray(value) ? value : [];
 	return (
-		<Grid sx={{ xs: 12 }}>
-			<FormControl size="small" fullWidth>
+		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
+			<FormControl size="small">
 				<InputLabel>{label}</InputLabel>
 				<Select
 					multiple
@@ -270,12 +269,12 @@ function ChainIdMulti({
 /* ========================== формы по actions ========================== */
 /* -------- Common -------- */
 
-function Form_Common_CheckBalances({ params, set, networks }: FormCtx) {
+function Form_Common_CheckBalances({ params, set, networks, tokens }: FormCtx) {
 	const arr: any[] = Array.isArray(params.networks) ? params.networks : [];
 	const add = () => {
 		const blank = {
 			chainId: networks[0]?.chainId,
-			tokenNames: '',
+			tokenNames: [],
 			tokenAlert: { symbol: '', less: false, amountAlert: 0 },
 		};
 		set('networks', [...arr, blank]);
@@ -286,91 +285,79 @@ function Form_Common_CheckBalances({ params, set, networks }: FormCtx) {
 		set('networks', next.length ? next : undefined);
 	};
 
+	const changeTokens = (e: any, net: any, i: any) => {
+		const arrSel = (e.target.value as string[]) ?? [];
+		const next = [...arr];
+		next[i] = { ...net, tokenNames: arrSel };
+		set('networks', next);
+	};
+
 	return (
 		<Grid container spacing={2}>
-			<Grid sx={{ xs: 12 }}>
+			<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 				<Stack direction="row" justifyContent="space-between" alignItems="center">
-					<Typography variant="subtitle1">networks</Typography>
 					<Button size="small" startIcon={<AddIcon />} onClick={add}>
-						Add
+						Add network
 					</Button>
 				</Stack>
 			</Grid>
 
-			{arr.map((net, i) => (
-				<Grid sx={{ xs: 12 }}>
-					<Box sx={{ p: 1.5, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 2 }}>
-						<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-							<Typography variant="body2">networks[{i}]</Typography>
-							<IconButton size="small" onClick={() => remove(i)}>
-								<DeleteIcon fontSize="small" />
-							</IconButton>
-						</Stack>
+			{arr.map((net, i) => {
+				const netTokens = tokens.find((t) => t.chainId === net.chainId)?.tokens;
+				const filteredSelectedTokens = net.tokenNames.filter((tn: any) => netTokens?.some((t) => t.symbol === tn));
+				if (filteredSelectedTokens.length === 0) {
+					changeTokens({ target: { value: [netTokens?.map((t) => t.symbol)[0]] } }, net, i);
+				} else {
+					if (filteredSelectedTokens.length !== net.tokenNames.length) {
+						changeTokens({ target: { value: filteredSelectedTokens } }, net, i);
+					}
+				}
+				return (
+					<Grid sx={{ xs: 12 }} key={i}>
+						<Box sx={{ p: 1.5, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 2 }}>
+							<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+								<Button size="small" startIcon={<DeleteIcon />} onClick={() => remove(i)}>
+									Delete network
+								</Button>
+							</Stack>
 
-						<Grid container spacing={2}>
-							<ChainIdSelect
-								label="chainId"
-								value={net.chainId}
-								onChange={(v) => {
-									const next = [...arr];
-									next[i] = { ...net, chainId: v };
-									set('networks', next);
-								}}
-								networks={networks}
-							/>
+							<Grid container spacing={2}>
+								<ChainIdSelect
+									label="chainId"
+									value={net.chainId}
+									onChange={(v) => {
+										const next = [...arr];
+										next[i] = { ...net, chainId: v };
+										set('networks', next);
+									}}
+									networks={networks}
+								/>
 
-							<StrField
-								label="tokenNames"
-								value={
-									typeof net.tokenNames === 'string'
-										? net.tokenNames
-										: Array.isArray(net.tokenNames)
-											? net.tokenNames.join(', ')
-											: ''
-								}
-								onChange={(v) => {
-									const next = [...arr];
-									next[i] = { ...net, tokenNames: v ?? '' }; // вводим строкой
-									set('networks', next);
-								}}
-								xs={12}
-								md={6}
-							/>
-
-							<Grid sx={{ xs: 12 }}>
-								<Typography variant="subtitle2">tokenAlert</Typography>
+								<FormControl size="small">
+									<InputLabel>tokenNames</InputLabel>
+									<Select
+										multiple
+										label="tokenNames"
+										value={filteredSelectedTokens}
+										onChange={(e) => {
+											changeTokens(e, net, i);
+										}}
+										renderValue={(vals) => (vals as string[]).join(', ')}
+									>
+										{tokens
+											.find((t) => String(t.chainId) === String(net.chainId))
+											?.tokens.map((t) => (
+												<MenuItem key={String(t.symbol)} value={String(t.symbol)}>
+													{String(t.symbol)}
+												</MenuItem>
+											))}
+									</Select>
+								</FormControl>
 							</Grid>
-							<StrField
-								label="symbol"
-								value={net.tokenAlert?.symbol}
-								onChange={(v) => {
-									const next = [...arr];
-									next[i] = { ...net, tokenAlert: { ...net.tokenAlert, symbol: v ?? '' } };
-									set('networks', next);
-								}}
-							/>
-							<BoolField
-								label="less"
-								checked={!!net.tokenAlert?.less}
-								onChange={(v) => {
-									const next = [...arr];
-									next[i] = { ...net, tokenAlert: { ...net.tokenAlert, less: v } };
-									set('networks', next);
-								}}
-							/>
-							<NumField
-								label="amountAlert"
-								value={net.tokenAlert?.amountAlert}
-								onChange={(v) => {
-									const next = [...arr];
-									next[i] = { ...net, tokenAlert: { ...net.tokenAlert, amountAlert: v ?? 0 } };
-									set('networks', next);
-								}}
-							/>
-						</Grid>
-					</Box>
-				</Grid>
-			))}
+						</Box>
+					</Grid>
+				);
+			})}
 		</Grid>
 	);
 }
@@ -739,10 +726,12 @@ export default function FunctionParamsForm({
 	functionParams,
 	onChange,
 	networks,
+	tokens,
 }: {
 	actionParams: ActionParams;
 	functionParams: FunctionParamsTree | undefined;
 	networks: NetworkConfig[];
+	tokens: TokenConfig[];
 	onChange: (next: FunctionParamsTree) => void;
 }) {
 	const group = actionParams.group;
@@ -771,7 +760,7 @@ export default function FunctionParamsForm({
 					Форма для «{group}.{action}» пока не реализована.
 				</Alert>
 			) : (
-				<Form params={params} set={set} networks={networks} />
+				<Form params={params} set={set} networks={networks} tokens={tokens} />
 			)}
 		</Paper>
 	);

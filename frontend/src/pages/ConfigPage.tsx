@@ -5,15 +5,17 @@ import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { getAccountsFiles, getActions, getConfigs, getNetworks, postConfigs } from '../api/client';
+import { getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
 import { functionParamSchemas } from '../services/functionParamSchemas';
 import type { NetworkConfig } from '../../../src/utils/network';
+import type { TokenConfig } from '../../../src/utils/network/network';
 
 export default function ConfigPage() {
 	const [launchParams, setLaunchParams] = useState<LaunchParams>();
 	const [functionParams, setFunctionParams] = useState<Record<string, any>>({});
 	const [actions, setActions] = useState<ActionsGroup[]>([]);
 	const [networks, setNetworks] = useState<NetworkConfig[]>([]);
+	const [tokens, setTokens] = useState<TokenConfig[]>([]);
 	const [accsFiles, setAccsFiles] = useState<string[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [saved, setSaved] = useState<'idle' | 'process'>('idle');
@@ -28,17 +30,19 @@ export default function ConfigPage() {
 	useEffect(() => {
 		(async () => {
 			try {
-				const [cfg, acts, ntwrks, accs] = await Promise.all([
+				const [cfg, acts, ntwrks, accs, tkns] = await Promise.all([
 					getConfigs(),
 					getActions(),
 					getNetworks(),
 					getAccountsFiles(),
+					getTokens(),
 				]);
 				setLaunchParams(cfg.launchParams);
 				setFunctionParams(cfg.functionParams);
 				setActions(acts);
 				setAccsFiles(accs);
 				setNetworks(ntwrks);
+				setTokens(tkns);
 			} catch (e) {
 				console.error(e);
 				alert(`Не удалось загрузить данные. ${e}.`);
@@ -126,6 +130,7 @@ export default function ConfigPage() {
 							functionParams={functionParams}
 							onChange={(patch) => setFunctionParams((p) => ({ ...p, ...patch }))}
 							networks={networks}
+							tokens={tokens}
 						/>
 					</Grid>
 				</Grid>

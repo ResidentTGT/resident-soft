@@ -10,10 +10,15 @@ export interface Token {
 }
 
 export interface NetworkConfig {
-	chainId: number | string;
+	chainId: ChainId;
 	name: string;
 	nativeCoin: string;
 	rpc: string[];
+}
+
+export interface TokenConfig {
+	chainId: ChainId;
+	tokens: Token[];
 }
 
 export class Network {
@@ -22,7 +27,7 @@ export class Network {
 	readonly nativeCoin: string;
 
 	static networksConfig: NetworkConfig[] = [];
-	static tokensConfig: { chainId: string; tokens: Token[] }[] = [];
+	static tokensConfig: TokenConfig[] = [];
 
 	rpc?: string;
 	readonly tokens: Token[] = [];
@@ -46,11 +51,15 @@ export class Network {
 
 	public static loadNetworksAndTokensConfigs() {
 		this.networksConfig = parse(fs.readFileSync('./networks.jsonc', 'utf-8')) as NetworkConfig[];
-		this.tokensConfig = parse(fs.readFileSync('./tokens.jsonc', 'utf-8')) as { chainId: string; tokens: Token[] }[];
+		this.tokensConfig = parse(fs.readFileSync('./tokens.jsonc', 'utf-8')) as TokenConfig[];
 	}
 
 	public static getAllNetworksConfigs() {
 		return this.networksConfig;
+	}
+
+	public static getAllTokensConfigs() {
+		return this.tokensConfig;
 	}
 
 	public static async getNetworkByChainId(id: ChainId) {
