@@ -29,6 +29,8 @@ export default function ConfigPage() {
 	useEffect(() => {
 		(async () => {
 			try {
+				const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
+
 				const [cfg, acts, ntwrks, accs, tkns] = await Promise.all([
 					getConfigs(),
 					getActions(),
@@ -38,10 +40,23 @@ export default function ConfigPage() {
 				]);
 				setLaunchParams(cfg.launchParams);
 				setFunctionParams(cfg.functionParams);
-				setActions(acts);
-				setAccsFiles(accs);
-				setNetworks(ntwrks);
-				setTokens(tkns);
+
+				const sortedacts = acts.slice().sort((a, b) => +a.premium - +b.premium);
+				setActions(sortedacts);
+
+				const sortedaccs = accs.slice().sort((a, b) => collator.compare(a, b));
+				setAccsFiles(sortedaccs);
+
+				const sortedntwrks = ntwrks.slice().sort((a, b) => collator.compare(a.name, b.name));
+				setNetworks(sortedntwrks);
+
+				const sortedtkns = tkns.map((entry) => {
+					const tokens = Array.isArray(entry.tokens)
+						? entry.tokens.slice().sort((a, b) => collator.compare(a.symbol, b.symbol))
+						: entry.tokens;
+					return { ...entry, tokens };
+				});
+				setTokens(sortedtkns);
 			} catch (e) {
 				console.error(e);
 				alert(`Не удалось загрузить данные. ${e}.`);
