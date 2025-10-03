@@ -1,7 +1,7 @@
 {
 	"ACTION_PARAMS": {
-		"group": "Common",
-		"action": "CheckBalances"
+		"group": "CommonUi",
+		"action": "OpenPages"
 	},
 	"SHUFFLE_ACCOUNTS": false,
 	"TAKE_STATE": false,

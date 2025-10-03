@@ -297,7 +297,7 @@ function Form_Common_CheckBalances({ params, set, networks, tokens }: FormCtx) {
 			<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 				<Stack direction="row" justifyContent="space-between" alignItems="center">
 					<Button size="small" startIcon={<AddIcon />} onClick={add}>
-						Add network
+						Добавить сеть
 					</Button>
 				</Stack>
 			</Grid>
@@ -317,13 +317,13 @@ function Form_Common_CheckBalances({ params, set, networks, tokens }: FormCtx) {
 						<Box sx={{ p: 1.5, border: '1px solid rgba(255,255,255,0.12)', borderRadius: 2 }}>
 							<Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
 								<Button size="small" startIcon={<DeleteIcon />} onClick={() => remove(i)}>
-									Delete network
+									Удалить сеть
 								</Button>
 							</Stack>
 
 							<Grid container spacing={2}>
 								<ChainIdSelect
-									label="chainId"
+									label="Сеть"
 									value={net.chainId}
 									onChange={(v) => {
 										const next = [...arr];
@@ -334,10 +334,10 @@ function Form_Common_CheckBalances({ params, set, networks, tokens }: FormCtx) {
 								/>
 
 								<FormControl size="small">
-									<InputLabel>tokenNames</InputLabel>
+									<InputLabel>Токены</InputLabel>
 									<Select
 										multiple
-										label="tokenNames"
+										label="Токены"
 										value={filteredSelectedTokens}
 										onChange={(e) => {
 											changeTokens(e, net, i);
@@ -365,7 +365,7 @@ function Form_Common_CheckBalances({ params, set, networks, tokens }: FormCtx) {
 function Form_Common_GenerateWallets({ params, set }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<NumField label="amount" value={params.amount} onChange={(v) => set('amount', v ?? 0)} />
+			<NumField label="Количество" value={params.amount} onChange={(v) => set('amount', v ?? 0)} />
 		</Grid>
 	);
 }
@@ -374,25 +374,25 @@ function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect
-				label="fromChainId"
+				label="Из сети"
 				value={params.fromChainId}
 				onChange={(v) => set('fromChainId', v)}
 				networks={networks}
 			/>
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<RangeField
-				labelFrom="minBalanceToKeep from"
-				labelTo="minBalanceToKeep to"
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<RangeField
+				labelFrom="Оставлять на балансе от"
+				labelTo="Оставлять на балансе до"
 				value={params.minBalanceToKeep}
 				onChange={(v) => set('minBalanceToKeep', v)}
 			/>
-			<NumField label="minAmountToSend" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<ChainIdMulti
-				label="toChainIds"
-				value={params.toChainIds}
-				onChange={(v) => set('toChainIds', v)}
-				networks={networks}
-			/>
+			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
+			<ChainIdMulti label="В сети" value={params.toChainIds} onChange={(v) => set('toChainIds', v)} networks={networks} />
 		</Grid>
 	);
 }
@@ -401,19 +401,19 @@ function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect
-				label="fromChainId"
+				label="Из сети"
 				value={params.fromChainId}
 				onChange={(v) => set('fromChainId', v)}
 				networks={networks}
 			/>
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-			<ChainIdMulti
-				label="toChainIds"
-				value={params.toChainIds}
-				onChange={(v) => set('toChainIds', v)}
-				networks={networks}
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
 			/>
-			<CsvField label="addresses" value={params.addresses} onChange={(v) => set('addresses', v)} />
+			<ChainIdMulti label="В сети" value={params.toChainIds} onChange={(v) => set('toChainIds', v)} networks={networks} />
+			<CsvField label="Адреса" value={params.addresses} onChange={(v) => set('addresses', v)} />
 		</Grid>
 	);
 }
@@ -422,20 +422,25 @@ function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect
-				label="fromChainId"
+				label="Из сети"
 				value={params.fromChainId}
 				onChange={(v) => set('fromChainId', v)}
 				networks={networks}
 			/>
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<RangeField
-				labelFrom="minBalanceToKeep from"
-				labelTo="minBalanceToKeep to"
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<RangeField
+				labelFrom="Оставлять на балансе от"
+				labelTo="Оставлять на балансе до"
 				value={params.minBalanceToKeep}
 				onChange={(v) => set('minBalanceToKeep', v)}
 			/>
-			<NumField label="minAmountToSend" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<ChainIdSelect label="toChainId" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
+			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
+			<ChainIdSelect label="в сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
 		</Grid>
 	);
 }
@@ -444,66 +449,107 @@ function Form_Common_RefuelManyRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect
-				label="fromChainId"
+				label="Из сети"
 				value={params.fromChainId}
 				onChange={(v) => set('fromChainId', v)}
 				networks={networks}
 			/>
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-			<ChainIdSelect label="toChainId" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
-			<CsvField label="addresses" value={params.addresses} onChange={(v) => set('addresses', v)} />
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
+			<CsvField label="Адреса" value={params.addresses} onChange={(v) => set('addresses', v)} />
 		</Grid>
 	);
 }
 
 /* -------- Evm -------- */
 
-function Form_Evm_SendToken({ params, set, networks }: FormCtx) {
+function Form_Evm_SendToken({ params, set, networks, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect
-				label="fromChainId"
+				label="Из сети"
 				value={params.fromChainId}
 				onChange={(v) => set('fromChainId', v)}
 				networks={networks}
 			/>
-			<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
+			<FormControl size="small">
+				<InputLabel>Токен</InputLabel>
+				<Select
+					label="Токен"
+					value={params.token ?? ''}
+					onChange={(e) => set('token', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.fromChainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
 			<RangeField
-				labelFrom="minBalanceToKeep from"
-				labelTo="minBalanceToKeep to"
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<RangeField
+				labelFrom="Оставлять на балансе от"
+				labelTo="Оставлять на балансе до"
 				value={params.minBalanceToKeep}
 				onChange={(v) => set('minBalanceToKeep', v)}
 			/>
-			<NumField label="minAmountToSend" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<StrField label="to" value={params.to} onChange={(v) => set('to', v)} />
+			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
+			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
 		</Grid>
 	);
 }
 
 const Form_Evm_CheckNft = ({ params, set, networks }: FormCtx) => (
 	<Grid container spacing={2}>
-		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-		<StrField label="nftContract" value={params.nftContract} onChange={(v) => set('nftContract', v)} />
+		<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+		<StrField label="Адрес контаркта NFT" value={params.nftContract} onChange={(v) => set('nftContract', v)} />
 	</Grid>
 );
 
 const Form_Evm_Wrap = ({ params, set, networks }: FormCtx) => (
 	<Grid container spacing={2}>
-		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-		<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
+		<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+		<RangeField labelFrom="Количество от" labelTo="Количество до" value={params.amount} onChange={(v) => set('amount', v)} />
 	</Grid>
 );
 
 const Form_Evm_Unwrap = Form_Evm_Wrap;
 
-function Form_Evm_Approve({ params, set, networks }: FormCtx) {
+function Form_Evm_Approve({ params, set, networks, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-			<StrField label="tokenSymbol" value={params.tokenSymbol} onChange={(v) => set('tokenSymbol', v)} />
-			<StrField label="spender" value={params.spender} onChange={(v) => set('spender', v)} />
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
+			<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+			<FormControl size="small">
+				<InputLabel>Токен</InputLabel>
+				<Select
+					label="Токен"
+					value={params.tokenSymbol ?? ''}
+					onChange={(e) => set('tokenSymbol', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.chainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<StrField label="Spender" value={params.spender} onChange={(v) => set('spender', v)} />
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
 		</Grid>
 	);
 }
@@ -511,48 +557,88 @@ function Form_Evm_Approve({ params, set, networks }: FormCtx) {
 function Form_Evm_MakeTransaction({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-			<StrField label="contractAddress" value={params.contractAddress} onChange={(v) => set('contractAddress', v)} />
-			<StrField label="data" value={params.data} onChange={(v) => set('data', v)} />
-			<NumField label="value" value={params.value} onChange={(v) => set('value', v ?? 0)} />
+			<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+			<StrField label="Адрес контаркта" value={params.contractAddress} onChange={(v) => set('contractAddress', v)} />
+			<StrField label="Data" value={params.data} onChange={(v) => set('data', v)} />
+			<NumField label="Value" value={params.value} onChange={(v) => set('value', v ?? 0)} />
 		</Grid>
 	);
 }
 
 /* -------- Svm -------- */
 
-const Form_Svm_SendToken = ({ params, set, networks }: FormCtx) => (
+const Form_Svm_SendToken = ({ params, set, networks, tokens }: FormCtx) => (
 	<Grid container spacing={2}>
-		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-		<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-		<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
+		<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+		<FormControl size="small">
+			<InputLabel>Токен</InputLabel>
+			<Select
+				label="Токен"
+				value={params.token ?? ''}
+				onChange={(e) => set('token', (e.target.value as string) || undefined)}
+			>
+				{(tokens.find((g) => String(g.chainId) === String(params.chainId))?.tokens ?? []).map((tok) => (
+					<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+						{String(tok.symbol)}
+					</MenuItem>
+				))}
+			</Select>
+		</FormControl>
+		<RangeField labelFrom="Количество от" labelTo="Количество до" value={params.amount} onChange={(v) => set('amount', v)} />
 		<RangeField
-			labelFrom="minBalanceToKeep from"
-			labelTo="minBalanceToKeep to"
+			labelFrom="Оставлять на балансе от"
+			labelTo="Оставлять на балансе до"
 			value={params.minBalanceToKeep}
 			onChange={(v) => set('minBalanceToKeep', v)}
 		/>
-		<NumField label="minAmountToSend" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-		<StrField label="to" value={params.to} onChange={(v) => set('to', v)} />
+		<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
+		<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
 	</Grid>
 );
 
 /* -------- Odos -------- */
 
-function Form_Odos_Swap({ params, set, networks }: FormCtx) {
+function Form_Odos_Swap({ params, set, networks, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
-			<StrField label="token1" value={params.token1} onChange={(v) => set('token1', v)} />
-			<StrField label="token2" value={params.token2} onChange={(v) => set('token2', v)} />
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-			<NumField
-				label="slippageInPercent"
-				value={params.slippageInPercent}
-				onChange={(v) => set('slippageInPercent', v ?? 0)}
+			<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+			<FormControl size="small">
+				<InputLabel>Из токена</InputLabel>
+				<Select
+					label="Из токена"
+					value={params.token1 ?? ''}
+					onChange={(e) => set('token1', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.chainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<FormControl size="small">
+				<InputLabel>В токен</InputLabel>
+				<Select
+					label="В токен"
+					value={params.token2 ?? ''}
+					onChange={(e) => set('token2', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.chainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
 			/>
+			<NumField label="Слиппедж в %" value={params.slippageInPercent} onChange={(v) => set('slippageInPercent', v ?? 0)} />
 			<NumField
-				label="minAmountForSwap"
+				label="Минимальная сумма"
 				value={params.minAmountForSwap}
 				onChange={(v) => set('minAmountForSwap', v ?? 0)}
 			/>
@@ -562,27 +648,63 @@ function Form_Odos_Swap({ params, set, networks }: FormCtx) {
 
 /* -------- Exchanges (строковый toChainId) -------- */
 
-function Form_Exchanges_Withdraw({ params, set }: FormCtx) {
+function Form_Exchanges_Withdraw({ params, set, tokens, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<CsvField label="exchanges" value={params.exchanges} onChange={(v) => set('exchanges', v)} />
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-			<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-			<StrField label="to" value={params.to} onChange={(v) => set('to', v)} />
-			<StrField label="toChainId (string)" value={params.toChainId} onChange={(v) => set('toChainId', v)} />
+			<CsvField label="Биржи" value={params.exchanges} onChange={(v) => set('exchanges', v)} />
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<FormControl size="small">
+				<InputLabel>Токен</InputLabel>
+				<Select
+					label="Токен"
+					value={params.token ?? ''}
+					onChange={(e) => set('token', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
+			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
 		</Grid>
 	);
 }
 
 /* -------- централизованные Withdraw (ChainId) -------- */
 
-function Form_ExchangeWithdraw_ChainId({ params, set, networks }: FormCtx) {
+function Form_ExchangeWithdraw_ChainId({ params, set, networks, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-			<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-			<StrField label="to" value={params.to} onChange={(v) => set('to', v)} />
-			<ChainIdSelect label="toChainId" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<FormControl size="small">
+				<InputLabel>Токен</InputLabel>
+				<Select
+					label="Токен"
+					value={params.token ?? ''}
+					onChange={(e) => set('token', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
+			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
 		</Grid>
 	);
 }
@@ -592,29 +714,41 @@ function Form_ExchangeWithdraw_ChainId({ params, set, networks }: FormCtx) {
 function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
+			<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
 			<CsvField
-				label="pageUrls"
+				label="Ссылки на страницы"
 				value={params.pageUrls}
 				onChange={(v) => set('pageUrls', v)}
 				placeholder="https://..., https://..."
 			/>
-			<BoolField label="loginInRabby" checked={params.loginInRabby} onChange={(v) => set('loginInRabby', v)} />
-			<BoolField label="loginInPetra" checked={params.loginInPetra} onChange={(v) => set('loginInPetra', v)} />
+			<BoolField
+				label="Залогиниться в расширении Rabby"
+				checked={params.loginInRabby}
+				onChange={(v) => set('loginInRabby', v)}
+			/>
+			<BoolField
+				label="Залогиниться в расширении Petra"
+				checked={params.loginInPetra}
+				onChange={(v) => set('loginInPetra', v)}
+			/>
 		</Grid>
 	);
 }
 
 const Form_CommonUi_RestoreMetamask = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
-		<BoolField label="closeBrowser" checked={params.closeBrowser} onChange={(v) => set('closeBrowser', v)} />
+		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<BoolField
+			label="Закрыть браузер после выполнения"
+			checked={params.closeBrowser}
+			onChange={(v) => set('closeBrowser', v)}
+		/>
 	</Grid>
 );
 
 const Form_CommonUi_LoginInMetamask = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
+		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
 	</Grid>
 );
 
@@ -628,69 +762,45 @@ const Form_CommonUi_LoginInRabby = Form_CommonUi_LoginInMetamask;
 
 const Form_AdsPower_GetProfiles = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<NumField label="count" value={params.count} onChange={(v) => set('count', v ?? 0)} />
+		<NumField label="Количество" value={params.count} onChange={(v) => set('count', v ?? 0)} />
 	</Grid>
 );
 
 const Form_Vision_GetProfiles = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-		<StrField label="folderId" value={params.folderId} onChange={(v) => set('folderId', v)} />
+		<StrField label="API токен" value={params.token} onChange={(v) => set('token', v)} />
+		<StrField label="Id папки с профилями" value={params.folderId} onChange={(v) => set('folderId', v)} />
 	</Grid>
 );
 
 /* -------- Opensea -------- */
 
-const Form_Opensea_BuyByLink = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
-		<CsvField label="links" value={params.links} onChange={(v) => set('links', v)} />
-	</Grid>
-);
-
 const Form_Opensea_SweepByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
-		<CsvField label="links" value={params.links} onChange={(v) => set('links', v)} />
-		<NumField label="count" value={params.count} onChange={(v) => set('count', v ?? 0)} />
+		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<CsvField label="Ссылки на коллекции" value={params.links} onChange={(v) => set('links', v)} />
+		<NumField label="Сколько NFT купить" value={params.count} onChange={(v) => set('count', v ?? 0)} />
 	</Grid>
 );
 
 const Form_Opensea_SellCollectionByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
-		<StrField label="link" value={params.link} onChange={(v) => set('link', v)} />
+		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<StrField label="Ссылка на коллекцию" value={params.link} onChange={(v) => set('link', v)} />
 	</Grid>
 );
 
 const Form_Opensea_ClaimUi = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="browser" value={params.browser} onChange={(v) => set('browser', v)} />
+		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
 	</Grid>
 );
 
-/* -------- Berachain -------- */
-
-const Form_Berachain_FlyTradeSwap = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<StrField label="tokenSymbol1" value={params.tokenSymbol1} onChange={(v) => set('tokenSymbol1', v)} />
-		<StrField label="tokenSymbol2" value={params.tokenSymbol2} onChange={(v) => set('tokenSymbol2', v)} />
-		<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
-	</Grid>
-);
-
-/* -------- Plasma / ZksyncLite -------- */
-
-const Form_Plasma_Deposit = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
-		<StrField label="amount" value={params.amount} onChange={(v) => set('amount', v)} />
-	</Grid>
-);
+/* -------- / ZksyncLite -------- */
 
 const Form_ZksyncLite_SendToken = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="to" value={params.to} onChange={(v) => set('to', v)} />
+		<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
 	</Grid>
 );
 
@@ -744,14 +854,11 @@ const FORMS: Record<string, (ctx: FormCtx) => JSX.Element> = {
 	'Vision.GetProfiles': Form_Vision_GetProfiles,
 
 	// Opensea
-	'Opensea.OpenseaBuyByLink': Form_Opensea_BuyByLink,
 	'Opensea.SweepByLink': Form_Opensea_SweepByLink,
 	'Opensea.SellCollectionByLink': Form_Opensea_SellCollectionByLink,
 	'Opensea.ClaimUi': Form_Opensea_ClaimUi,
 
-	// Berachain / Plasma / ZksyncLite
-	'Berachain.FlyTradeSwap': Form_Berachain_FlyTradeSwap,
-	'Plasma.Deposit': Form_Plasma_Deposit,
+	// ZksyncLite
 	'ZksyncLite.SendToken': Form_ZksyncLite_SendToken,
 };
 
