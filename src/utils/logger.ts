@@ -64,13 +64,23 @@ export class Logger {
 				while (!success && attempts < TRIES) {
 					attempts++;
 					try {
-						await this.telegramBot.api.sendMessage(this.telegramParams.chatId, message.toString().slice(0, 4090));
+						const r = await fetch(`https://api.telegram.org/bot${this.telegramParams.apiKey}/sendMessage`, {
+							method: 'POST',
+							headers: { 'content-type': 'application/json' },
+							body: JSON.stringify({
+								chat_id: this.telegramParams.chatId,
+								text: message.toString().slice(0, 4090),
+							}),
+						});
+						if (!r.ok) throw new Error(`${await r.text()}`);
+
+						// await this.telegramBot.api.sendMessage(this.telegramParams.chatId, message.toString().slice(0, 4090));
 						success = true;
 					} catch (e) {
 						if (attempts < TRIES) {
 							await delay(3);
 						} else {
-							console.log(`Error during sending message to Telegram with ${TRIES} attempts: ${e}`);
+							console.log(`Error during sending message to Telegram with ${TRIES} attempts:\n${e}`);
 							break;
 						}
 					}

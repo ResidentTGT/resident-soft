@@ -79,6 +79,7 @@ export async function checkBalances(
 				tokenAlert: undefined,
 				tokensBalances: [],
 			},
+			rootDir: './',
 			readable: true,
 			fileExt: '.json',
 		});

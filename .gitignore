@@ -111,6 +111,7 @@ dist
 src/premium/
 secrets/
 states/
+balances/
 sea_build/*.exe
 sea_build/*.blob
 configs/dependency-cruiser/dependency-graph.dot

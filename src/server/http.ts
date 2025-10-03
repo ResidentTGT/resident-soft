@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { selectionGate } from './selection';
 import { ACTIONS } from '@src/actions';
 import { Network } from '@src/utils/network';
+import { StandardState } from '@src/utils/state/standardState.interface';
 
 export async function startHttpServer() {
 	const app = express();
@@ -85,6 +86,53 @@ export async function startHttpServer() {
 			res.json([...new Set([...decryptedfiles, ...encryptedfiles])]);
 		} catch (e: any) {
 			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.get('/api/process/states', async (_req, res) => {
+		try {
+			const PROCESS_DIR = path.resolve(process.cwd(), 'states');
+			const files = (await fs.readdirSync(PROCESS_DIR)).filter((f) => f.endsWith('.json'));
+
+			const ok: { name: string; updatedAt: string; data: StandardState }[] = [];
+			const failed: { name: string; error?: string }[] = [];
+
+			for (const f of files) {
+				const name = path.basename(f, '.json'); // сохраняем пробелы и т.п.
+				const filePath = path.join(PROCESS_DIR, f);
+				try {
+					const raw = await fs.readFileSync(filePath, 'utf8');
+					const json = JSON.parse(raw) as unknown;
+
+					if (typeof json !== 'object' || json === null) {
+						failed.push({ name, error: 'Bad JSON root' });
+						continue;
+					}
+					const isStringArray = (v: unknown): v is string[] =>
+						Array.isArray(v) && v.every((x) => typeof x === 'string');
+					const o = json as Record<string, unknown>;
+					if (!isStringArray(o.successes) || !isStringArray(o.fails)) {
+						failed.push({ name, error: 'Invalid schema' });
+						continue;
+					}
+
+					const uniq = (arr: string[]) => Array.from(new Set(arr)).sort();
+					const data: StandardState = {
+						successes: uniq(o.successes),
+						fails: uniq(o.fails),
+						info: typeof o.info === 'string' ? o.info : '',
+					};
+
+					const stat = await fs.statSync(filePath);
+					ok.push({ name, updatedAt: stat.mtime.toISOString(), data });
+				} catch (e: any) {
+					failed.push({ name, error: e?.message });
+				}
+			}
+
+			res.json({ states: ok, failed });
+		} catch (e: any) {
+			res.status(500).json({ error: 'Failed to list states', details: e?.message });
 		}
 	});
 
