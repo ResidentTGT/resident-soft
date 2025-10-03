@@ -32,7 +32,7 @@ export async function postConfigs(payload: Configs) {
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload),
 	});
-	if (r.status === 423) throw Object.assign(new Error('Configs are locked by selection'), { code: 423 });
+	if (r.status === 423) throw Object.assign(new Error('нельзя менять конфиг во время работы скрипта'), { code: 423 });
 	if (!r.ok) throw new Error(`Configs save failed: ${r.status}`);
 	return r.json();
 }

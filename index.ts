@@ -21,20 +21,20 @@ async function main() {
 
 	await welcomeMessage();
 
-	void waitForKeyPress(
-		`${GREEN_TEXT}Configs editor available at: http://localhost:3000/\n\n${GREEN_TEXT}⚠️  Press ENTER to continue with current config\n${RESET}`,
-	).then(() => selectionGate.choose('terminal', readConfigs()));
-
-	await selectionGate.waitForChoice();
-
-	const snapshot = selectionGate.getSnapshot() ?? readConfigs();
-	const { launchParams, functionParams } = snapshot;
-
-	const licenseResult = await getVerifyLicenseMessage(launchParams);
-	await sendTelemetry(licenseResult);
-
 	while (true) {
 		try {
+			void waitForKeyPress(
+				`${GREEN_TEXT}Configs editor available at: http://localhost:3000/\n\n${GREEN_TEXT}⚠️  Press ENTER to continue with current config\n${RESET}`,
+			).then(() => selectionGate.choose('terminal', readConfigs()));
+
+			await selectionGate.waitForChoice();
+
+			const snapshot = selectionGate.getSnapshot() ?? readConfigs();
+			const { launchParams, functionParams } = snapshot;
+
+			const licenseResult = await getVerifyLicenseMessage(launchParams);
+			await sendTelemetry(licenseResult);
+
 			const selectedOption = await promptUserForOption(launchParams);
 			if (!selectedOption) process.exit(0);
 			console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
@@ -49,6 +49,8 @@ async function main() {
 
 			const commandHandler = new CommandHandler(launchParams, functionParams, key);
 			await commandHandler.executeCommand(selectedOption);
+
+			selectionGate.reset();
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			console.error(`${RED_BOLD_TEXT}Fatal error. ${message}${RESET}`);

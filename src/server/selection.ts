@@ -27,6 +27,11 @@ class SelectionGate extends EventEmitter {
 	getSnapshot() {
 		return this.frozenSnapshot;
 	}
+
+	reset() {
+		this.chosenBy = null;
+		this.frozenSnapshot = null;
+	}
 }
 
 export const selectionGate = new SelectionGate();

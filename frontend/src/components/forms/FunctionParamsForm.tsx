@@ -651,7 +651,22 @@ function Form_Odos_Swap({ params, set, networks, tokens }: FormCtx) {
 function Form_Exchanges_Withdraw({ params, set, tokens, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<CsvField label="Биржи" value={params.exchanges} onChange={(v) => set('exchanges', v)} />
+			<FormControl size="small">
+				<InputLabel>Биржи</InputLabel>
+				<Select
+					multiple
+					label="Биржи"
+					value={Array.isArray(params.exchanges) ? params.exchanges : []}
+					onChange={(e) => set('exchanges', (e.target.value as string[]) ?? [])}
+					renderValue={(vals) => (vals as string[]).join(', ')}
+				>
+					<MenuItem value="Bitget">Bitget</MenuItem>
+					<MenuItem value="Bybit">Bybit</MenuItem>
+					<MenuItem value="Okx">Okx</MenuItem>
+					<MenuItem value="Gate">Gate</MenuItem>
+					<MenuItem value="Binance">Binance</MenuItem>
+				</Select>
+			</FormControl>
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
@@ -714,7 +729,17 @@ function Form_ExchangeWithdraw_ChainId({ params, set, networks, tokens }: FormCt
 function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+			<FormControl size="small">
+				<InputLabel>Антидетект браузер</InputLabel>
+				<Select
+					label="Антидетект браузер"
+					value={params.browser ?? ''}
+					onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+				>
+					<MenuItem value="Vision">Vision</MenuItem>
+					<MenuItem value="AdsPower">AdsPower</MenuItem>
+				</Select>
+			</FormControl>
 			<CsvField
 				label="Ссылки на страницы"
 				value={params.pageUrls}
@@ -737,7 +762,17 @@ function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
 
 const Form_CommonUi_RestoreMetamask = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
 		<BoolField
 			label="Закрыть браузер после выполнения"
 			checked={params.closeBrowser}
@@ -748,7 +783,17 @@ const Form_CommonUi_RestoreMetamask = ({ params, set }: FormCtx) => (
 
 const Form_CommonUi_LoginInMetamask = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
 	</Grid>
 );
 
@@ -777,7 +822,17 @@ const Form_Vision_GetProfiles = ({ params, set }: FormCtx) => (
 
 const Form_Opensea_SweepByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
 		<CsvField label="Ссылки на коллекции" value={params.links} onChange={(v) => set('links', v)} />
 		<NumField label="Сколько NFT купить" value={params.count} onChange={(v) => set('count', v ?? 0)} />
 	</Grid>
@@ -785,14 +840,34 @@ const Form_Opensea_SweepByLink = ({ params, set }: FormCtx) => (
 
 const Form_Opensea_SellCollectionByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
 		<StrField label="Ссылка на коллекцию" value={params.link} onChange={(v) => set('link', v)} />
 	</Grid>
 );
 
 const Form_Opensea_ClaimUi = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<StrField label="Антидетект браузер" value={params.browser} onChange={(v) => set('browser', v)} />
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
 	</Grid>
 );
 
