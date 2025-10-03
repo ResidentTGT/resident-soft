@@ -76,8 +76,12 @@ export async function startHttpServer() {
 			const snapshot = readConfigs();
 			const decryptedPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
 			const encryptedPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
-			const decryptedfiles = fs.readdirSync(decryptedPath).map((a) => a.replaceAll('.xlsx', ''));
-			const encryptedfiles = fs.readdirSync(encryptedPath).map((a) => a.replaceAll('.xlsx', ''));
+			const decryptedfiles = fs.existsSync(decryptedPath)
+				? fs.readdirSync(decryptedPath).map((a) => a.replaceAll('.xlsx', ''))
+				: [];
+			const encryptedfiles = fs.existsSync(encryptedPath)
+				? fs.readdirSync(encryptedPath).map((a) => a.replaceAll('.xlsx', ''))
+				: [];
 			res.json([...new Set([...decryptedfiles, ...encryptedfiles])]);
 		} catch (e: any) {
 			res.status(500).json({ error: e.message });
