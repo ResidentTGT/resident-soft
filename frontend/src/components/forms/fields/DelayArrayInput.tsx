@@ -1,4 +1,3 @@
-import React from 'react';
 import { Grid, TextField } from '@mui/material';
 
 export default function DelayArrayInput({ value, onChange }: { value?: number[]; onChange: (next?: number[]) => void }) {

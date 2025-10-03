@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Paper, Alert } from '@mui/material';
 
 export default function ProcessPage() {

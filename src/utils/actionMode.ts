@@ -8,6 +8,7 @@ import { FREE_HANDLERS } from '@src/free/handlersList';
 import { BaseHandler } from './handler';
 import { verifyLicense } from './licenses';
 import { Network } from './network';
+import { shuffleArray } from './shuffleArray';
 
 export interface ActionModeParams {
 	ACCOUNTS_TO_DO: Account[];
@@ -75,7 +76,7 @@ export async function actionMode(
 	for (const id of chainIdFields) Network.checkChainId(id);
 
 	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {
-		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? ACCOUNTS.slice().shuffle() : ACCOUNTS.slice();
+		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
 
 		const params: ActionModeParams = {
 			ACCOUNTS_TO_DO,

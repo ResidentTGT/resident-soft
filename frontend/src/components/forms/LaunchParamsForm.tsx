@@ -1,4 +1,3 @@
-import React from 'react';
 import { Paper, Typography, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 
 import ActionSelector from './fields/ActionSelector';

@@ -11,6 +11,7 @@ import { RelayLink } from '@freeModules/relayLink';
 import { checkBalances } from '@freeScenarios/checkBalances';
 import { ChainId, Network } from '@src/utils/network';
 import { MissingFieldError } from '@src/utils/errors';
+import { shuffleArray } from '@src/utils/shuffleArray';
 
 export class CommonHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
@@ -129,7 +130,7 @@ export class CommonHandler extends BaseHandler {
 					SECRET_STORAGE.mainEvmWallet.private,
 					network,
 					FUNCTION_PARAMS.toChainIds,
-					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? FUNCTION_PARAMS.addresses.shuffle() : FUNCTION_PARAMS.addresses,
+					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.addresses) : FUNCTION_PARAMS.addresses,
 					FUNCTION_PARAMS.amount,
 					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
 				);
@@ -142,7 +143,7 @@ export class CommonHandler extends BaseHandler {
 					SECRET_STORAGE.mainEvmWallet.private,
 					network,
 					FUNCTION_PARAMS.toChainId,
-					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? FUNCTION_PARAMS.addresses.shuffle() : FUNCTION_PARAMS.addresses,
+					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.addresses) : FUNCTION_PARAMS.addresses,
 					FUNCTION_PARAMS.amount,
 					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
 				);

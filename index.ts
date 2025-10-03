@@ -1,5 +1,3 @@
-import './src/extensions/array';
-
 import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';

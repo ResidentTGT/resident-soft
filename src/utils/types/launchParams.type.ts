@@ -1,5 +1,5 @@
-import { JobAccount } from '@utils/job';
 import { ActionName, ActionsGroupName } from '../../actions';
+import { type JobAccount } from '../job';
 
 export interface LaunchParams {
 	ACTION_PARAMS: {

@@ -3,6 +3,7 @@ import { ChainId } from './chainId';
 import { Logger, MessageType } from '../logger';
 import { parse } from 'jsonc-parser';
 import fs from 'fs';
+import { shuffleArray } from '../shuffleArray';
 
 export interface Token {
 	symbol: string;
@@ -65,7 +66,7 @@ export class Network {
 	public static async getNetworkByChainId(id: ChainId) {
 		const networkConfig = this.networksConfig.find((n) => n.chainId === id);
 		if (!networkConfig) throw new Error(`There is no network configuration for chainId ${id}`);
-		const rpcs = networkConfig.rpc.shuffle();
+		const rpcs = shuffleArray(networkConfig.rpc);
 		const logger = await Logger.getInstance();
 
 		let selectedRpc = '';

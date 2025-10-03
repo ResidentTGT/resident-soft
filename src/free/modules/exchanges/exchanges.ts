@@ -6,6 +6,7 @@ import { Gate } from './gate';
 import { Okx } from './okx';
 import { SecretStorage } from '@src/utils/secretStorage.type';
 import { MissingFieldError } from '@src/utils/errors';
+import { shuffleArray } from '@src/utils/shuffleArray';
 
 const EXCHANGES_LIST = ['Bybit', 'Okx', 'Bitget', 'Binance', 'Gate'];
 
@@ -22,7 +23,7 @@ export async function withdraw(
 		if (!EXCHANGES_LIST.includes(exchange))
 			throw new Error(`Exchange "${exchange}" is not supported! Supported: ${EXCHANGES_LIST.join(', ')}`);
 
-	const exchange = exchanges.shuffle()[0];
+	const exchange = shuffleArray(exchanges)[0];
 	switch (exchange) {
 		case 'Bybit':
 			if (!secretStorage.mainBybitAccount) throw new MissingFieldError('mainBybitAccount', false);

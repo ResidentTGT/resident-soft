@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppBar, Tabs, Tab, Toolbar as MuiToolbar, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { titleSx, toolbarSx } from './AppHeader.styles';

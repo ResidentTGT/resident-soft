@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Grid } from '@mui/material';
 import { FormControl, InputLabel, Select, MenuItem, TextField, FormHelperText } from '@mui/material';
 import type { LaunchParams } from '../../../../../src/utils/types/launchParams.type';
@@ -24,6 +23,7 @@ export default function AccountsSelector({
 	value?: LaunchParams['JOB_ACCOUNTS'];
 	onChange: (next?: LaunchParams['JOB_ACCOUNTS']) => void;
 }) {
+	if (!value || !value[0]) throw new Error('no JobAccount');
 	const job: JobAccount = value && value[0];
 
 	const push = (next: JobAccount) => {

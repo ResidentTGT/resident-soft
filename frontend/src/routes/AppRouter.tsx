@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppHeader from '../components/layout/AppHeader';
 import ConfigPage from '../pages/ConfigPage';
