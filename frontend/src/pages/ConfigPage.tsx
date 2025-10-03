@@ -60,7 +60,6 @@ export default function ConfigPage() {
 			[launchParams.NUMBER_OF_THREADS, 1],
 			[launchParams.NUMBER_OF_EXECUTIONS, 1],
 			[launchParams.ATTEMPTS_UNTIL_SUCCESS, 1],
-			[launchParams.WAIT_GAS_PRICE, 0],
 			[launchParams.DELAY_AFTER_ERROR_IN_S, 0],
 		];
 		for (const [v, min] of nums) {
@@ -120,7 +119,6 @@ export default function ConfigPage() {
 							launchParams={launchParams}
 							onChange={(patch) => setLaunchParams((p) => ({ ...p, ...patch }) as any)}
 							actions={actions}
-							networks={networks}
 							accountsFiles={accsFiles}
 						/>
 					</Grid>

@@ -1,6 +1,6 @@
 import { ActionModeParams } from '@utils/actionMode';
 import { Account } from '@utils/account';
-import { ChainId, Network } from '@utils/network';
+import { ChainId } from '@utils/network';
 import { SecretStorage } from '@utils/secretStorage.type';
 import { Action, ActionName, ActionParams, ACTIONS, ActionsGroupName } from '@src/actions';
 import { delay } from './delay';
@@ -9,13 +9,11 @@ import Random from './random';
 import { rotateProxy } from './rotateProxy';
 import { setProxy } from './setProxy';
 import { getStandardState } from './state';
-import { waitGasPrice } from './waitGasPrice';
 import { getExplorerUrl } from './getExplorerUrl';
 
 export interface IsolatedHandlerParams {
 	account: Account;
 	secretStorage: SecretStorage;
-	network?: Network;
 	aesKey?: string;
 	actionParams: ActionParams;
 	functionParams: any;
@@ -91,19 +89,12 @@ export abstract class BaseHandler implements Handler {
 
 					if (LAUNCH_PARAMS.PROXY && account.proxy) {
 						if (LAUNCH_PARAMS.ROTATE_PROXY) await rotateProxy(account.proxy?.rotateUrl as any);
-						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(LAUNCH_PARAMS.CHAIN_ID, account.proxy);
-					}
-
-					let NETWORK;
-					if (action.needNetwork) {
-						NETWORK = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
-						if (LAUNCH_PARAMS.WAIT_GAS_PRICE) await waitGasPrice(NETWORK.chainId, LAUNCH_PARAMS.WAIT_GAS_PRICE);
+						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(account.proxy);
 					}
 
 					const result = await this.executeIsolated({
 						account: account,
 						secretStorage: SECRET_STORAGE,
-						network: NETWORK,
 						aesKey: AES_KEY,
 						actionParams: LAUNCH_PARAMS.ACTION_PARAMS,
 						functionParams: FUNCTION_PARAMS,
@@ -233,14 +224,12 @@ export abstract class BaseHandler implements Handler {
 
 	getChainIdForLog(action: Action, actionModeParams: ActionModeParams): ChainId {
 		let chainId;
-		if (action.needNetwork) chainId = actionModeParams.LAUNCH_PARAMS.CHAIN_ID;
-		else {
-			if (actionModeParams.FUNCTION_PARAMS) {
-				const l = Object.keys(actionModeParams.FUNCTION_PARAMS)
-					.filter((k) => k.toUpperCase().includes('CHAINID'))
-					.map((k) => actionModeParams.FUNCTION_PARAMS[k]);
-				if (l[0]) chainId = l[0];
-			}
+
+		if (actionModeParams.FUNCTION_PARAMS) {
+			const l = Object.keys(actionModeParams.FUNCTION_PARAMS)
+				.filter((k) => k.toUpperCase().includes('CHAINID'))
+				.map((k) => actionModeParams.FUNCTION_PARAMS[k]);
+			if (l[0]) chainId = l[0];
 		}
 
 		return chainId;

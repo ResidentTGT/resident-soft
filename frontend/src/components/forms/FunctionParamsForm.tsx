@@ -373,6 +373,12 @@ function Form_Common_GenerateWallets({ params, set }: FormCtx) {
 function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect
+				label="fromChainId"
+				value={params.fromChainId}
+				onChange={(v) => set('fromChainId', v)}
+				networks={networks}
+			/>
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<RangeField
 				labelFrom="minBalanceToKeep from"
@@ -394,6 +400,12 @@ function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect
+				label="fromChainId"
+				value={params.fromChainId}
+				onChange={(v) => set('fromChainId', v)}
+				networks={networks}
+			/>
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<ChainIdMulti
 				label="toChainIds"
@@ -409,6 +421,12 @@ function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect
+				label="fromChainId"
+				value={params.fromChainId}
+				onChange={(v) => set('fromChainId', v)}
+				networks={networks}
+			/>
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<RangeField
 				labelFrom="minBalanceToKeep from"
@@ -425,6 +443,12 @@ function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelManyRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect
+				label="fromChainId"
+				value={params.fromChainId}
+				onChange={(v) => set('fromChainId', v)}
+				networks={networks}
+			/>
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<ChainIdSelect label="toChainId" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
 			<CsvField label="addresses" value={params.addresses} onChange={(v) => set('addresses', v)} />
@@ -434,9 +458,15 @@ function Form_Common_RefuelManyRelayLink({ params, set, networks }: FormCtx) {
 
 /* -------- Evm -------- */
 
-function Form_Evm_SendToken({ params, set }: FormCtx) {
+function Form_Evm_SendToken({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect
+				label="fromChainId"
+				value={params.fromChainId}
+				onChange={(v) => set('fromChainId', v)}
+				networks={networks}
+			/>
 			<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 			<RangeField
@@ -451,23 +481,26 @@ function Form_Evm_SendToken({ params, set }: FormCtx) {
 	);
 }
 
-const Form_Evm_CheckNft = ({ params, set }: FormCtx) => (
+const Form_Evm_CheckNft = ({ params, set, networks }: FormCtx) => (
 	<Grid container spacing={2}>
+		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 		<StrField label="nftContract" value={params.nftContract} onChange={(v) => set('nftContract', v)} />
 	</Grid>
 );
 
-const Form_Evm_Wrap = ({ params, set }: FormCtx) => (
+const Form_Evm_Wrap = ({ params, set, networks }: FormCtx) => (
 	<Grid container spacing={2}>
+		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 		<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 	</Grid>
 );
 
 const Form_Evm_Unwrap = Form_Evm_Wrap;
 
-function Form_Evm_Approve({ params, set }: FormCtx) {
+function Form_Evm_Approve({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 			<StrField label="tokenSymbol" value={params.tokenSymbol} onChange={(v) => set('tokenSymbol', v)} />
 			<StrField label="spender" value={params.spender} onChange={(v) => set('spender', v)} />
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
@@ -475,9 +508,10 @@ function Form_Evm_Approve({ params, set }: FormCtx) {
 	);
 }
 
-function Form_Evm_MakeTransaction({ params, set }: FormCtx) {
+function Form_Evm_MakeTransaction({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 			<StrField label="contractAddress" value={params.contractAddress} onChange={(v) => set('contractAddress', v)} />
 			<StrField label="data" value={params.data} onChange={(v) => set('data', v)} />
 			<NumField label="value" value={params.value} onChange={(v) => set('value', v ?? 0)} />
@@ -487,8 +521,9 @@ function Form_Evm_MakeTransaction({ params, set }: FormCtx) {
 
 /* -------- Svm -------- */
 
-const Form_Svm_SendToken = ({ params, set }: FormCtx) => (
+const Form_Svm_SendToken = ({ params, set, networks }: FormCtx) => (
 	<Grid container spacing={2}>
+		<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 		<StrField label="token" value={params.token} onChange={(v) => set('token', v)} />
 		<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />
 		<RangeField
@@ -504,9 +539,10 @@ const Form_Svm_SendToken = ({ params, set }: FormCtx) => (
 
 /* -------- Odos -------- */
 
-function Form_Odos_Swap({ params, set }: FormCtx) {
+function Form_Odos_Swap({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
+			<ChainIdSelect label="chainId" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
 			<StrField label="token1" value={params.token1} onChange={(v) => set('token1', v)} />
 			<StrField label="token2" value={params.token2} onChange={(v) => set('token2', v)} />
 			<RangeField labelFrom="amount from" labelTo="amount to" value={params.amount} onChange={(v) => set('amount', v)} />

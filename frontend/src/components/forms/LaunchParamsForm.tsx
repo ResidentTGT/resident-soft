@@ -1,38 +1,21 @@
 import React from 'react';
-import {
-	Paper,
-	Typography,
-	Grid,
-	Divider,
-	TextField,
-	Box,
-	FormGroup,
-	FormControlLabel,
-	Checkbox,
-	FormControl,
-	InputLabel,
-	Select,
-	MenuItem,
-} from '@mui/material';
+import { Paper, Typography, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 
 import ActionSelector from './fields/ActionSelector';
 import DelayArrayInput from './fields/DelayArrayInput';
 import type { ActionsGroup } from '../../../../src/actions';
 import type { LaunchParams } from '../../../../src/utils/types/launchParams.type';
-import { type NetworkConfig } from '../../../../src/utils/network';
 import AccountsSelector from './fields/AccountsSelector';
 
 export default function LaunchParamsForm({
 	launchParams,
 	onChange,
 	actions,
-	networks,
 	accountsFiles,
 }: {
 	launchParams: LaunchParams;
 	onChange: (patch: Partial<LaunchParams>) => void;
 	actions: ActionsGroup[];
-	networks: NetworkConfig[];
 	accountsFiles: string[];
 }) {
 	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
@@ -96,34 +79,6 @@ export default function LaunchParamsForm({
 				</Grid>
 			</Grid>
 
-			<Grid container spacing={2} sx={{ mb: 2 }}>
-				<Grid sx={{ xs: 12, sm: 6 }}>
-					<FormControl fullWidth size="small">
-						<InputLabel>Выбор сети (CHAIN_ID)</InputLabel>
-						<Select
-							label="Выбор сети (CHAIN_ID)"
-							value={launchParams.CHAIN_ID}
-							onChange={(e) => setField('CHAIN_ID', e.target.value)}
-						>
-							{networks.map((g) => (
-								<MenuItem key={g.name} value={g.chainId}>
-									{g.name}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Grid>
-				<Grid sx={{ xs: 12, sm: 6 }}>
-					<TextField
-						label="Ждать цену газа (Gwei)"
-						type="number"
-						size="small"
-						fullWidth
-						value={launchParams.WAIT_GAS_PRICE ?? ''}
-						onChange={(e) => setField('WAIT_GAS_PRICE', e.target.value === '' ? undefined : +e.target.value)}
-					/>
-				</Grid>
-			</Grid>
 			<Grid container spacing={2}>
 				<FormControlLabel
 					sx={{ width: '100%' }}

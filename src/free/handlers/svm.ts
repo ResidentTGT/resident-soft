@@ -8,12 +8,14 @@ import { ActionModeParams } from '@src/utils/actionMode';
 import { resolveAdresses } from '@src/utils/resolveAddresses';
 import { MissingFieldError } from '@src/utils/errors';
 import { Logger, MessageType } from '@src/utils/logger';
+import { Network } from '@src/utils/network';
 
 export class SvmHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
-		const { account, network, actionParams, functionParams } = params;
+		const { account, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.SendToken: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.solana?.private) throw new MissingFieldError('wallets.solana.private');
 

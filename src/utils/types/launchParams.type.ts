@@ -1,4 +1,3 @@
-import { ChainId } from '@utils/network';
 import { JobAccount } from '@utils/job';
 import { ActionName, ActionsGroupName } from '../../actions';
 
@@ -15,10 +14,8 @@ export interface LaunchParams {
 	TAKE_STATE: boolean;
 	STATE_NAME: string;
 	ATTEMPTS_UNTIL_SUCCESS: number;
-	WAIT_GAS_PRICE: number;
 	DELAY_BETWEEN_ACCS_IN_S: number[];
 	DELAY_AFTER_ERROR_IN_S: number;
-	CHAIN_ID: ChainId;
 	JOB_ACCOUNTS: JobAccount[];
 	USE_ENCRYPTION: boolean;
 	ENCRYPTION: {

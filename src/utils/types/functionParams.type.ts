@@ -19,12 +19,14 @@ export interface FunctionParams {
 			amount: number;
 		};
 		RefuelGasZip: {
+			fromChainId: ChainId;
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
 			minAmountToSend: number;
 			toChainIds: ChainId[];
 		};
 		RefuelManyGasZip: {
+			fromChainId: ChainId;
 			amount: [number, number];
 			toChainIds: ChainId[];
 			addresses: string[];
@@ -33,16 +35,19 @@ export interface FunctionParams {
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
 			minAmountToSend: number;
+			fromChainId: ChainId;
 			toChainId: ChainId;
 		};
 		RefuelManyRelayLink: {
 			amount: [number, number];
+			fromChainId: ChainId;
 			toChainId: ChainId;
 			addresses: string[];
 		};
 	};
 	Evm: {
 		SendToken: {
+			fromChainId: ChainId;
 			token: string;
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
@@ -50,20 +55,25 @@ export interface FunctionParams {
 			to: string;
 		};
 		CheckNft: {
+			chainId: ChainId;
 			nftContract: string;
 		};
 		Wrap: {
+			chainId: ChainId;
 			amount: [number, number];
 		};
 		Unwrap: {
+			chainId: ChainId;
 			amount: [number, number];
 		};
 		Approve: {
+			chainId: ChainId;
 			tokenSymbol: string;
 			spender: string;
 			amount: [number, number];
 		};
 		MakeTransaction: {
+			chainId: ChainId;
 			contractAddress: string;
 			data: string;
 			value: number;
@@ -71,6 +81,7 @@ export interface FunctionParams {
 	};
 	Svm: {
 		SendToken: {
+			chainId: ChainId;
 			token: string;
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
@@ -80,6 +91,7 @@ export interface FunctionParams {
 	};
 	Odos: {
 		Swap: {
+			chainId: ChainId;
 			token1: string;
 			token2: string;
 			amount: [number, number];

@@ -3,72 +3,80 @@
 		"CheckBalances": {
 			"networks": [
 				{
-					"chainId": "8453",
+					"chainId": "1",
 					"tokenNames": [
 						"ETH"
 					],
 					"tokenAlert": {
 						"symbol": "",
-						"less": true,
-						"amountAlert": 100
+						"less": false,
+						"amountAlert": 0
 					}
 				}
 			]
 		},
 		"GenerateWallets": {
-			"amount": 5
+			"amount": 1
 		},
 		"RefuelGasZip": {
-			"amount": [
-				0,
-				0
-			],
-			"minBalanceToKeep": [
-				0,
-				0
-			],
-			"minAmountToSend": 0.000001,
-			"toChainIds": [
-				"8453"
-			]
-		},
-		"RefuelManyGasZip": {
-			"amount": [
-				0.1,
-				0.2
-			],
-			"toChainIds": [
-				"10"
-			],
-			"addresses": [
-				"0x..."
-			]
-		},
-		"RefuelRelayLink": {
+			"fromChainId": "324",
 			"amount": [
 				1,
 				2
 			],
 			"minBalanceToKeep": [
+				3,
+				4
+			],
+			"minAmountToSend": 0.000021,
+			"toChainIds": [
+				"8453"
+			]
+		},
+		"RefuelManyGasZip": {
+			"fromChainId": "43114",
+			"amount": [
+				1,
+				2
+			],
+			"toChainIds": [
+				"10",
+				"56"
+			],
+			"addresses": [
+				"0x2",
+				"0x1"
+			]
+		},
+		"RefuelRelayLink": {
+			"fromChainId": "8453",
+			"amount": [
+				0.12121,
+				0
+			],
+			"minBalanceToKeep": [
 				0,
 				0
 			],
 			"minAmountToSend": 0.000001,
-			"toChainId": "8453"
+			"toChainId": "100"
 		},
 		"RefuelManyRelayLink": {
+			"fromChainId": "7777777",
 			"amount": [
-				0.1,
-				0.2
+				2,
+				3
 			],
 			"toChainId": "8453",
 			"addresses": [
-				"0x..."
+				"0x",
+				"0x"
 			]
 		}
 	},
 	"Evm": {
 		"SendToken": {
+			"fromChainId": "1",
 			"token": "ETH",
 			"amount": [
 				0,
@@ -82,21 +90,25 @@
 			"to": "evm"
 		},
 		"CheckNft": {
+			"chainId": "1",
 			"nftContract": "0x8d0802559775C70fb505f22988a4FD4A4f6D3B62"
 		},
 		"Wrap": {
+			"chainId": "1",
 			"amount": [
 				1,
 				0
 			]
 		},
 		"Unwrap": {
+			"chainId": "1",
 			"amount": [
 				1,
 				0
 			]
 		},
 		"Approve": {
+			"chainId": "1",
 			"tokenSymbol": "USDT",
 			"spender": "0x...",
 			"amount": [
@@ -105,6 +117,7 @@
 			]
 		},
 		"MakeTransaction": {
+			"chainId": "1",
 			"contractAddress": "0x005E2c2a327cEBE03409221cb37Abf4911AFF791",
 			"data": "0x1249c58b",
 			"value": 0
@@ -112,6 +125,7 @@
 	},
 	"Svm": {
 		"SendToken": {
+			"chainId": "1",
 			"token": "SOL",
 			"amount": [
 				0,
@@ -127,6 +141,7 @@
 	},
 	"Odos": {
 		"Swap": {
+			"chainId": "1",
 			"token1": "ETH",
 			"token2": "USDC",
 			"amount": [

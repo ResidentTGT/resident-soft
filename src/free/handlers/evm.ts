@@ -3,7 +3,7 @@ import { ActionModeParams } from '@src/utils/actionMode';
 import { Evm } from '@src/free/modules/evm';
 import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
 import { ethers } from 'ethers';
-import { ChainId } from '@src/utils/network';
+import { ChainId, Network } from '@src/utils/network';
 
 import Random from '@src/utils/random';
 import { Evmscan } from '@freeModules/evmscan';
@@ -14,9 +14,10 @@ import { Logger, MessageType } from '@src/utils/logger';
 
 export class EvmHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
-		const { account, secretStorage, network, actionParams, functionParams } = params;
+		const { account, secretStorage, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.SendToken: {
+				const network = await Network.getNetworkByChainId(functionParams.fromChainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const toAddr = resolveAdresses(account, functionParams.to);
@@ -75,6 +76,7 @@ export class EvmHandler extends BaseHandler {
 			}
 
 			case ActionName.Wrap: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
@@ -83,6 +85,7 @@ export class EvmHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.Unwrap: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const amount =
@@ -93,6 +96,7 @@ export class EvmHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.Approve: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				if (!functionParams.amount || !functionParams.amount[1]) throw new Error('amount is required');
@@ -109,7 +113,8 @@ export class EvmHandler extends BaseHandler {
 				);
 				break;
 			}
-			case ActionName.MakeTransaction:
+			case ActionName.MakeTransaction: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				await Evm.generateAndMakeTransaction(
@@ -120,6 +125,7 @@ export class EvmHandler extends BaseHandler {
 					functionParams.data,
 				);
 				break;
+			}
 			default:
 				this.unsupportedAction(actionParams.action);
 		}
@@ -129,7 +135,7 @@ export class EvmHandler extends BaseHandler {
 	async executeJoint(params: ActionModeParams): Promise<void> {
 		switch (params.LAUNCH_PARAMS.ACTION_PARAMS.action) {
 			case ActionName.CheckNft:
-				await checkNft(params.ACCOUNTS_TO_DO, params.LAUNCH_PARAMS.CHAIN_ID, params.FUNCTION_PARAMS.nftContract);
+				await checkNft(params.ACCOUNTS_TO_DO, params.FUNCTION_PARAMS.chainId, params.FUNCTION_PARAMS.nftContract);
 				break;
 			default:
 				this.unsupportedAction(params.LAUNCH_PARAMS.ACTION_PARAMS.action);

@@ -8,6 +8,7 @@
 		"frontend"
 	],
 	"scripts": {
+		"tsc": "tsc",
 		"start:frontend": "npm run dev -w frontend",
 		"build:frontend": "npm run build -w frontend",
 		"start:backend": "npm run bundle:backend && node ./dist/index.js",

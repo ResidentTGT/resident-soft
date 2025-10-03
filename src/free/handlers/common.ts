@@ -9,14 +9,15 @@ import { ethers } from 'ethers';
 import { GasZip } from '@freeModules/gaszip';
 import { RelayLink } from '@freeModules/relayLink';
 import { checkBalances } from '@freeScenarios/checkBalances';
-import { Network } from '@src/utils/network';
+import { ChainId, Network } from '@src/utils/network';
 import { MissingFieldError } from '@src/utils/errors';
 
 export class CommonHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
-		const { account, network, actionParams, functionParams } = params;
+		const { account, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.RefuelGasZip: {
+				const network = await Network.getNetworkByChainId(functionParams.fromChainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
@@ -54,7 +55,7 @@ export class CommonHandler extends BaseHandler {
 				break;
 			}
 			case ActionName.RefuelRelayLink: {
-				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
+				const network = await Network.getNetworkByChainId(functionParams.fromChainId);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const wal = new ethers.Wallet(account.wallets.evm.private);
 				const bal = +ethers.formatEther(await Evm.getBalance(network, wal.address, network.nativeCoin));
@@ -112,7 +113,6 @@ export class CommonHandler extends BaseHandler {
 	async executeJoint(params: ActionModeParams): Promise<void> {
 		const { ACCOUNTS_TO_DO, LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE } = params;
 
-		const network = await Network.getNetworkByChainId(LAUNCH_PARAMS.CHAIN_ID);
 		switch (LAUNCH_PARAMS.ACTION_PARAMS.action) {
 			case ActionName.ShowWallets:
 				for (const acc of ACCOUNTS_TO_DO) {
@@ -120,9 +120,10 @@ export class CommonHandler extends BaseHandler {
 				}
 				break;
 			case ActionName.GenerateWallets:
-				await generateWallets(FUNCTION_PARAMS.amount, LAUNCH_PARAMS.CHAIN_ID);
+				await generateWallets(FUNCTION_PARAMS.amount, ChainId.Ethereum);
 				break;
-			case ActionName.RefuelManyGasZip:
+			case ActionName.RefuelManyGasZip: {
+				const network = await Network.getNetworkByChainId(FUNCTION_PARAMS.fromChainId);
 				if (!SECRET_STORAGE.mainEvmWallet?.private) throw new Error('SECRET_STORAGE.mainEvmWallet.private is required!');
 				await GasZip.refuelManyWalletsFromOneWallet(
 					SECRET_STORAGE.mainEvmWallet.private,
@@ -133,7 +134,9 @@ export class CommonHandler extends BaseHandler {
 					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
 				);
 				break;
-			case ActionName.RefuelManyRelayLink:
+			}
+			case ActionName.RefuelManyRelayLink: {
+				const network = await Network.getNetworkByChainId(FUNCTION_PARAMS.fromChainId);
 				if (!SECRET_STORAGE.mainEvmWallet?.private) throw new Error('SECRET_STORAGE.mainEvmWallet.private is required!');
 				await RelayLink.refuelManyWalletsFromOneWallet(
 					SECRET_STORAGE.mainEvmWallet.private,
@@ -144,6 +147,7 @@ export class CommonHandler extends BaseHandler {
 					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
 				);
 				break;
+			}
 			case ActionName.CheckBalances:
 				await checkBalances(ACCOUNTS_TO_DO, FUNCTION_PARAMS, SECRET_STORAGE.cmcApiKey);
 				break;

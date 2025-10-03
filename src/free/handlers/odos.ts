@@ -5,12 +5,14 @@ import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
 import Random from '@src/utils/random';
 import { Odos } from '@freeModules/exchanges';
 import { MissingFieldError } from '@src/utils/errors';
+import { Network } from '@src/utils/network';
 
 export class OdosHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
-		const { account, network, actionParams, functionParams } = params;
+		const { account, actionParams, functionParams } = params;
 		switch (actionParams.action) {
 			case ActionName.Swap: {
+				const network = await Network.getNetworkByChainId(functionParams.chainId);
 				if (!network) throw new Error(`Network is required for ${actionParams.action}!`);
 				if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
 				const amount =

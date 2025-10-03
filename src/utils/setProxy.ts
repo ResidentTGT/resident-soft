@@ -1,13 +1,12 @@
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { ChainId, Network } from '@utils/network';
 import { Proxy } from '@utils/account';
 import { Logger } from './logger';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import { FetchRequest } from 'ethers';
 import { MissingFieldError } from './errors';
 
-export async function setProxy(chainId: ChainId, proxy?: Proxy) {
+export async function setProxy(proxy?: Proxy) {
 	if (!proxy?.type) throw new MissingFieldError('proxy.type');
 
 	if (!['http', 'socks5'].includes(proxy.type)) throw new Error(`Invalid proxy type: ${proxy.type}. Allowed sock5, http.`);
@@ -22,23 +21,22 @@ export async function setProxy(chainId: ChainId, proxy?: Proxy) {
 	axios.defaults.httpAgent = proxyAgent;
 	axios.defaults.httpsAgent = proxyAgent;
 
-	if (Network.isEvm(chainId)) {
-		FetchRequest.registerGetUrl(
-			FetchRequest.createGetUrlFunc({
-				agent: proxyAgent,
-			}),
-		);
-	}
+	FetchRequest.registerGetUrl(
+		FetchRequest.createGetUrlFunc({
+			agent: proxyAgent,
+		}),
+	);
+
 	await Logger.getInstance().log(`Proxy: ${proxy.type === 'socks5' ? socks5Url : httpUrl}`);
 }
 
-export async function resetProxy(network: Network) {
+export async function resetProxy() {
 	axios.defaults.httpAgent = undefined;
 	axios.defaults.httpsAgent = undefined;
-	if (Network.isEvm(network.chainId))
-		FetchRequest.registerGetUrl(
-			FetchRequest.createGetUrlFunc({
-				agent: undefined,
-			}),
-		);
+
+	FetchRequest.registerGetUrl(
+		FetchRequest.createGetUrlFunc({
+			agent: undefined,
+		}),
+	);
 }

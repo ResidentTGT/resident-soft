@@ -118,7 +118,6 @@ export enum ActionName {
 export interface Action {
 	action: ActionName;
 	isolated: boolean;
-	needNetwork: boolean;
 	name: string;
 	allowed: boolean;
 }
@@ -138,33 +137,33 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Общие',
 		allowed: true,
 		actions: [
-			{ action: ActionName.CheckBalances, isolated: false, needNetwork: true, allowed: true, name: 'Проверить балансы' },
+			{ action: ActionName.CheckBalances, isolated: false, allowed: true, name: 'Проверить балансы' },
 			{
 				action: ActionName.GenerateWallets,
 				isolated: false,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Сгенерировать EVM кошельки',
 			},
-			{ action: ActionName.RefuelGasZip, isolated: true, needNetwork: true, allowed: false, name: 'Refuel через GasZip' },
+			{ action: ActionName.RefuelGasZip, isolated: true, allowed: true, name: 'Refuel через GasZip' },
 			{
 				action: ActionName.RefuelRelayLink,
 				isolated: true,
-				needNetwork: true,
+
 				allowed: true,
 				name: 'Refuel через RelayLink',
 			},
 			{
 				action: ActionName.RefuelManyGasZip,
 				isolated: false,
-				needNetwork: true,
+
 				allowed: true,
 				name: 'Refuel с одного кошелька на множество других через GasZip',
 			},
 			{
 				action: ActionName.RefuelManyRelayLink,
 				isolated: false,
-				needNetwork: true,
+
 				allowed: true,
 				name: 'Refuel с одного кошелька на множество других через RelayLink',
 			},
@@ -176,28 +175,28 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'EVM',
 		allowed: true,
 		actions: [
-			{ action: ActionName.SendToken, isolated: true, needNetwork: true, allowed: true, name: 'Отправка токенов' },
+			{ action: ActionName.SendToken, isolated: true, allowed: true, name: 'Отправка токенов' },
 			{
 				action: ActionName.CheckNft,
 				isolated: false,
-				needNetwork: true,
+
 				allowed: true,
 				name: 'Проверить наличие NFT ERC-721',
 			},
 			{
 				action: ActionName.CheckTransactions,
 				isolated: true,
-				needNetwork: true,
+
 				allowed: false,
 				name: 'Проверить транзакции',
 			},
-			{ action: ActionName.Wrap, isolated: true, needNetwork: true, allowed: true, name: 'Wrap' },
-			{ action: ActionName.Unwrap, isolated: true, needNetwork: true, allowed: true, name: 'Unwrap' },
-			{ action: ActionName.Approve, isolated: true, needNetwork: true, allowed: true, name: 'Approve' },
+			{ action: ActionName.Wrap, isolated: true, allowed: true, name: 'Wrap' },
+			{ action: ActionName.Unwrap, isolated: true, allowed: true, name: 'Unwrap' },
+			{ action: ActionName.Approve, isolated: true, allowed: true, name: 'Approve' },
 			{
 				action: ActionName.MakeTransaction,
 				isolated: true,
-				needNetwork: true,
+
 				allowed: true,
 				name: 'Сделать кастомную транзакцию',
 			},
@@ -208,7 +207,7 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: false,
 		name: 'SVM',
 		allowed: true,
-		actions: [{ action: ActionName.SendToken, isolated: true, needNetwork: true, allowed: true, name: 'Отправка токенов' }],
+		actions: [{ action: ActionName.SendToken, isolated: true, allowed: true, name: 'Отправка токенов' }],
 	},
 	{
 		group: ActionsGroupName.Twitter,
@@ -216,15 +215,15 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Twitter',
 		allowed: false,
 		actions: [
-			{ action: ActionName.Follow, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.LikeAndRetweet, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.Login, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.LoginByToken, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.OnetLogin, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.OutlookLogin, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.ChangeName, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.GetProfileInfo, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.Reply, isolated: true, needNetwork: false, allowed: true, name: '' },
+			{ action: ActionName.Follow, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.LikeAndRetweet, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Login, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.LoginByToken, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OnetLogin, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OutlookLogin, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.ChangeName, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.GetProfileInfo, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Reply, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -232,65 +231,63 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: false,
 		name: 'OKX',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод средств' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод средств' }],
 	},
 	{
 		group: ActionsGroupName.Bitget,
 		premium: false,
 		name: 'Bitget',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод средств' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод средств' }],
 	},
 	{
 		group: ActionsGroupName.Binance,
 		premium: false,
 		name: 'Binance',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод средств' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод средств' }],
 	},
 	{
 		group: ActionsGroupName.Gate,
 		premium: false,
 		name: 'Gate',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод средств' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод средств' }],
 	},
 	{
 		group: ActionsGroupName.Bybit,
 		premium: false,
 		name: 'Bybit',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод средств' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод средств' }],
 	},
 	{
 		group: ActionsGroupName.Odos,
 		premium: false,
 		name: 'Odos',
 		allowed: true,
-		actions: [{ action: ActionName.Swap, isolated: true, needNetwork: true, allowed: true, name: 'Swap' }],
+		actions: [{ action: ActionName.Swap, isolated: true, allowed: true, name: 'Swap' }],
 	},
 	{
 		group: ActionsGroupName.TEST,
 		premium: false,
 		name: 'TEST',
 		allowed: false,
-		actions: [{ action: ActionName.TEST, isolated: true, needNetwork: true, allowed: true, name: '' }],
+		actions: [{ action: ActionName.TEST, isolated: true, allowed: true, name: '' }],
 	},
 	{
 		group: ActionsGroupName.ZksyncLite,
 		premium: true,
 		name: 'Zksync Lite',
 		allowed: true,
-		actions: [
-			{ action: ActionName.SendToken, isolated: true, needNetwork: true, allowed: true, name: 'Отправка токенов через UI' },
-		],
+		actions: [{ action: ActionName.SendToken, isolated: true, allowed: true, name: 'Отправка токенов через UI' }],
 	},
 	{
 		group: ActionsGroupName.TEST_PREMIUM,
 		premium: true,
 		name: 'TEST_PREMIUM',
 		allowed: false,
-		actions: [{ action: ActionName.TEST, isolated: true, needNetwork: true, allowed: true, name: '' }],
+		actions: [{ action: ActionName.TEST, isolated: true, allowed: true, name: '' }],
 	},
 	{
 		group: ActionsGroupName.CommonUi,
@@ -301,56 +298,56 @@ export const ACTIONS: ActionsGroup[] = [
 			{
 				action: ActionName.OpenPages,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Открыть страницы в браузере',
 			},
 			{
 				action: ActionName.LoginInMetamask,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Логин в расширении Metamask',
 			},
 			{
 				action: ActionName.RestoreMetamask,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Восстановление расширения Metamask',
 			},
 			{
 				action: ActionName.RestorePetra,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Восстановление расширения Petra',
 			},
 			{
 				action: ActionName.RestoreBackpack,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Восстановление расширения Backpack',
 			},
 			{
 				action: ActionName.RestoreArgent,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: false,
 				name: 'Восстановление расширения Argent',
 			},
 			{
 				action: ActionName.LoginInRabby,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Логин в расширении Rabby',
 			},
 			{
 				action: ActionName.RestoreRabby,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Восстановление расширения Rabby',
 			},
@@ -362,23 +359,23 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Towns',
 		allowed: false,
 		actions: [
-			{ action: ActionName.Bober, isolated: true, needNetwork: false, allowed: true, name: '' },
-			{ action: ActionName.JoinTown, isolated: true, needNetwork: false, allowed: true, name: '' },
+			{ action: ActionName.Bober, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.JoinTown, isolated: true, allowed: true, name: '' },
 			{
 				action: ActionName.RandomActionInRandomChannelInNativeTown,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: '',
 			},
 			{
 				action: ActionName.RandomActionInRandomChannelInRandomTown,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: '',
 			},
-			{ action: ActionName.Review, isolated: true, needNetwork: false, allowed: true, name: '' },
+			{ action: ActionName.Review, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -387,8 +384,8 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Eclipse',
 		allowed: false,
 		actions: [
-			{ action: ActionName.Tap, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.Withdraw, isolated: true, needNetwork: true, allowed: true, name: '' },
+			{ action: ActionName.Tap, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Withdraw, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -397,18 +394,18 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Berachain',
 		allowed: false,
 		actions: [
-			{ action: ActionName.HoneypotSwap, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.HoneyfunCreateMeme, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.HoneyfunSellAllMemes, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.DapDap, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.KodiakSwap, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.JunkyUrsas, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.ClaimBgtAndRedeemAndSendToOkx, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.FlyTradeSwap, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.CheckStats, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.Outpostsurge, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.Yeet, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.YeetGetTodayValues, isolated: true, needNetwork: true, allowed: true, name: '' },
+			{ action: ActionName.HoneypotSwap, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.HoneyfunCreateMeme, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.HoneyfunSellAllMemes, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.DapDap, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.KodiakSwap, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.JunkyUrsas, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.ClaimBgtAndRedeemAndSendToOkx, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.FlyTradeSwap, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.CheckStats, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Outpostsurge, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Yeet, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.YeetGetTodayValues, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -420,28 +417,28 @@ export const ACTIONS: ActionsGroup[] = [
 			{
 				action: ActionName.OpenseaBuyByLink,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: false,
 				name: 'Покупка 1 NFT по ссылке',
 			},
-			{ action: ActionName.ClaimUi, isolated: true, needNetwork: false, allowed: true, name: 'Клейм XP в квестах' },
+			{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм XP в квестах' },
 			{
 				action: ActionName.SweepByLink,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Sweep коллекции по флору',
 			},
 			{
 				action: ActionName.SellCollectionByLink,
 				isolated: true,
-				needNetwork: false,
+
 				allowed: true,
 				name: 'Продать все NFT из коллекции',
 			},
-			{ action: ActionName.Register, isolated: true, needNetwork: false, allowed: false, name: '' },
-			{ action: ActionName.CrosschainMint, isolated: true, needNetwork: false, allowed: false, name: '' },
-			{ action: ActionName.Mint, isolated: true, needNetwork: true, allowed: false, name: '' },
+			{ action: ActionName.Register, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.CrosschainMint, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.Mint, isolated: true, allowed: false, name: '' },
 		],
 	},
 	{
@@ -450,20 +447,20 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Shape',
 		allowed: false,
 		actions: [
-			{ action: ActionName.MintStack, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.MintForms, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.Claim, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.ConnectTwitter, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.ConnectDiscord, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.CheckStats, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomMint, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomAnnihilate, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomAnalyze, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomMineAllOtoms, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomMineMolecule, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomMineOtom, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomMineAndAnnihilateMolecule, isolated: true, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.OtomCraftPkax, isolated: true, needNetwork: true, allowed: true, name: '' },
+			{ action: ActionName.MintStack, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.MintForms, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.Claim, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.ConnectTwitter, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.ConnectDiscord, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.CheckStats, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomMint, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomAnnihilate, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomAnalyze, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomMineAllOtoms, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomMineMolecule, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomMineOtom, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomMineAndAnnihilateMolecule, isolated: true, allowed: true, name: '' },
+			{ action: ActionName.OtomCraftPkax, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -471,23 +468,21 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: true,
 		name: 'Hemi',
 		allowed: false,
-		actions: [{ action: ActionName.CheckStats, isolated: false, needNetwork: true, allowed: true, name: '' }],
+		actions: [{ action: ActionName.CheckStats, isolated: false, allowed: true, name: '' }],
 	},
 	{
 		group: ActionsGroupName.Plasma,
 		premium: true,
 		name: 'Plasma',
 		allowed: false,
-		actions: [{ action: ActionName.Deposit, isolated: true, needNetwork: true, allowed: true, name: '' }],
+		actions: [{ action: ActionName.Deposit, isolated: true, allowed: true, name: '' }],
 	},
 	{
 		group: ActionsGroupName.Sophon,
 		premium: true,
 		name: 'Sophon',
 		allowed: true,
-		actions: [
-			{ action: ActionName.Claim, isolated: true, needNetwork: true, allowed: true, name: 'Клейм наград за делегаторство' },
-		],
+		actions: [{ action: ActionName.Claim, isolated: true, allowed: true, name: 'Клейм наград за делегаторство' }],
 	},
 	{
 		group: ActionsGroupName.Checkers,
@@ -495,8 +490,8 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Чекеры и клеймы',
 		allowed: false,
 		actions: [
-			{ action: ActionName.Linea, isolated: false, needNetwork: true, allowed: true, name: '' },
-			{ action: ActionName.Claim, isolated: true, needNetwork: true, allowed: true, name: '' },
+			{ action: ActionName.Linea, isolated: false, allowed: true, name: '' },
+			{ action: ActionName.Claim, isolated: true, allowed: true, name: '' },
 		],
 	},
 	{
@@ -504,24 +499,20 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: false,
 		name: 'Биржи',
 		allowed: true,
-		actions: [{ action: ActionName.Withdraw, isolated: true, needNetwork: false, allowed: true, name: 'Вывод' }],
+		actions: [{ action: ActionName.Withdraw, isolated: true, allowed: true, name: 'Вывод' }],
 	},
 	{
 		group: ActionsGroupName.AdsPower,
 		premium: true,
 		name: 'AdsPower',
 		allowed: true,
-		actions: [
-			{ action: ActionName.GetProfiles, isolated: false, needNetwork: false, allowed: true, name: 'Получение профилей' },
-		],
+		actions: [{ action: ActionName.GetProfiles, isolated: false, allowed: true, name: 'Получение профилей' }],
 	},
 	{
 		group: ActionsGroupName.Vision,
 		premium: true,
 		name: 'Vision',
 		allowed: true,
-		actions: [
-			{ action: ActionName.GetProfiles, isolated: false, needNetwork: false, allowed: true, name: 'Получение профилей' },
-		],
+		actions: [{ action: ActionName.GetProfiles, isolated: false, allowed: true, name: 'Получение профилей' }],
 	},
 ];
