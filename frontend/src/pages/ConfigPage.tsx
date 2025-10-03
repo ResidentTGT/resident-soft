@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Container, Paper, Stack, Typography, Grid, Alert, CircularProgress, Snackbar } from '@mui/material';
+import { Box, Button, Container, Paper, Typography, Grid, Alert, CircularProgress, Snackbar } from '@mui/material';
 import LaunchParamsForm from '../components/forms/LaunchParamsForm';
 import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
@@ -156,8 +156,18 @@ export default function ConfigPage() {
 				</Grid>
 
 				<Box sx={{ mt: 2 }}>
-					<Paper variant="outlined" sx={{ p: 2 }}>
-						<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
+					<Paper
+						variant="outlined"
+						sx={{
+							p: 2,
+							display: 'grid',
+							gridTemplateColumns: { xs: '1fr', sm: '1fr auto' },
+							columnGap: 2,
+							alignItems: 'center',
+							minHeight: 80,
+						}}
+					>
+						<Box sx={{ overflow: 'hidden' }}>
 							{formInvalid && (
 								<Alert severity="error" variant="outlined" sx={{ width: '100%' }}>
 									<Typography variant="subtitle2" sx={{ mb: 1 }}>
@@ -172,13 +182,29 @@ export default function ConfigPage() {
 									</ul>
 								</Alert>
 							)}
-							<Button variant="contained" onClick={save} disabled={saved === 'process' || formInvalid}>
+						</Box>
+
+						<Box
+							sx={{
+								justifySelf: { xs: 'stretch', sm: 'end' },
+								alignSelf: 'center',
+								display: 'flex',
+								justifyContent: { xs: 'stretch', sm: 'flex-end' },
+							}}
+						>
+							<Button
+								variant="contained"
+								onClick={save}
+								disabled={saved === 'process' || formInvalid}
+								sx={{ height: 45, px: 3 }}
+							>
 								Сохранить конфиг
 							</Button>
-						</Stack>
+						</Box>
 					</Paper>
 				</Box>
 			</Container>
+
 			<Snackbar
 				open={toast.open}
 				autoHideDuration={5000}
