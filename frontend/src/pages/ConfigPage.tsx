@@ -6,7 +6,6 @@ import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
 import { getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
-import { functionParamSchemas } from '../services/functionParamSchemas';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 
@@ -52,47 +51,70 @@ export default function ConfigPage() {
 		})();
 	}, []);
 
-	const formInvalid = useMemo(() => {
-		const ap = launchParams?.ACTION_PARAMS;
-		if (!ap || !ap.group || !ap.action) return true;
+	// helpers
+	const isNumberLike = (v: any) => v !== undefined && v !== null && Number.isFinite(Number(v));
+	const isArrayOfNumberLike = (arr: any) => Array.isArray(arr) && arr.every(isNumberLike);
 
-		const nums: [any, number][] = [
-			[launchParams.NUMBER_OF_THREADS, 1],
-			[launchParams.NUMBER_OF_EXECUTIONS, 1],
-			[launchParams.ATTEMPTS_UNTIL_SUCCESS, 1],
-			[launchParams.DELAY_AFTER_ERROR_IN_S, 0],
-		];
-		for (const [v, min] of nums) {
-			if (v !== undefined && (Number.isNaN(Number(v)) || Number(v) < min)) return true;
+	const errors = useMemo(() => {
+		const errs: string[] = [];
+		const lp = launchParams;
+		if (!lp) return errs;
+
+		if (!lp.ACTION_PARAMS?.group || !lp.ACTION_PARAMS?.action) {
+			errs.push('Выберите группу и действие.');
+			return errs;
 		}
 
-		if (launchParams.DELAY_BETWEEN_ACCS_IN_S) {
-			const ok =
-				Array.isArray(launchParams.DELAY_BETWEEN_ACCS_IN_S) &&
-				launchParams.DELAY_BETWEEN_ACCS_IN_S.every((n: any) => typeof n === 'number' && n >= 0);
-			if (!ok) return true;
-		}
-
-		const schema = launchParams.ACTION_PARAMS?.action && functionParamSchemas[launchParams.ACTION_PARAMS.action];
-		if (schema && schema.length) {
-			for (const fld of schema) {
-				if (fld.kind === 'number' && fld.required) {
-					const v = functionParams[fld.name];
-					if (v === undefined || Number.isNaN(Number(v)) || (fld.min ?? -Infinity) > Number(v)) return true;
-				}
-				if (fld.kind === 'string' && fld.required) {
-					const v = (functionParams[fld.name] ?? '').toString();
-					if (!v) return true;
-				}
-				if (fld.kind === 'numberRange' && fld.required) {
-					const v = functionParams[fld.name] as [number, number] | undefined;
-					if (!v || v[0] === undefined || v[1] === undefined) return true;
-				}
+		if (lp.TAKE_STATE === true) {
+			const name = (lp as any).STATE_NAME;
+			if (typeof name !== 'string' || !name.trim()) {
+				errs.push('Включён TAKE_STATE — необходимо заполнить STATE_NAME (строка, не пустая).');
 			}
 		}
 
-		return false;
+		const ja: any = lp.JOB_ACCOUNTS[0];
+		if (ja) {
+			if (!isNumberLike(ja.start) || !isNumberLike(ja.end)) {
+				errs.push('Порядковые номера аккаунтов должны быть числами.');
+			} else if (Number(ja.end) < Number(ja.start)) {
+				errs.push('Порядковый номер аккаунтов "до" должен быть больше или равен "от"');
+			}
+			if (ja.include !== undefined && !isArrayOfNumberLike(ja.include)) {
+				errs.push('"Включить только" должен быть массивом номеров аккаунтов.');
+			}
+			if (ja.exclude !== undefined && !isArrayOfNumberLike(ja.exclude)) {
+				errs.push('"Исключить" должен быть массивом номеров аккаунтов.');
+			}
+		}
+
+		const dba: any = (lp as any).DELAY_BETWEEN_ACCS_IN_S;
+		if (!Array.isArray(dba) || dba.length !== 2 || !isNumberLike(dba[0]) || !isNumberLike(dba[1])) {
+			errs.push('Задержка между аккаунтами должны быть числами.');
+		} else if (Number(dba[1]) < Number(dba[0])) {
+			errs.push('Задержка между аккаунтами: "до" должна быть больше или равна "от".');
+		}
+
+		if (!isNumberLike(lp.DELAY_AFTER_ERROR_IN_S) || Number(lp.DELAY_AFTER_ERROR_IN_S) < 0)
+			errs.push(`"Задержка после ошибки" должно быть числом и >= 0.`);
+		if (!isNumberLike(lp.ATTEMPTS_UNTIL_SUCCESS) || Number(lp.ATTEMPTS_UNTIL_SUCCESS) < 1)
+			errs.push(`"Попыток до успеха" должно быть числом и > 0.`);
+		if (!isNumberLike(lp.NUMBER_OF_THREADS) || Number(lp.NUMBER_OF_THREADS) < 1)
+			errs.push(`"Количество потоков" должна быть числом и > 0.`);
+		if (!isNumberLike(lp.NUMBER_OF_EXECUTIONS) || Number(lp.NUMBER_OF_EXECUTIONS) < 1)
+			errs.push(`"Количество выполнений" должна быть числом и > 0.`);
+
+		const act = actions.find((a) => a.group === lp.ACTION_PARAMS.group);
+		if (act?.premium === true) {
+			const license: any = (lp as any).LICENSE ?? (functionParams as any)?.LICENSE;
+			if (typeof license !== 'string' || !license.trim()) {
+				errs.push(`Для группы "${act.name}" обязательна валидная лицензия.`);
+			}
+		}
+
+		return errs;
 	}, [launchParams, functionParams]);
+
+	const formInvalid = errors.length > 0;
 
 	async function save() {
 		if (formInvalid || !launchParams) return;
@@ -135,15 +157,24 @@ export default function ConfigPage() {
 
 				<Box sx={{ mt: 2 }}>
 					<Paper variant="outlined" sx={{ p: 2 }}>
-						<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
+						<Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
+							{formInvalid && (
+								<Alert severity="error" variant="outlined" sx={{ width: '100%' }}>
+									<Typography variant="subtitle2" sx={{ mb: 1 }}>
+										Обнаружены ошибки заполнения:
+									</Typography>
+									<ul style={{ margin: 0, paddingInlineStart: 18 }}>
+										{errors.map((msg, i) => (
+											<li key={i}>
+												<Typography variant="body2">{msg}</Typography>
+											</li>
+										))}
+									</ul>
+								</Alert>
+							)}
 							<Button variant="contained" onClick={save} disabled={saved === 'process' || formInvalid}>
 								Сохранить конфиг
 							</Button>
-							{formInvalid && (
-								<Typography variant="body2" color="error">
-									Проверьте обязательные поля и корректность значений
-								</Typography>
-							)}
 						</Stack>
 					</Paper>
 				</Box>
