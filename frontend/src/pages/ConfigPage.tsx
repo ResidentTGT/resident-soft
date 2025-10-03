@@ -213,7 +213,7 @@ export default function ConfigPage() {
 								disabled={saved === 'process' || formInvalid}
 								sx={{ height: 45, px: 3 }}
 							>
-								Сохранить конфиг
+								Сохранить настройки
 							</Button>
 						</Box>
 					</Paper>

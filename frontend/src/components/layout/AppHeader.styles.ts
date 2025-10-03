@@ -6,5 +6,5 @@ export const toolbarSx: SxProps<Theme> = {
 
 export const titleSx: SxProps<Theme> = {
 	flexShrink: 0,
-	marginLeft: '50px',
+	marginLeft: '10px',
 };
