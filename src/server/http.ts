@@ -92,7 +92,9 @@ export async function startHttpServer() {
 	app.get('/api/process/states', async (_req, res) => {
 		try {
 			const PROCESS_DIR = path.resolve(process.cwd(), 'states');
-			const files = (await fs.readdirSync(PROCESS_DIR)).filter((f) => f.endsWith('.json'));
+			const files = fs.existsSync(PROCESS_DIR)
+				? (await fs.readdirSync(PROCESS_DIR)).filter((f) => f.endsWith('.json'))
+				: [];
 
 			const ok: { name: string; updatedAt: string; data: StandardState }[] = [];
 			const failed: { name: string; error?: string }[] = [];
