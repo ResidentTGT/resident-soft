@@ -67,6 +67,8 @@ export const DEFAULT_CHROMIUM_ARGS = [
 	//'--start-maximized',
 	// '--window-position=0,0',
 	//'--auto-open-devtools-for-tabs',
+	// '--ipc-server=1',
+	// '--ipc-client=1',
 ];
 
 export abstract class Vision {
