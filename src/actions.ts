@@ -115,6 +115,7 @@ export enum ActionName {
 	SellCollectionByLink = 'SellCollectionByLink',
 	Linea = 'Linea',
 	ParseIsotopes = 'ParseIsotopes',
+	Spin = 'Spin',
 }
 
 export interface Action {
@@ -451,7 +452,7 @@ export const ACTIONS: ActionsGroup[] = [
 		actions: [
 			{ action: ActionName.MintStack, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.MintForms, isolated: true, allowed: false, name: '' },
-			{ action: ActionName.Claim, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.Claim, isolated: true, allowed: true, name: 'Клейм всех медалей' },
 			{ action: ActionName.ConnectTwitter, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.ConnectDiscord, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.CheckStats, isolated: true, allowed: false, name: '' },
@@ -465,6 +466,7 @@ export const ACTIONS: ActionsGroup[] = [
 			{ action: ActionName.OtomCraftPkax, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.ParseIsotopes, isolated: false, allowed: true, name: 'Спарсить все изотопы' },
 			{ action: ActionName.OtomMineAllIsotopes, isolated: true, allowed: true, name: 'Минтить все изотопы' },
+			{ action: ActionName.Spin, isolated: true, allowed: true, name: 'Спин' },
 		],
 	},
 	{
