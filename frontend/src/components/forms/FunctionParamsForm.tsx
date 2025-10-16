@@ -801,6 +801,7 @@ const Form_CommonUi_RestorePetra = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreBackpack = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreArgent = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreRabby = Form_CommonUi_RestoreMetamask;
+const Form_CommonUi_RestorePhantom = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_LoginInRabby = Form_CommonUi_LoginInMetamask;
 
 /* -------- AdsPower / Vision -------- */
@@ -879,6 +880,24 @@ const Form_ZksyncLite_SendToken = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
+/* -------- / Meteora -------- */
+
+const Form_Meteora_AddLiquidity = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
+	</Grid>
+);
+
 /* ========================== роутер форм ========================== */
 
 const FORMS: Record<string, (ctx: FormCtx) => JSX.Element> = {
@@ -923,6 +942,7 @@ const FORMS: Record<string, (ctx: FormCtx) => JSX.Element> = {
 	'CommonUi.RestoreArgent': Form_CommonUi_RestoreArgent,
 	'CommonUi.RestoreRabby': Form_CommonUi_RestoreRabby,
 	'CommonUi.LoginInRabby': Form_CommonUi_LoginInRabby,
+	'CommonUi.RestorePhantom': Form_CommonUi_RestorePhantom,
 
 	// AdsPower / Vision
 	'AdsPower.GetProfiles': Form_AdsPower_GetProfiles,
@@ -935,6 +955,9 @@ const FORMS: Record<string, (ctx: FormCtx) => JSX.Element> = {
 
 	// ZksyncLite
 	'ZksyncLite.SendToken': Form_ZksyncLite_SendToken,
+
+	// ZksyncLite
+	'Meteora.AddLiquidity': Form_Meteora_AddLiquidity,
 };
 
 /* ========================== корневой компонент ========================== */

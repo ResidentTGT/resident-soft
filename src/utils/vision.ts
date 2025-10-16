@@ -44,31 +44,22 @@ interface StartProfileResponse {
 }
 
 export const DEFAULT_CHROMIUM_ARGS = [
-	// graphical optimization
-	// '--wm-window-animations-disabled',
-	// '--animation-duration-scale=0',
-	// '--blink-settings=imageAnimationPolicy=2', // disable gif animation
-	// '--ignore-gpu-blacklist',
-	// '--enable-gpu-rasterization',
-	// '--enable-native-gpu-memory-buffers',
+	// '--ipc-server=1',
+	// '--ipc-client=1',
+
 	// audio
 	//'--mute-audio',
 	// access to extendion:// tabs
-	//'--silent-debugger-extension-api',
-	//'--extensions-on-chrome-urls',
+	// '--extensions-on-chrome-urls',
 	// allow background work for tabs
-	/*
-    '--disable-background-timer-throttling',
-    '--disable-backgrounding-occluded-windows',
-    '--disable-renderer-backgrounding',
-    */
-	//'--disable-blink-features',
+	// '--disable-background-timer-throttling',
+	'--disable-backgrounding-occluded-windows',
+	'--disable-renderer-backgrounding',
+
 	// maximize windows
-	//'--start-maximized',
-	// '--window-position=0,0',
+	// '--start-maximized',
+	'--window-position=0,0',
 	//'--auto-open-devtools-for-tabs',
-	// '--ipc-server=1',
-	// '--ipc-client=1',
 ];
 
 export abstract class Vision {

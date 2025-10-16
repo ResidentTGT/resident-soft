@@ -30,6 +30,7 @@ export enum ActionsGroupName {
 	Exchanges = 'Exchanges',
 	AdsPower = 'AdsPower',
 	Vision = 'Vision',
+	Meteora = 'Meteora',
 }
 
 export enum ActionName {
@@ -108,6 +109,7 @@ export enum ActionName {
 	GenerateWallets = 'GenerateWallets',
 	RestoreBackpack = 'RestoreBackpack',
 	RestoreArgent = 'RestoreArgent',
+	RestorePhantom = 'RestorePhantom',
 	GetProfiles = 'GetProfiles',
 	LoginInMetamask = 'LoginInMetamask',
 	LoginInRabby = 'LoginInRabby',
@@ -116,6 +118,7 @@ export enum ActionName {
 	Linea = 'Linea',
 	ParseIsotopes = 'ParseIsotopes',
 	Spin = 'Spin',
+	AddLiquidity = 'AddLiquidity',
 }
 
 export interface Action {
@@ -301,58 +304,56 @@ export const ACTIONS: ActionsGroup[] = [
 			{
 				action: ActionName.OpenPages,
 				isolated: true,
-
 				allowed: true,
 				name: 'Открыть страницы в браузере',
 			},
 			{
 				action: ActionName.LoginInMetamask,
 				isolated: true,
-
 				allowed: true,
 				name: 'Логин в расширении Metamask',
 			},
 			{
 				action: ActionName.RestoreMetamask,
 				isolated: true,
-
 				allowed: true,
 				name: 'Восстановление расширения Metamask',
 			},
 			{
 				action: ActionName.RestorePetra,
 				isolated: true,
-
 				allowed: true,
 				name: 'Восстановление расширения Petra',
 			},
 			{
 				action: ActionName.RestoreBackpack,
 				isolated: true,
-
 				allowed: true,
 				name: 'Восстановление расширения Backpack',
 			},
 			{
 				action: ActionName.RestoreArgent,
 				isolated: true,
-
 				allowed: false,
 				name: 'Восстановление расширения Argent',
 			},
 			{
 				action: ActionName.LoginInRabby,
 				isolated: true,
-
 				allowed: true,
 				name: 'Логин в расширении Rabby',
 			},
 			{
 				action: ActionName.RestoreRabby,
 				isolated: true,
-
 				allowed: true,
 				name: 'Восстановление расширения Rabby',
+			},
+			{
+				action: ActionName.RestorePhantom,
+				isolated: true,
+				allowed: true,
+				name: 'Восстановление расширения Phantom',
 			},
 		],
 	},
@@ -520,5 +521,12 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Vision',
 		allowed: true,
 		actions: [{ action: ActionName.GetProfiles, isolated: false, allowed: true, name: 'Получение профилей' }],
+	},
+	{
+		group: ActionsGroupName.Meteora,
+		premium: true,
+		name: 'Meteora',
+		allowed: true,
+		actions: [{ action: ActionName.AddLiquidity, isolated: true, allowed: true, name: 'Добавить LP' }],
 	},
 ];

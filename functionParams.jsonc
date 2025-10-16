@@ -252,6 +252,10 @@
 			"browser": "Vision",
 			"closeBrowser": true
 		},
+		"RestorePhantom": {
+			"browser": "Vision",
+			"closeBrowser": true
+		},
 		"LoginInRabby": {
 			"browser": "Vision"
 		}
@@ -313,6 +317,11 @@
 	"ZksyncLite": {
 		"SendToken": {
 			"to": "0x..."
+		}
+	},
+	"Meteora": {
+		"AddLiquidity": {
+			"browser": "Vision"
 		}
 	}
 }

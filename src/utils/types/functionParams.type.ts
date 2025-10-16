@@ -181,6 +181,10 @@ export interface FunctionParams {
 		LoginInRabby: {
 			browser: string;
 		};
+		RestorePhantom: {
+			browser: string;
+			closeBrowser: boolean;
+		};
 	};
 	AdsPower: {
 		GetProfiles: {
@@ -232,6 +236,11 @@ export interface FunctionParams {
 	ZksyncLite: {
 		SendToken: {
 			to: string;
+		};
+	};
+	Meteora: {
+		AddLiquidity: {
+			browser: string;
 		};
 	};
 }
