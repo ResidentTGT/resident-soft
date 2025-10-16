@@ -8,10 +8,11 @@ import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 import { getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
+import type { FunctionParams } from '../../../src/utils/types/functionParams.type';
 
 export default function ConfigPage() {
 	const [launchParams, setLaunchParams] = useState<LaunchParams>();
-	const [functionParams, setFunctionParams] = useState<Record<string, any>>({});
+	const [functionParams, setFunctionParams] = useState<FunctionParams>();
 	const [actions, setActions] = useState<ActionsGroup[]>([]);
 	const [networks, setNetworks] = useState<NetworkConfig[]>([]);
 	const [tokens, setTokens] = useState<TokenConfig[]>([]);
@@ -132,7 +133,7 @@ export default function ConfigPage() {
 	const formInvalid = errors.length > 0;
 
 	async function save() {
-		if (formInvalid || !launchParams) return;
+		if (formInvalid || !launchParams || !functionParams) return;
 		setSaved('process');
 		try {
 			await postConfigs({ launchParams, functionParams });
@@ -145,7 +146,7 @@ export default function ConfigPage() {
 	}
 	if (loading) return <CircularProgress />;
 
-	if (!launchParams) return <div>Не удалось загрузить данные. Проверьте бэкенд.</div>;
+	if (!launchParams || !functionParams) return <div>Не удалось загрузить данные. Проверьте бэкенд.</div>;
 
 	return (
 		<>

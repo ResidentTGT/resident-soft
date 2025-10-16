@@ -1,8 +1,8 @@
 import { ChainId } from '../network';
 
 export interface FunctionParams {
-	Common: {
-		CheckBalances: {
+	Common?: {
+		CheckBalances?: {
 			networks: [
 				{
 					chainId: ChainId;
@@ -15,38 +15,38 @@ export interface FunctionParams {
 				},
 			];
 		};
-		GenerateWallets: {
+		GenerateWallets?: {
 			amount: number;
 		};
-		RefuelGasZip: {
+		RefuelGasZip?: {
 			fromChainId: ChainId;
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
 			minAmountToSend: number;
 			toChainIds: ChainId[];
 		};
-		RefuelManyGasZip: {
+		RefuelManyGasZip?: {
 			fromChainId: ChainId;
 			amount: [number, number];
 			toChainIds: ChainId[];
 			addresses: string[];
 		};
-		RefuelRelayLink: {
+		RefuelRelayLink?: {
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
 			minAmountToSend: number;
 			fromChainId: ChainId;
 			toChainId: ChainId;
 		};
-		RefuelManyRelayLink: {
+		RefuelManyRelayLink?: {
 			amount: [number, number];
 			fromChainId: ChainId;
 			toChainId: ChainId;
 			addresses: string[];
 		};
 	};
-	Evm: {
-		SendToken: {
+	Evm?: {
+		SendToken?: {
 			fromChainId: ChainId;
 			token: string;
 			amount: [number, number];
@@ -54,33 +54,33 @@ export interface FunctionParams {
 			minAmountToSend: number;
 			to: string;
 		};
-		CheckNft: {
+		CheckNft?: {
 			chainId: ChainId;
 			nftContract: string;
 		};
-		Wrap: {
+		Wrap?: {
 			chainId: ChainId;
 			amount: [number, number];
 		};
-		Unwrap: {
+		Unwrap?: {
 			chainId: ChainId;
 			amount: [number, number];
 		};
-		Approve: {
+		Approve?: {
 			chainId: ChainId;
 			tokenSymbol: string;
 			spender: string;
 			amount: [number, number];
 		};
-		MakeTransaction: {
+		MakeTransaction?: {
 			chainId: ChainId;
 			contractAddress: string;
 			data: string;
 			value: number;
 		};
 	};
-	Svm: {
-		SendToken: {
+	Svm?: {
+		SendToken?: {
 			chainId: ChainId;
 			token: string;
 			amount: [number, number];
@@ -89,8 +89,8 @@ export interface FunctionParams {
 			to: string;
 		};
 	};
-	Odos: {
-		Swap: {
+	Odos?: {
+		Swap?: {
 			chainId: ChainId;
 			token1: string;
 			token2: string;
@@ -99,8 +99,8 @@ export interface FunctionParams {
 			minAmountForSwap: number;
 		};
 	};
-	Exchanges: {
-		Withdraw: {
+	Exchanges?: {
+		Withdraw?: {
 			exchanges: string[];
 			amount: [number, number];
 			token: string;
@@ -108,138 +108,138 @@ export interface FunctionParams {
 			toChainId: string;
 		};
 	};
-	Okx: {
-		Withdraw: {
+	Okx?: {
+		Withdraw?: {
 			amount: [number, number];
 			token: string;
 			to: string;
 			toChainId: ChainId;
 		};
 	};
-	Bitget: {
-		Withdraw: {
+	Bitget?: {
+		Withdraw?: {
 			amount: [number, number];
 			token: string;
 			to: string;
 			toChainId: ChainId;
 		};
 	};
-	Gate: {
-		Withdraw: {
+	Gate?: {
+		Withdraw?: {
 			amount: [number, number];
 			token: string;
 			to: string;
 			toChainId: ChainId;
 		};
 	};
-	Binance: {
-		Withdraw: {
+	Binance?: {
+		Withdraw?: {
 			amount: [number, number];
 			token: string;
 			to: string;
 			toChainId: ChainId;
 		};
 	};
-	Bybit: {
-		Withdraw: {
+	Bybit?: {
+		Withdraw?: {
 			amount: [number, number];
 			token: string;
 			to: string;
 			toChainId: ChainId;
 		};
 	};
-	CommonUi: {
-		OpenPages: {
+	CommonUi?: {
+		OpenPages?: {
 			browser: string;
 			pageUrls: string[];
 			loginInRabby: boolean;
 			loginInPetra: boolean;
 		};
-		RestoreMetamask: {
+		RestoreMetamask?: {
 			browser: string;
 			closeBrowser: boolean;
 		};
-		LoginInMetamask: {
+		LoginInMetamask?: {
 			browser: string;
 		};
-		RestorePetra: {
-			browser: string;
-			closeBrowser: boolean;
-		};
-		RestoreBackpack: {
+		RestorePetra?: {
 			browser: string;
 			closeBrowser: boolean;
 		};
-		RestoreArgent: {
+		RestoreBackpack?: {
 			browser: string;
 			closeBrowser: boolean;
 		};
-		RestoreRabby: {
+		RestoreArgent?: {
 			browser: string;
 			closeBrowser: boolean;
 		};
-		LoginInRabby: {
+		RestoreRabby?: {
+			browser: string;
+			closeBrowser: boolean;
+		};
+		LoginInRabby?: {
 			browser: string;
 		};
-		RestorePhantom: {
+		RestorePhantom?: {
 			browser: string;
 			closeBrowser: boolean;
 		};
 	};
-	AdsPower: {
-		GetProfiles: {
+	AdsPower?: {
+		GetProfiles?: {
 			count: number;
 		};
 	};
-	Vision: {
-		GetProfiles: {
+	Vision?: {
+		GetProfiles?: {
 			token: string;
 			folderId: string;
 		};
 	};
-	Opensea: {
-		OpenseaBuyByLink: {
+	Opensea?: {
+		OpenseaBuyByLink?: {
 			browser: string;
 			links: string[];
 		};
-		SweepByLink: {
+		SweepByLink?: {
 			browser: string;
 			links: string[];
 			count: number;
 		};
-		SellCollectionByLink: {
+		SellCollectionByLink?: {
 			browser: string;
 			link: string;
 		};
-		ClaimUi: {
+		ClaimUi?: {
 			browser: string;
 		};
 	};
-	Twitter: any;
-	Discord: any;
-	Berachain: {
-		FlyTradeSwap: {
+	Twitter?: any;
+	Discord?: any;
+	Berachain?: {
+		FlyTradeSwap?: {
 			tokenSymbol1: string;
 			tokenSymbol2: string;
 			amount: [number, number];
 		};
 	};
-	TEST: {
-		TEST: any;
+	TEST?: {
+		TEST?: any;
 	};
-	Plasma: {
-		Deposit: {
+	Plasma?: {
+		Deposit?: {
 			token: string;
 			amount: string;
 		};
 	};
-	ZksyncLite: {
-		SendToken: {
+	ZksyncLite?: {
+		SendToken?: {
 			to: string;
 		};
 	};
-	Meteora: {
-		AddLiquidity: {
+	Meteora?: {
+		AddLiquidity?: {
 			browser: string;
 		};
 	};
