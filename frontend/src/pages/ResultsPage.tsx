@@ -43,7 +43,7 @@ const splitByLastUnderscore = (s: string) => {
 	return i === -1 ? { base: s, num: s } : { base: s.slice(0, i), num: s.slice(i + 1) };
 };
 
-export default function ProcessPage() {
+export default function ResultsPage() {
 	const [names, setNames] = useState<string[]>([]);
 	const [selected, setSelected] = useState<string>('');
 	const [map, setMap] = useState<Record<string, { data: StandardState; updatedAt?: string }>>({});

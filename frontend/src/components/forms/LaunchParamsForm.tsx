@@ -119,7 +119,7 @@ export default function LaunchParamsForm({
 									onChange={(e) => setField('TAKE_STATE', e.target.checked)}
 								/>
 							}
-							label="Сохранять стейт"
+							label="Сохранять и учитывать стейт"
 						/>
 					</Grid>
 					{launchParams.TAKE_STATE && (

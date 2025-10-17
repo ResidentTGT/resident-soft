@@ -5,7 +5,10 @@ import logoPng from '../../../assets/ava-round.png';
 
 export default function AppHeader() {
 	const location = useLocation();
-	const value = location.pathname.startsWith('/process') ? 'process' : 'config';
+	let value = '';
+	if (location.pathname.startsWith('/results')) value = 'results';
+	if (location.pathname.startsWith('/config')) value = 'config';
+	if (location.pathname.startsWith('/secrets')) value = 'secrets';
 
 	return (
 		<AppBar position="sticky">
@@ -30,7 +33,8 @@ export default function AppHeader() {
 
 				<Tabs value={value} textColor="inherit" indicatorColor="secondary">
 					<Tab label="Настройка запуска" value="config" component={RouterLink} to="/config" />
-					<Tab label="Результаты запусков" value="process" component={RouterLink} to="/process" />
+					<Tab label="Результаты запусков" value="results" component={RouterLink} to="/results" />
+					<Tab label="Секретные данные" value="secrets" component={RouterLink} to="/secrets" />
 				</Tabs>
 			</MuiToolbar>
 		</AppBar>
