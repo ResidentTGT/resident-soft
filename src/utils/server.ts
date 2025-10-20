@@ -8,6 +8,7 @@ import { selectionGate } from './selection';
 import { ACTIONS } from '@src/actions';
 import { Network } from '@src/utils/network';
 import { StandardState } from '@src/utils/state/standardState.interface';
+import { convertSecretStorage } from './workWithSecrets';
 
 export async function startHttpServer() {
 	const app = express();
@@ -174,6 +175,23 @@ export async function startHttpServer() {
 			res.json({ ok: true });
 		} catch (e: any) {
 			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.post('/api/encryptsecrets', (req, res) => {
+		try {
+			const { password, encryption } = req.body || {};
+			const snapshot = readConfigs();
+
+			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
+			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+
+			convertSecretStorage(encPath, decPath, password, encryption);
+
+			res.json({ ok: true });
+		} catch (e: any) {
+			if (e.message.toString().includes('invalid key')) res.status(403).json({ error: e.message });
+			else res.status(500).json({ error: e.message });
 		}
 	});
 

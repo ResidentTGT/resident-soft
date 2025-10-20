@@ -77,3 +77,17 @@ export async function postSecrets(data: { encrypted: any; decrypted: any }) {
 	if (!r.ok) throw new Error(`Secrets save failed: ${r.status}`);
 	return r.json();
 }
+
+export async function encryptSecretStorage(password: string, encryption: boolean) {
+	const r = await fetch('/api/encryptsecrets', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password, encryption }),
+	});
+
+	if (!r.ok) {
+		if (r.status === 403) throw Object.assign(new Error('Неправильный пароль'), { code: 403 });
+		throw new Error(`Secrets encryption failed: ${r.status}`);
+	}
+	return r.json();
+}

@@ -58,12 +58,12 @@ export class CommandHandler {
 		await convertFromCsvToCsv(encryptedFilePath, decryptedFilePath, this.aesKey, encrypt);
 	}
 
-	async handleSecretStorageEncryption(encrypt: boolean): Promise<void> {
+	handleSecretStorageEncryption(encrypt: boolean): void {
 		if (!this.aesKey) throw new Error('Key for ecnryption/decryption is required!');
 		const encryptedFilePath = this.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
 		const decryptedFilePath = this.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
 
-		await convertSecretStorage(encryptedFilePath, decryptedFilePath, this.aesKey, encrypt);
+		convertSecretStorage(encryptedFilePath, decryptedFilePath, this.aesKey, encrypt);
 	}
 
 	async executeCommand(option: CommandOption): Promise<void> {
@@ -73,11 +73,11 @@ export class CommandHandler {
 				break;
 			case CommandOption['Decrypt Accounts And SecretStorage']:
 				await this.handleAccountsEncryption(false);
-				await this.handleSecretStorageEncryption(false);
+				this.handleSecretStorageEncryption(false);
 				break;
 			case CommandOption['Encrypt Accounts And SecretStorage']:
 				await this.handleAccountsEncryption(true);
-				await this.handleSecretStorageEncryption(true);
+				this.handleSecretStorageEncryption(true);
 				break;
 			default:
 				throw new Error(`Unsupported option: ${option}`);

@@ -5,7 +5,7 @@ import { SHEETS } from './account/models/csvSheets';
 import { Account } from './account/models/account.type';
 import { parse } from 'jsonc-parser';
 import { SecretStorage } from './secretStorage.type';
-import * as fs from 'fs/promises';
+import fs from 'node:fs';
 
 export async function saveJsonAccountsToCsv(filePath: string, accounts: Account[]) {
 	const workbook = new Excel.Workbook();
@@ -128,7 +128,7 @@ export async function convertFromCsvToCsv(
 	aesKey: string,
 	encrypt = true,
 ) {
-	const files = (await fs.readdir(encrypt ? decryptedFolderPath : encryptedFolderPath)).filter((f) => f.endsWith('.xlsx'));
+	const files = fs.readdirSync(encrypt ? decryptedFolderPath : encryptedFolderPath).filter((f) => f.endsWith('.xlsx'));
 
 	for (const file of files) {
 		const encryptedFilePath = `${encryptedFolderPath}/${file}`;
@@ -142,8 +142,8 @@ export async function convertFromCsvToCsv(
 
 		const folderPathToSave = encrypt ? encryptedFolderPath : decryptedFolderPath;
 
-		const stat = await fs.stat(folderPathToSave).catch(() => undefined);
-		if (!stat) await fs.mkdir(folderPathToSave, { recursive: true });
+		const stat = fs.statSync(folderPathToSave);
+		if (!stat) fs.mkdirSync(folderPathToSave, { recursive: true });
 
 		await saveJsonAccountsToCsv(encrypt ? encryptedFilePath : decryptedFilePath, newAccs);
 
@@ -153,7 +153,7 @@ export async function convertFromCsvToCsv(
 	}
 }
 
-export async function convertSecretStorage(encryptedFilePath: string, decryptedFilePath: string, aesKey: string, encrypt = true) {
+export function convertSecretStorage(encryptedFilePath: string, decryptedFilePath: string, aesKey: string, encrypt = true) {
 	const secretStorage = parse(readFileSync(encrypt ? decryptedFilePath : encryptedFilePath, 'utf-8')) as SecretStorage;
 
 	const newSecretStorage = encrypt
@@ -162,8 +162,8 @@ export async function convertSecretStorage(encryptedFilePath: string, decryptedF
 
 	const filePathToSave = encrypt ? encryptedFilePath : decryptedFilePath;
 	const folderPathToSave = filePathToSave.split('/').slice(0, -1).join('/');
-	const stat = await fs.stat(folderPathToSave).catch(() => undefined);
-	if (!stat) await fs.mkdir(folderPathToSave, { recursive: true });
+	const stat = fs.statSync(folderPathToSave);
+	if (!stat) fs.mkdirSync(folderPathToSave, { recursive: true });
 
 	writeFileSync(encrypt ? encryptedFilePath : decryptedFilePath, JSON.stringify(newSecretStorage));
 
