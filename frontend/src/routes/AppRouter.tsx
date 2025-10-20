@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AppHeader from '../components/layout/AppHeader';
 import ConfigPage from '../pages/ConfigPage';
 import ResultsPage from '../pages/ResultsPage';
-import SecretsPage from '../pages/SecretsPage';
+import SecretsPage from '../pages/secrets/SecretsPage';
 
 export default function AppRouter() {
 	return (

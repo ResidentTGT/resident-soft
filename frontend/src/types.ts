@@ -1,4 +1,4 @@
-import { type Selector } from '../../src/server/selection';
+import { type Selector } from '../../src/utils/selection';
 import { type LaunchParams } from '../../src/utils/types/launchParams.type';
 import { type FunctionParams } from '../../src/utils/types/functionParams.type';
 export interface SelectionStatus {

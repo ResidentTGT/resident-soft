@@ -7,7 +7,7 @@ const ROOT = process.cwd(); // рядом с exe/запуском
 const LAUNCH = path.join(ROOT, 'launchParams.jsonc');
 const FUNCP = path.join(ROOT, 'functionParams.jsonc');
 
-function readJsonc(file: string) {
+export function readJsonc(file: string) {
 	const raw = fs.readFileSync(file, 'utf8');
 	return parse(raw);
 }

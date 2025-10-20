@@ -60,3 +60,20 @@ export async function getTokens(): Promise<TokenConfig[]> {
 	if (!r.ok) throw new Error(`Tokens fetch failed: ${r.status}`);
 	return r.json();
 }
+
+export async function getSecrets() {
+	const r = await fetch('/api/secrets');
+	if (!r.ok) throw new Error(`Secrets fetch failed: ${r.status}`);
+	return r.json();
+}
+
+export async function postSecrets(data: { encrypted: any; decrypted: any }) {
+	const r = await fetch('/api/secrets', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	if (r.status === 423) throw Object.assign(new Error('нельзя менять данные во время работы скрипта'), { code: 423 });
+	if (!r.ok) throw new Error(`Secrets save failed: ${r.status}`);
+	return r.json();
+}

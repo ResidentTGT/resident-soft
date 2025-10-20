@@ -2,9 +2,9 @@ import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, w
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
 import { GREEN_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
-import { readConfigs } from '@src/server/config-io';
-import { startHttpServer } from '@src/server/http';
-import { selectionGate } from '@src/server/selection';
+import { readConfigs } from '@src/utils/config-io';
+import { startHttpServer } from '@src/utils/server';
+import { selectionGate } from '@src/utils/selection';
 import { Network } from '@src/utils/network';
 
 process.on('unhandledRejection', async (error) => {

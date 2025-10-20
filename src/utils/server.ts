@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import { readConfigs, writeConfigs } from './config-io';
+import { readConfigs, readJsonc, writeConfigs } from './config-io';
 import * as sea from 'node:sea';
 import fs from 'node:fs';
 
@@ -135,6 +135,45 @@ export async function startHttpServer() {
 			res.json({ states: ok, failed });
 		} catch (e: any) {
 			res.status(500).json({ error: 'Failed to list states', details: e?.message });
+		}
+	});
+
+	app.get('/api/secrets', (_req, res) => {
+		try {
+			const snapshot = readConfigs();
+			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
+			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+			let encryptedData;
+			let decryptedData;
+			if (fs.existsSync(encPath)) encryptedData = readJsonc(encPath);
+			if (fs.existsSync(decPath)) decryptedData = readJsonc(decPath);
+
+			res.json({ encrypted: encryptedData, decrypted: decryptedData });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.post('/api/secrets', (req, res) => {
+		if (selectionGate.getStatus().chosenBy) {
+			return res.status(423).json({ error: 'Configs are locked (already chosen)' });
+		}
+		try {
+			const { encrypted, decrypted } = req.body || {};
+			const snapshot = readConfigs();
+			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
+			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+			if (encrypted !== undefined) {
+				fs.mkdirSync(path.dirname(encPath), { recursive: true });
+				fs.writeFileSync(encPath, JSON.stringify(encrypted, null, '\t'));
+			}
+			if (decrypted !== undefined) {
+				fs.mkdirSync(path.dirname(decPath), { recursive: true });
+				fs.writeFileSync(decPath, JSON.stringify(decrypted, null, '\t'));
+			}
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
 		}
 	});
 
