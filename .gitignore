@@ -108,11 +108,11 @@ dist
 # TernJS port file
 .tern-port
 
-src/premium/
-secrets/
-states/
-balances/
-sea_build/*.exe
-sea_build/*.blob
-configs/dependency-cruiser/dependency-graph.dot
-configs/dependency-cruiser/dependency-graph.svg
+/src/premium/
+/secrets/
+/states/
+/balances/
+/sea_build/*.exe
+/sea_build/*.blob
+/configs/dependency-cruiser/dependency-graph.dot
+/configs/dependency-cruiser/dependency-graph.svg
