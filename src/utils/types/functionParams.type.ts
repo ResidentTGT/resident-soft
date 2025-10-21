@@ -243,4 +243,9 @@ export interface FunctionParams {
 			browser: string;
 		};
 	};
+	Polymarket?: {
+		ClaimUi?: {
+			browser: string;
+		};
+	};
 }

@@ -164,6 +164,7 @@ export default function LaunchParamsForm({
 			<TextField
 				label="Лицензия"
 				size="small"
+				type="password"
 				fullWidth
 				value={launchParams.LICENSE ?? ''}
 				onChange={(e) => setField('LICENSE', e.target.value || undefined)}

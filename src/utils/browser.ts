@@ -8,18 +8,17 @@ import { Vision } from './vision';
 const ALLOWED_BROWSERS = ['AdsPower', 'Vision'];
 
 export async function openBrowser(browserName: string, account: Account): Promise<Browser> {
-	if (!browserName || !ALLOWED_BROWSERS.includes(browserName))
-		throw new Error(`Browser ${browserName} is not allowed! Allowed browsers: ${ALLOWED_BROWSERS.join(', ')}`);
-
 	let browser;
 	if (browserName === 'AdsPower') {
 		if (!account.adsPower?.profileId) throw new MissingFieldError('adsPower.profileId');
 		browser = await AdsPower.openBrowser(account.adsPower.profileId);
-	} else {
+	} else if (browserName === 'Vision') {
 		if (!account.vision?.token) throw new MissingFieldError('vision.token');
 		if (!account.vision?.folderId) throw new MissingFieldError('vision.folderId');
 		if (!account.vision?.profileId) throw new MissingFieldError('vision.profileId');
 		browser = await Vision.openBrowser(account.vision.token, account.vision.folderId, account.vision.profileId, []);
+	} else {
+		throw new Error(`Browser ${browserName} is not supported! Allowed browsers: ${ALLOWED_BROWSERS.join(', ')}`);
 	}
 
 	return browser;

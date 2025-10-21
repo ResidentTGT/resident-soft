@@ -323,5 +323,10 @@
 		"AddLiquidity": {
 			"browser": "Vision"
 		}
+	},
+	"Polymarket": {
+		"ClaimUi": {
+			"browser": "Vision"
+		}
 	}
 }

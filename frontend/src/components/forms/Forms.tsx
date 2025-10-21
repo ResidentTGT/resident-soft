@@ -654,6 +654,24 @@ const Form_Meteora_AddLiquidity = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
+/* -------- / Polymarket -------- */
+
+const Form_Polymarket_ClaimUi = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
+	</Grid>
+);
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -722,5 +740,8 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Bybit]: {
 		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
+	},
+	[ActionsGroupName.Polymarket]: {
+		[ActionName.ClaimUi]: Form_Polymarket_ClaimUi,
 	},
 };

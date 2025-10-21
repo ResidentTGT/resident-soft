@@ -31,6 +31,7 @@ export enum ActionsGroupName {
 	AdsPower = 'AdsPower',
 	Vision = 'Vision',
 	Meteora = 'Meteora',
+	Polymarket = 'Polymarket',
 }
 
 export enum ActionName {
@@ -528,5 +529,12 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Meteora',
 		allowed: true,
 		actions: [{ action: ActionName.AddLiquidity, isolated: true, allowed: true, name: 'Добавить LP' }],
+	},
+	{
+		group: ActionsGroupName.Polymarket,
+		premium: true,
+		name: 'Polymarket',
+		allowed: true,
+		actions: [{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм наград (UI)' }],
 	},
 ];
