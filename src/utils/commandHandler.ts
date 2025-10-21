@@ -13,8 +13,8 @@ import prompts, { PromptObject } from 'prompts';
 
 export enum CommandOption {
 	'Action Mode' = 1,
-	'Decrypt Accounts And SecretStorage' = 2,
-	'Encrypt Accounts And SecretStorage' = 3,
+	'Decrypt Accounts' = 2,
+	'Encrypt Accounts' = 3,
 }
 
 export class CommandHandler {
@@ -71,13 +71,11 @@ export class CommandHandler {
 			case CommandOption['Action Mode']:
 				await this.handleActionMode();
 				break;
-			case CommandOption['Decrypt Accounts And SecretStorage']:
+			case CommandOption['Decrypt Accounts']:
 				await this.handleAccountsEncryption(false);
-				this.handleSecretStorageEncryption(false);
 				break;
-			case CommandOption['Encrypt Accounts And SecretStorage']:
+			case CommandOption['Encrypt Accounts']:
 				await this.handleAccountsEncryption(true);
-				this.handleSecretStorageEncryption(true);
 				break;
 			default:
 				throw new Error(`Unsupported option: ${option}`);
@@ -96,8 +94,8 @@ export async function promptUserForOption(launchParams: LaunchParams): Promise<C
 		message: 'Select option:',
 		choices: [
 			{ title: `${runAction}`, value: 'run' },
-			{ title: '🔑 Encrypt accounts and secretStorage', value: 'encrypt' },
-			{ title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
+			{ title: '🔑 Encrypt accounts', value: 'encrypt' },
+			{ title: '🔓 Decrypt accounts', value: 'decrypt' },
 			{ title: '❌ Exit', value: 'exit' },
 		],
 		hint: 'arrows ↑↓, Enter — select',
@@ -114,9 +112,9 @@ export async function promptUserForOption(launchParams: LaunchParams): Promise<C
 		case 'run':
 			return CommandOption['Action Mode'];
 		case 'encrypt':
-			return CommandOption['Encrypt Accounts And SecretStorage'];
+			return CommandOption['Encrypt Accounts'];
 		case 'decrypt':
-			return CommandOption['Decrypt Accounts And SecretStorage'];
+			return CommandOption['Decrypt Accounts'];
 		default:
 			return;
 	}
