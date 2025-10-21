@@ -75,6 +75,32 @@ const DebouncedTextField = React.memo(function DebouncedTextField({ value, onCha
 	);
 });
 
+/** Рекурсивная очистка: строки -> '', массивы -> [], объекты -> рекурсивно */
+function deepClear<T>(obj: T): T {
+	if (obj === null || obj === undefined) return obj;
+	if (Array.isArray(obj)) return [] as unknown as T;
+	if (typeof obj === 'string') return '' as unknown as T;
+	if (typeof obj === 'object') {
+		const next: Record<string, unknown> = {};
+		for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+			if (v === null || v === undefined) {
+				next[k] = v;
+			} else if (typeof v === 'string') {
+				next[k] = '';
+			} else if (Array.isArray(v)) {
+				next[k] = [];
+			} else if (typeof v === 'object') {
+				next[k] = deepClear(v);
+			} else {
+				// числа/булевы — возвращаем как есть (в SecretStorage ожидаются в основном строки/объекты)
+				next[k] = v;
+			}
+		}
+		return next as T;
+	}
+	return obj;
+}
+
 export default function SecretsPage() {
 	const [encrypted, setEncrypted] = useState<SecretStorage>();
 	const [decrypted, setDecrypted] = useState<SecretStorage>();
@@ -88,6 +114,9 @@ export default function SecretsPage() {
 	const [conversionMode, setConversionMode] = useState<'encrypt' | 'decrypt' | null>(null);
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
+
+	// Новый стейт для подтверждения сброса
+	const [openResetDialog, setOpenResetDialog] = useState(false);
 
 	const current = useMemo(() => (variant === 'encrypted' ? encrypted : decrypted), [variant, encrypted, decrypted]);
 	const setCurrent = variant === 'encrypted' ? setEncrypted : setDecrypted;
@@ -181,13 +210,20 @@ export default function SecretsPage() {
 		}
 	};
 
+	// Сброс всех полей текущей вкладки
+	const handleResetAll = () => {
+		setCurrent((prev) => (prev ? deepClear(prev) : prev));
+		setOpenResetDialog(false);
+		setToast({ open: true, severity: 'success', message: 'Все поля очищены' });
+	};
+
 	const telegram = (current?.telegram ?? {}) as NonNullable<SecretStorage['telegram']>;
 
 	return (
 		<Paper variant="outlined" sx={{ p: 2 }}>
-			<Typography variant="h6" gutterBottom>
-				Секретные данные
-			</Typography>
+			<Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+				<Typography variant="h6">Секретные данные</Typography>
+			</Box>
 
 			<Tabs value={variant} onChange={(_, v) => setVariant(v)} textColor="inherit" indicatorColor="primary" sx={{ mb: 2 }}>
 				<Tab value="encrypted" label="Зашифрованный файл" />
@@ -196,7 +232,28 @@ export default function SecretsPage() {
 
 			{current ? (
 				<>
-					<Accordion defaultExpanded TransitionProps={{ unmountOnExit: true }}>
+					<Box sx={{ display: 'flex', marginBottom: '15px' }}>
+						<Button
+							variant="outlined"
+							color="warning"
+							onClick={() => setOpenResetDialog(true)}
+							disabled={loading || !current}
+						>
+							Сбросить все поля
+						</Button>
+						<Button variant="contained" onClick={handleSave} disabled={loading || saving} sx={{ marginLeft: '20px' }}>
+							Сохранить изменения
+						</Button>
+						<Button
+							color="secondary"
+							sx={{ marginLeft: 'auto' }}
+							variant="outlined"
+							onClick={() => handleOpenConvertDialog(variant === 'encrypted' ? 'decrypt' : 'encrypt')}
+						>
+							{variant === 'encrypted' ? 'Расшифровать данные' : 'Зашифровать данные'}
+						</Button>
+					</Box>
+					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>Основной EVM-кошелёк</Typography>
 						</AccordionSummary>
@@ -208,7 +265,7 @@ export default function SecretsPage() {
 						</AccordionDetails>
 					</Accordion>
 
-					<Accordion TransitionProps={{ unmountOnExit: true }}>
+					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>Биржи</Typography>
 						</AccordionSummary>
@@ -257,7 +314,7 @@ export default function SecretsPage() {
 						</AccordionDetails>
 					</Accordion>
 
-					<Accordion TransitionProps={{ unmountOnExit: true }}>
+					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>API-ключи и прочее</Typography>
 						</AccordionSummary>
@@ -281,7 +338,7 @@ export default function SecretsPage() {
 						</AccordionDetails>
 					</Accordion>
 
-					<Accordion TransitionProps={{ unmountOnExit: true }}>
+					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>Telegram</Typography>
 						</AccordionSummary>
@@ -307,61 +364,47 @@ export default function SecretsPage() {
 						</AccordionDetails>
 					</Accordion>
 
-					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-						<Button variant="contained" onClick={handleSave} disabled={loading || saving} sx={{ height: 45, px: 3 }}>
-							Сохранить
-						</Button>
-						<Button
-							sx={{ marginLeft: '20px' }}
-							variant="contained"
-							onClick={() => handleOpenConvertDialog(variant === 'encrypted' ? 'decrypt' : 'encrypt')}
-						>
-							{variant === 'encrypted' ? 'Расшифровать данные' : 'Зашифровать данные'}
-						</Button>
-						<Dialog open={openConvertDialog} onClose={handleCloseConvertDialog}>
-							<DialogTitle>
-								{conversionMode === 'encrypt' ? 'Зашифровать данные' : 'Расшифровать данные'}
-							</DialogTitle>
-							<DialogContent>
-								<DialogContentText sx={{ mb: 2 }}>
-									Все {conversionMode === 'encrypt' ? 'зашифрованные' : 'расшифрованные'} данные будут
-									перезаписаны. Введите пароль:
-								</DialogContentText>
+					<Dialog open={openConvertDialog} onClose={handleCloseConvertDialog}>
+						<DialogTitle>{conversionMode === 'encrypt' ? 'Зашифровать данные' : 'Расшифровать данные'}</DialogTitle>
+						<DialogContent>
+							<DialogContentText sx={{ mb: 2 }}>
+								Все {conversionMode === 'encrypt' ? 'зашифрованные' : 'расшифрованные'} данные будут перезаписаны.
+								Введите пароль:
+							</DialogContentText>
 
-								<TextField
-									label="Пароль"
-									type="password"
-									fullWidth
-									margin="normal"
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-								/>
-								<TextField
-									label="Повторите пароль"
-									type="password"
-									fullWidth
-									margin="normal"
-									value={confirmPassword}
-									onChange={(e) => setConfirmPassword(e.target.value)}
-									error={confirmPassword.length > 0 && password !== confirmPassword}
-									helperText={
-										confirmPassword.length > 0 && password !== confirmPassword ? 'Пароли не совпадают' : ''
-									}
-								/>
-							</DialogContent>
-							<DialogActions>
-								<Button onClick={handleCloseConvertDialog}>Отмена</Button>
-								<Button
-									onClick={handleConfirmConvert}
-									variant="contained"
-									color="primary"
-									disabled={!password || password !== confirmPassword}
-								>
-									{conversionMode === 'encrypt' ? 'Зашифровать' : 'Расшифровать'}
-								</Button>
-							</DialogActions>
-						</Dialog>
-					</Box>
+							<TextField
+								label="Пароль"
+								type="password"
+								fullWidth
+								margin="normal"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+							/>
+							<TextField
+								label="Повторите пароль"
+								type="password"
+								fullWidth
+								margin="normal"
+								value={confirmPassword}
+								onChange={(e) => setConfirmPassword(e.target.value)}
+								error={confirmPassword.length > 0 && password !== confirmPassword}
+								helperText={
+									confirmPassword.length > 0 && password !== confirmPassword ? 'Пароли не совпадают' : ''
+								}
+							/>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={handleCloseConvertDialog}>Отмена</Button>
+							<Button
+								onClick={handleConfirmConvert}
+								variant="contained"
+								color="primary"
+								disabled={!password || password !== confirmPassword}
+							>
+								{conversionMode === 'encrypt' ? 'Зашифровать' : 'Расшифровать'}
+							</Button>
+						</DialogActions>
+					</Dialog>
 				</>
 			) : (
 				!loading && (
@@ -372,6 +415,23 @@ export default function SecretsPage() {
 					</Alert>
 				)
 			)}
+
+			<Dialog open={openResetDialog} onClose={() => setOpenResetDialog(false)}>
+				<DialogTitle>Сбросить все поля?</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Это очистит все поля на текущей вкладке (
+						<b>{variant === 'encrypted' ? 'Зашифрованный файл' : 'Расшифрованный файл'}</b>). Данные не будут
+						сохранены автоматически.
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenResetDialog(false)}>Отмена</Button>
+					<Button variant="contained" color="warning" onClick={handleResetAll}>
+						Сбросить
+					</Button>
+				</DialogActions>
+			</Dialog>
 
 			<Snackbar
 				open={toast.open}
