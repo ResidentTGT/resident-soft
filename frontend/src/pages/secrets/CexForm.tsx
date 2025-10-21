@@ -48,9 +48,10 @@ interface Props {
 	value?: Cex;
 	onChange: (next: Cex) => void;
 	dense?: boolean;
+	disabled?: boolean;
 }
 
-export const CexForm = React.memo(function CexForm({ label, value, onChange, dense = false }: Props) {
+export const CexForm = React.memo(function CexForm({ label, value, onChange, dense = false, disabled }: Props) {
 	const v: Cex = value ?? {};
 
 	const setRoot =
@@ -88,7 +89,13 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 			<CardContent sx={{ pt: 1.5 }}>
 				<Grid container spacing={spacing} sx={{ mb: 1 }}>
 					<Grid size={{ xs: 12, sm: 6 }}>
-						<DebouncedTextField label="Email" fullWidth value={v.email ?? ''} onChange={setRoot('email')} />
+						<DebouncedTextField
+							disabled={disabled}
+							label="Email"
+							fullWidth
+							value={v.email ?? ''}
+							onChange={setRoot('email')}
+						/>
 					</Grid>
 				</Grid>
 
@@ -100,6 +107,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 				<Grid container spacing={spacing}>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="EVM Deposit Address"
 							fullWidth
 							value={v.evmDepositAddress ?? ''}
@@ -108,6 +116,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="Starknet Deposit Address"
 							fullWidth
 							value={v.starknetDepositAddress ?? ''}
@@ -116,6 +125,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="Sui Deposit Address"
 							fullWidth
 							value={v.suiDepositAddress ?? ''}
@@ -124,6 +134,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="Aptos Deposit Address"
 							fullWidth
 							value={v.aptosDepositAddress ?? ''}
@@ -132,6 +143,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="Solana Deposit Address"
 							fullWidth
 							value={v.solanaDepositAddress ?? ''}
@@ -147,10 +159,17 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 				</Typography>
 				<Grid container spacing={spacing}>
 					<Grid size={{ xs: 12, sm: 6 }}>
-						<DebouncedTextField label="API Key" fullWidth value={v.api?.apiKey ?? ''} onChange={setApi('apiKey')} />
+						<DebouncedTextField
+							disabled={disabled}
+							label="API Key"
+							fullWidth
+							value={v.api?.apiKey ?? ''}
+							onChange={setApi('apiKey')}
+						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>
 						<DebouncedTextField
+							disabled={disabled}
 							label="Secret Key"
 							fullWidth
 							value={v.api?.secretKey ?? ''}
@@ -160,6 +179,7 @@ export const CexForm = React.memo(function CexForm({ label, value, onChange, den
 					{
 						<Grid size={{ xs: 12, sm: 6 }}>
 							<DebouncedTextField
+								disabled={disabled}
 								label="Passphrase"
 								fullWidth
 								value={v.api?.passPhrase ?? ''}

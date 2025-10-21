@@ -40,10 +40,10 @@ async function main() {
 			let key;
 			if (
 				(selectedOption === CommandOption['Action Mode'] && launchParams.USE_ENCRYPTION) ||
-				selectedOption === CommandOption['Decrypt Accounts']
+				selectedOption === CommandOption['Decrypt Accounts And SecretStorage']
 			)
 				key = await promptUserForKey(true);
-			else if (selectedOption === CommandOption['Encrypt Accounts']) key = await promptUserForKey(false);
+			else if (selectedOption === CommandOption['Encrypt Accounts And SecretStorage']) key = await promptUserForKey(false);
 
 			const commandHandler = new CommandHandler(launchParams, functionParams, key);
 			await commandHandler.executeCommand(selectedOption);

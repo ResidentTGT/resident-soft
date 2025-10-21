@@ -45,11 +45,12 @@ const DebouncedTextField = React.memo(function DebouncedTextField({ value, onCha
 });
 
 interface Props {
+	disabled?: boolean;
 	value?: Wallet;
 	onChange: (next: Wallet) => void;
 }
 
-export const WalletForm = React.memo(function WalletForm({ value, onChange }: Props) {
+export const WalletForm = React.memo(function WalletForm({ value, onChange, disabled }: Props) {
 	const v = (value ?? {}) as any;
 
 	const set = (key: keyof Wallet) => (val: string) => onChange({ ...(value ?? {}), [key]: val } as Wallet);
@@ -58,13 +59,31 @@ export const WalletForm = React.memo(function WalletForm({ value, onChange }: Pr
 		<>
 			<Grid container spacing={2}>
 				<Grid sx={{ width: '400px' }}>
-					<DebouncedTextField fullWidth label="Address" value={v.address ?? ''} onChange={set('address')} />
+					<DebouncedTextField
+						disabled={disabled}
+						fullWidth
+						label="Address"
+						value={v.address ?? ''}
+						onChange={set('address')}
+					/>
 				</Grid>
 				<Grid sx={{ width: '400px' }}>
-					<DebouncedTextField fullWidth label="Private Key" value={v.private ?? ''} onChange={set('private')} />
+					<DebouncedTextField
+						disabled={disabled}
+						fullWidth
+						label="Private Key"
+						value={v.private ?? ''}
+						onChange={set('private')}
+					/>
 				</Grid>
 				<Grid sx={{ width: '400px' }}>
-					<DebouncedTextField fullWidth label="Seed Phrase" value={v.seed ?? ''} onChange={set('seed')} />
+					<DebouncedTextField
+						disabled={disabled}
+						fullWidth
+						label="Seed Phrase"
+						value={v.seed ?? ''}
+						onChange={set('seed')}
+					/>
 				</Grid>
 			</Grid>
 		</>

@@ -23,7 +23,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import type { SecretStorage } from '../../../../src/utils/secretStorage.type';
 
 import type { Cex } from '../../../../src/utils/account/models/cex.type';
-import { encryptSecretStorage, getSecrets, postSecrets } from '../../api/client';
+import { getSecrets, postSecrets } from '../../api/client';
 import { CexForm } from './CexForm';
 import { WalletForm } from './WalletForm';
 import type { Wallet } from '../../../../src/utils/account/models/wallet.type';
@@ -110,10 +110,10 @@ export default function SecretsPage() {
 	const [saving, setSaving] = useState(false);
 	const [toast, setToast] = useState<Toast>({ open: false, severity: 'success', message: '' });
 
-	const [openConvertDialog, setOpenConvertDialog] = useState(false);
-	const [conversionMode, setConversionMode] = useState<'encrypt' | 'decrypt' | null>(null);
-	const [password, setPassword] = useState('');
-	const [confirmPassword, setConfirmPassword] = useState('');
+	// const [openConvertDialog, setOpenConvertDialog] = useState(false);
+
+	// const [password, setPassword] = useState('');
+	// const [confirmPassword, setConfirmPassword] = useState('');
 
 	// Новый стейт для подтверждения сброса
 	const [openResetDialog, setOpenResetDialog] = useState(false);
@@ -174,41 +174,41 @@ export default function SecretsPage() {
 		{ key: 'wssRpcUrl', label: 'WSS RPC URL', type: 'text' },
 	];
 
-	const handleOpenConvertDialog = (mode: 'encrypt' | 'decrypt') => {
-		setConversionMode(mode);
-		setPassword('');
-		setConfirmPassword('');
-		setOpenConvertDialog(true);
-	};
+	// const handleOpenConvertDialog = (mode: 'encrypt' | 'decrypt') => {
+	// 	setConversionMode(mode);
+	// 	setPassword('');
+	// 	setConfirmPassword('');
+	// 	setOpenConvertDialog(true);
+	// };
 
-	const handleCloseConvertDialog = () => {
-		setOpenConvertDialog(false);
-		setConversionMode(null);
-	};
+	// const handleCloseConvertDialog = () => {
+	// 	setOpenConvertDialog(false);
+	// 	setConversionMode(null);
+	// };
 
-	const handleConfirmConvert = async () => {
-		if (!password || password !== confirmPassword) {
-			return;
-		}
-		try {
-			await encryptSecretStorage(password, conversionMode === 'encrypt');
-			setOpenConvertDialog(false);
-			setToast({
-				open: true,
-				severity: 'success',
-				message: `Данные ${conversionMode === 'encrypt' ? 'зашифрованы' : 'расшифрованы'}`,
-			});
-			const data = await getSecrets();
-			setEncrypted(data.encrypted);
-			setDecrypted(data.decrypted);
-		} catch (error: any) {
-			setToast({
-				open: true,
-				severity: 'error',
-				message: `Не удалось ${conversionMode === 'encrypt' ? 'зашифровать' : 'расшифровать'} данные: ${error}`,
-			});
-		}
-	};
+	// const handleConfirmConvert = async () => {
+	// 	if (!password || password !== confirmPassword) {
+	// 		return;
+	// 	}
+	// 	try {
+	// 		await encryptSecretStorage(password, conversionMode === 'encrypt');
+	// 		setOpenConvertDialog(false);
+	// 		setToast({
+	// 			open: true,
+	// 			severity: 'success',
+	// 			message: `Данные ${conversionMode === 'encrypt' ? 'зашифрованы' : 'расшифрованы'}`,
+	// 		});
+	// 		const data = await getSecrets();
+	// 		setEncrypted(data.encrypted);
+	// 		setDecrypted(data.decrypted);
+	// 	} catch (error: any) {
+	// 		setToast({
+	// 			open: true,
+	// 			severity: 'error',
+	// 			message: `Не удалось ${conversionMode === 'encrypt' ? 'зашифровать' : 'расшифровать'} данные: ${error}`,
+	// 		});
+	// 	}
+	// };
 
 	// Сброс всех полей текущей вкладки
 	const handleResetAll = () => {
@@ -226,39 +226,47 @@ export default function SecretsPage() {
 			</Box>
 
 			<Tabs value={variant} onChange={(_, v) => setVariant(v)} textColor="inherit" indicatorColor="primary" sx={{ mb: 2 }}>
-				<Tab value="encrypted" label="Зашифрованный файл" />
-				<Tab value="decrypted" label="Расшифрованный файл" />
+				<Tab value="encrypted" label="Зашифрованные данные" />
+				<Tab value="decrypted" label="Расшифрованные данные" />
 			</Tabs>
 
 			{current ? (
 				<>
-					<Box sx={{ display: 'flex', marginBottom: '15px' }}>
-						<Button
-							variant="outlined"
-							color="warning"
-							onClick={() => setOpenResetDialog(true)}
-							disabled={loading || !current}
-						>
-							Сбросить все поля
-						</Button>
-						<Button variant="contained" onClick={handleSave} disabled={loading || saving} sx={{ marginLeft: '20px' }}>
-							Сохранить изменения
-						</Button>
-						<Button
+					{variant === 'decrypted' && (
+						<Box sx={{ display: 'flex', marginBottom: '15px' }}>
+							<Button
+								variant="outlined"
+								color="warning"
+								onClick={() => setOpenResetDialog(true)}
+								disabled={loading || !current}
+							>
+								Сбросить все поля
+							</Button>
+							<Button
+								variant="contained"
+								onClick={handleSave}
+								disabled={loading || saving}
+								sx={{ marginLeft: '20px' }}
+							>
+								Сохранить изменения
+							</Button>
+							{/* <Button
 							color="secondary"
 							sx={{ marginLeft: 'auto' }}
 							variant="outlined"
 							onClick={() => handleOpenConvertDialog(variant === 'encrypted' ? 'decrypt' : 'encrypt')}
 						>
 							{variant === 'encrypted' ? 'Расшифровать данные' : 'Зашифровать данные'}
-						</Button>
-					</Box>
+						</Button> */}
+						</Box>
+					)}
 					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>Основной EVM-кошелёк</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
 							<WalletForm
+								disabled={variant === 'encrypted'}
 								value={current.mainEvmWallet as Wallet | undefined}
 								onChange={(next) => update('mainEvmWallet', next)}
 							/>
@@ -273,6 +281,7 @@ export default function SecretsPage() {
 							<Grid container spacing={3}>
 								<Grid size={{ xs: 12, sm: 6 }}>
 									<CexForm
+										disabled={variant === 'encrypted'}
 										label="Binance"
 										value={current.mainBinanceAccount as Cex | undefined}
 										onChange={(next) => update('mainBinanceAccount', next)}
@@ -281,6 +290,7 @@ export default function SecretsPage() {
 
 								<Grid size={{ xs: 12, sm: 6 }}>
 									<CexForm
+										disabled={variant === 'encrypted'}
 										label="OKX"
 										value={current.mainOkxAccount as Cex | undefined}
 										onChange={(next) => update('mainOkxAccount', next)}
@@ -289,6 +299,7 @@ export default function SecretsPage() {
 
 								<Grid size={{ xs: 12, sm: 6 }}>
 									<CexForm
+										disabled={variant === 'encrypted'}
 										label="Bitget"
 										value={current.mainBitgetAccount as Cex | undefined}
 										onChange={(next) => update('mainBitgetAccount', next)}
@@ -297,6 +308,7 @@ export default function SecretsPage() {
 
 								<Grid size={{ xs: 12, sm: 6 }}>
 									<CexForm
+										disabled={variant === 'encrypted'}
 										label="Gate"
 										value={current.mainGateAccount as Cex | undefined}
 										onChange={(next) => update('mainGateAccount', next)}
@@ -305,6 +317,7 @@ export default function SecretsPage() {
 
 								<Grid size={{ xs: 12, sm: 6 }}>
 									<CexForm
+										disabled={variant === 'encrypted'}
 										label="Bybit"
 										value={current.mainBybitAccount as Cex | undefined}
 										onChange={(next) => update('mainBybitAccount', next)}
@@ -325,6 +338,7 @@ export default function SecretsPage() {
 									return (
 										<Grid key={String(key)} sx={{ width: '400px' }}>
 											<DebouncedTextField
+												disabled={variant === 'encrypted'}
 												label={label}
 												type={type === 'password' ? 'password' : 'text'}
 												fullWidth
@@ -346,6 +360,7 @@ export default function SecretsPage() {
 							<Grid container spacing={2}>
 								<Grid sx={{ width: '400px' }}>
 									<DebouncedTextField
+										disabled={variant === 'encrypted'}
 										label="Bot API Key"
 										fullWidth
 										value={telegram?.apiKey ?? ''}
@@ -354,6 +369,7 @@ export default function SecretsPage() {
 								</Grid>
 								<Grid sx={{ width: '400px' }}>
 									<DebouncedTextField
+										disabled={variant === 'encrypted'}
 										label="Chat ID"
 										fullWidth
 										value={telegram?.chatId ?? ''}
@@ -364,7 +380,7 @@ export default function SecretsPage() {
 						</AccordionDetails>
 					</Accordion>
 
-					<Dialog open={openConvertDialog} onClose={handleCloseConvertDialog}>
+					{/* <Dialog open={openConvertDialog} onClose={handleCloseConvertDialog}>
 						<DialogTitle>{conversionMode === 'encrypt' ? 'Зашифровать данные' : 'Расшифровать данные'}</DialogTitle>
 						<DialogContent>
 							<DialogContentText sx={{ mb: 2 }}>
@@ -404,14 +420,14 @@ export default function SecretsPage() {
 								{conversionMode === 'encrypt' ? 'Зашифровать' : 'Расшифровать'}
 							</Button>
 						</DialogActions>
-					</Dialog>
+					</Dialog> */}
 				</>
 			) : (
 				!loading && (
 					<Alert severity="warning">
 						{variant === 'decrypted'
-							? 'Нет расшифрованного файла. Если хочешь увидеть расшифрованные данные, расшифруй зашифрованный файл.'
-							: 'Нет зашифрованного файла. Если хочешь зашифровать данные, зашифруй расшифрованный файл.'}
+							? 'Нет расшифрованных данных. Если хочешь увидеть расшифрованные данные, перейди на вкладку шифрования.'
+							: 'Нет зашифрованных данных. Если хочешь зашифровать данные, перейди на вкладку шифрования.'}
 					</Alert>
 				)
 			)}
