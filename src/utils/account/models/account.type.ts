@@ -1,8 +1,8 @@
-import { BrowserExtension } from './browserExtension.type';
-import { Cex } from './cex.type';
-import { Proxy } from './proxy.type';
-import { SocialAccount } from './socialAccount.type';
-import { Wallet } from './wallet.type';
+import { type BrowserExtension } from './browserExtension.type';
+import { type Cex } from './cex.type';
+import { type Proxy } from './proxy.type';
+import { type SocialAccount } from './socialAccount.type';
+import { type Wallet } from './wallet.type';
 
 export interface Account {
 	name: string;

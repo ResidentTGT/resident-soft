@@ -1,4 +1,4 @@
-import { Cex, Wallet } from '@utils/account';
+import type { Cex, Wallet } from './account/models';
 
 export interface SecretStorage {
 	mainEvmWallet?: Wallet;
