@@ -17,6 +17,7 @@ import {
 	DialogContent,
 	DialogContentText,
 	DialogTitle,
+	Paper,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import type { SecretStorage } from '../../../../src/utils/secretStorage.type';
@@ -151,10 +152,10 @@ export default function StoragePage({ encrypted, decrypted, setEncrypted, setDec
 	};
 
 	return (
-		<>
+		<Paper variant="outlined" sx={{ p: 2 }}>
 			<Tabs value={variant} onChange={(_, v) => setVariant(v)} textColor="inherit" indicatorColor="primary" sx={{ mb: 2 }}>
-				<Tab value="decrypted" label="Расшифрованные данные" />
-				<Tab value="encrypted" label="Зашифрованные данные" />
+				<Tab value="decrypted" label="Расшифрованные" />
+				<Tab value="encrypted" label="Зашифрованные" />
 			</Tabs>
 
 			{current ? (
@@ -324,6 +325,6 @@ export default function StoragePage({ encrypted, decrypted, setEncrypted, setDec
 					{toast.message}
 				</Alert>
 			</Snackbar>
-		</>
+		</Paper>
 	);
 }

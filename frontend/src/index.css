@@ -6,7 +6,17 @@
 	text-rendering: optimizeLegibility;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+
+	height: 100%;
+	position: relative;
 }
+
 body {
 	font-family: var(--font-sans);
+	height: 100%;
+	position: relative;
+}
+
+#root {
+	height: 100%;
 }

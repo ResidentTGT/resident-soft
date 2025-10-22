@@ -122,8 +122,6 @@ export default function SecretsPage() {
 			const storage = await getStorage();
 			const accounts = await getAccounts();
 
-			console.log(accounts);
-
 			setStorageEncrypted(storage.encrypted);
 			setStorageDecrypted(storage.decrypted);
 
@@ -141,7 +139,7 @@ export default function SecretsPage() {
 	}, []);
 
 	return (
-		<Paper variant="outlined" sx={{ p: 2 }}>
+		<Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
 			<Box sx={{ display: 'flex', alignItems: 'center' }}>
 				<Tabs
 					value={dataType}
