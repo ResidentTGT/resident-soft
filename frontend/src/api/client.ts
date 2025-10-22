@@ -1,6 +1,7 @@
 import type { ActionsGroup } from '../../../src/actions';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
+import type { AccountsFile } from '../pages/secrets/AccountsPage';
 import type { SelectionStatus, Configs } from '../types';
 
 export async function getSelection(): Promise<SelectionStatus> {
@@ -61,24 +62,42 @@ export async function getTokens(): Promise<TokenConfig[]> {
 	return r.json();
 }
 
-export async function getSecrets() {
-	const r = await fetch('/api/secrets');
-	if (!r.ok) throw new Error(`Secrets fetch failed: ${r.status}`);
+export async function getStorage(): Promise<{ encrypted: any; decrypted: any }> {
+	const r = await fetch('/api/secrets/storage');
+	if (!r.ok) throw new Error(`Storage fetch failed: ${r.status}`);
+	return r.json();
+}
+
+export async function getAccounts(): Promise<{
+	encrypted: AccountsFile[];
+	decrypted: AccountsFile[];
+}> {
+	const r = await fetch('/api/secrets/accounts');
+	if (!r.ok) throw new Error(`Accounts fetch failed: ${r.status}`);
 	return r.json();
 }
 
 export async function postSecrets(data: { encrypted: any; decrypted: any }) {
-	const r = await fetch('/api/secrets', {
+	const r = await fetch('/api/secrets/storage', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data),
 	});
-	if (r.status === 423) throw Object.assign(new Error('нельзя менять данные во время работы скрипта'), { code: 423 });
-	if (!r.ok) throw new Error(`Secrets save failed: ${r.status}`);
+	if (!r.ok) throw new Error(`Secret storage save failed: ${r.status}`);
 	return r.json();
 }
 
-export async function encryptSecretStorage(password: string, encryption: boolean) {
+export async function postAccounts(data: { encrypted: any; decrypted: any }) {
+	const r = await fetch('/api/secrets/accounts', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	if (!r.ok) throw new Error(`Accounts save failed: ${r.status}`);
+	return r.json();
+}
+
+export async function encryptSecrets(password: string, encryption: boolean) {
 	const r = await fetch('/api/encryptsecrets', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },

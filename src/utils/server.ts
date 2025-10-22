@@ -8,7 +8,8 @@ import { selectionGate } from './selection';
 import { ACTIONS } from '@src/actions';
 import { Network } from '@src/utils/network';
 import { StandardState } from '@src/utils/state/standardState.interface';
-import { convertSecretStorage } from './workWithSecrets';
+import { convertFromCsvToCsv, convertFromCsvToJsonAccounts, convertSecretStorage } from './workWithSecrets';
+import { Account } from './account';
 
 export async function startHttpServer() {
 	const app = express();
@@ -139,7 +140,7 @@ export async function startHttpServer() {
 		}
 	});
 
-	app.get('/api/secrets', (_req, res) => {
+	app.get('/api/secrets/storage', (_req, res) => {
 		try {
 			const snapshot = readConfigs();
 			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
@@ -155,7 +156,42 @@ export async function startHttpServer() {
 		}
 	});
 
-	app.post('/api/secrets', (req, res) => {
+	app.get('/api/secrets/accounts', async (_req, res) => {
+		try {
+			const snapshot = readConfigs();
+			const encPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
+			const decPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
+
+			const decryptedFiles = fs.readdirSync(decPath).filter((f) => f.endsWith('.xlsx'));
+			const encryptedFiles = fs.readdirSync(encPath).filter((f) => f.endsWith('.xlsx'));
+
+			const accsFiles: {
+				encrypted: { fileName: string; accounts: Account[] }[];
+				decrypted: { fileName: string; accounts: Account[] }[];
+			} = {
+				encrypted: [],
+				decrypted: [],
+			};
+
+			for (const file of decryptedFiles) {
+				const path = `${decPath}/${file}`;
+				const accs = await convertFromCsvToJsonAccounts(path, false);
+				accsFiles.decrypted.push({ fileName: file, accounts: accs });
+			}
+
+			for (const file of encryptedFiles) {
+				const path = `${encPath}/${file}`;
+				const accs = await convertFromCsvToJsonAccounts(path, false);
+				accsFiles.encrypted.push({ fileName: file, accounts: accs });
+			}
+
+			res.json(accsFiles);
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.post('/api/secrets/storage', (req, res) => {
 		if (selectionGate.getStatus().chosenBy) {
 			return res.status(423).json({ error: 'Configs are locked (already chosen)' });
 		}
@@ -178,15 +214,34 @@ export async function startHttpServer() {
 		}
 	});
 
-	app.post('/api/encryptsecrets', (req, res) => {
+	app.post('/api/secrets/accounts', (req, res) => {
+		if (selectionGate.getStatus().chosenBy) {
+			return res.status(423).json({ error: 'Configs are locked (already chosen)' });
+		}
+		try {
+			const { encrypted, decrypted } = req.body || {};
+			const snapshot = readConfigs();
+			const encPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
+			const decPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
+
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.post('/api/encryptsecrets', async (req, res) => {
 		try {
 			const { password, encryption } = req.body || {};
 			const snapshot = readConfigs();
 
-			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
-			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+			const encStoragePath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
+			const decStoragePath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+			const encAccsPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
+			const decAccsPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
 
-			convertSecretStorage(encPath, decPath, password, encryption);
+			convertSecretStorage(encStoragePath, decStoragePath, password, encryption);
+			await convertFromCsvToCsv(encAccsPath, decAccsPath, password, encryption);
 
 			res.json({ ok: true });
 		} catch (e: any) {
