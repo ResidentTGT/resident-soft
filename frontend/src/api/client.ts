@@ -97,6 +97,26 @@ export async function postAccounts(data: { encrypted: any; decrypted: any }) {
 	return r.json();
 }
 
+export async function createAccountsFile(data: { variant: 'encrypted' | 'decrypted'; fileName: string }) {
+	const r = await fetch('/api/secrets/accounts/create', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	if (!r.ok) throw new Error(`Create accounts file failed: ${r.status}`);
+	return r.json();
+}
+
+export async function deleteAccountsFile(data: { variant: 'encrypted' | 'decrypted'; fileName: string }) {
+	const r = await fetch('/api/secrets/accounts/delete', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	if (!r.ok) throw new Error(`Delete accounts file failed: ${r.status}`);
+	return r.json();
+}
+
 export async function encryptSecrets(password: string, encryption: boolean) {
 	const r = await fetch('/api/encryptsecrets', {
 		method: 'POST',

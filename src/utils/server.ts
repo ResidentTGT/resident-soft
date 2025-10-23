@@ -171,8 +171,8 @@ export async function startHttpServer() {
 			const encPath = ACCOUNTS_ENCRYPTED_PATH;
 			const decPath = ACCOUNTS_DECRYPTED_PATH;
 
-			const decryptedFiles = fs.readdirSync(decPath).filter((f) => f.endsWith('.xlsx'));
-			const encryptedFiles = fs.readdirSync(encPath).filter((f) => f.endsWith('.xlsx'));
+			const decryptedFiles = fs.existsSync(decPath) ? fs.readdirSync(decPath).filter((f) => f.endsWith('.xlsx')) : [];
+			const encryptedFiles = fs.existsSync(encPath) ? fs.readdirSync(encPath).filter((f) => f.endsWith('.xlsx')) : [];
 
 			const accsFiles: {
 				encrypted: { fileName: string; accounts: Account[] }[];
@@ -232,7 +232,7 @@ export async function startHttpServer() {
 				encrypted: AccountsFile[];
 				decrypted: AccountsFile[];
 			};
-			const snapshot = readConfigs();
+
 			const encPath = ACCOUNTS_ENCRYPTED_PATH;
 			const decPath = ACCOUNTS_DECRYPTED_PATH;
 
@@ -256,17 +256,63 @@ export async function startHttpServer() {
 		}
 	});
 
+	app.post('/api/secrets/accounts/create', express.json({ limit: '1mb' }), async (req, res) => {
+		try {
+			const { variant, fileName } = req.body as { variant: 'encrypted' | 'decrypted'; fileName: string };
+
+			const root = variant === 'encrypted' ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH;
+
+			fs.mkdirSync(root, { recursive: true });
+
+			function safeCsvName(name: string) {
+				const base = path.basename(name).trim();
+				if (!base) throw new Error('Empty fileName');
+				const norm = base.toLowerCase().endsWith('.xlsx') ? base : `${base}.xlsx`;
+				if (norm.includes('..') || norm.includes('/') || norm.includes('\\')) throw new Error('Invalid fileName');
+				return norm;
+			}
+
+			const safeName = safeCsvName(fileName);
+			const full = path.join(root, safeName);
+
+			if (fs.existsSync(full)) {
+				return res.status(409).json({ error: 'File already exists' });
+			}
+
+			await saveJsonAccountsToCsv(full, [], false);
+
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
+	app.post('/api/secrets/accounts/delete', async (req, res) => {
+		try {
+			const { variant, fileName } = req.body as { variant: 'encrypted' | 'decrypted'; fileName: string };
+
+			const root = variant === 'encrypted' ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH;
+
+			const full = path.join(root, fileName);
+
+			if (!fs.existsSync(full)) {
+				return res.status(404).json({ error: 'File not found' });
+			}
+
+			fs.unlinkSync(full);
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
+
 	app.post('/api/encryptsecrets', async (req, res) => {
 		try {
 			const { password, encryption } = req.body || {};
 
-			const encStoragePath = SECRET_STORAGE_ENCRYPTED_PATH;
-			const decStoragePath = SECRET_STORAGE_DECRYPTED_PATH;
-			const encAccsPath = ACCOUNTS_ENCRYPTED_PATH;
-			const decAccsPath = ACCOUNTS_DECRYPTED_PATH;
+			convertSecretStorage(SECRET_STORAGE_ENCRYPTED_PATH, SECRET_STORAGE_DECRYPTED_PATH, password, encryption);
 
-			convertSecretStorage(encStoragePath, decStoragePath, password, encryption);
-			await convertFromCsvToCsv(encAccsPath, decAccsPath, password, encryption);
+			await convertFromCsvToCsv(ACCOUNTS_ENCRYPTED_PATH, ACCOUNTS_DECRYPTED_PATH, password, encryption);
 
 			res.json({ ok: true });
 		} catch (e: any) {

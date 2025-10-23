@@ -18,7 +18,15 @@ import {
 } from '@mui/material';
 
 import StoragePage from './StoragePage';
-import { encryptSecrets, getAccounts, getStorage, postAccounts, postSecrets } from '../../api/client';
+import {
+	createAccountsFile,
+	deleteAccountsFile,
+	encryptSecrets,
+	getAccounts,
+	getStorage,
+	postAccounts,
+	postSecrets,
+} from '../../api/client';
 import type { SecretStorage } from '../../../../src/utils/secretStorage.type';
 import AccountsPage from './AccountsPage';
 import type { AccountsFile } from '../../../../src/utils/account';
@@ -78,7 +86,7 @@ export default function SecretsPage() {
 			setToast({
 				open: true,
 				severity: 'success',
-				message: `Данные ${isEncryption ? 'зашифрованы' : 'расшифрованы'}`,
+				message: `Данные ${isEncryption ? 'зашифрованы' : 'расшифрованы'} ✅`,
 			});
 			await fetchAllData();
 		} catch (error: any) {
@@ -97,7 +105,7 @@ export default function SecretsPage() {
 		setSavingStorage(true);
 		try {
 			await postSecrets({ encrypted: storageEncrypted, decrypted: storageDecrypted });
-			setToast({ open: true, severity: 'success', message: 'Данные сохранены 👍' });
+			setToast({ open: true, severity: 'success', message: 'Данные сохранены ✅' });
 		} catch (e: any) {
 			setToast({ open: true, severity: 'error', message: `Ошибка сохранения данных: ${e?.message ?? e}` });
 		} finally {
@@ -115,6 +123,26 @@ export default function SecretsPage() {
 			setToast({ open: true, severity: 'error', message: `Ошибка сохранения аккаунтов: ${e?.message ?? e}` });
 		} finally {
 			setSavingAccounts(false);
+		}
+		await fetchAllData();
+	};
+
+	const handleCreateAccountsFile = async (opts: { variant: 'encrypted' | 'decrypted'; fileName: string }) => {
+		try {
+			await createAccountsFile(opts);
+			setToast({ open: true, severity: 'success', message: `Файл ${opts.fileName} создан ✅` });
+		} catch (e: any) {
+			setToast({ open: true, severity: 'error', message: `Не удалось создать файл: ${e?.message ?? e}` });
+		}
+		await fetchAllData();
+	};
+
+	const handleDeleteAccountsFile = async (opts: { variant: 'encrypted' | 'decrypted'; fileName: string }) => {
+		try {
+			await deleteAccountsFile(opts);
+			setToast({ open: true, severity: 'success', message: `Файл ${opts.fileName} удалён 🗑️` });
+		} catch (e: any) {
+			setToast({ open: true, severity: 'error', message: `Не удалось удалить файл: ${e?.message ?? e}` });
 		}
 		await fetchAllData();
 	};
@@ -197,6 +225,8 @@ export default function SecretsPage() {
 					loading={loading}
 					saving={savingAccounts}
 					onSave={(s) => saveAccounts(s)}
+					onCreateFile={handleCreateAccountsFile}
+					onDeleteFile={handleDeleteAccountsFile}
 				/>
 			)}
 

@@ -142,8 +142,7 @@ export async function convertFromCsvToCsv(
 
 		const folderPathToSave = encrypt ? encryptedFolderPath : decryptedFolderPath;
 
-		const stat = fs.statSync(folderPathToSave);
-		if (!stat) fs.mkdirSync(folderPathToSave, { recursive: true });
+		fs.mkdirSync(folderPathToSave, { recursive: true });
 
 		await saveJsonAccountsToCsv(encrypt ? encryptedFilePath : decryptedFilePath, newAccs);
 
@@ -162,8 +161,7 @@ export function convertSecretStorage(encryptedFilePath: string, decryptedFilePat
 
 	const filePathToSave = encrypt ? encryptedFilePath : decryptedFilePath;
 	const folderPathToSave = filePathToSave.split('/').slice(0, -1).join('/');
-	const stat = fs.statSync(folderPathToSave);
-	if (!stat) fs.mkdirSync(folderPathToSave, { recursive: true });
+	fs.mkdirSync(folderPathToSave, { recursive: true });
 
 	writeFileSync(encrypt ? encryptedFilePath : decryptedFilePath, JSON.stringify(newSecretStorage));
 
