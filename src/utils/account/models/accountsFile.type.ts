@@ -1,4 +1,4 @@
-import { Account } from './account.type';
+import { type Account } from './account.type';
 
 export interface AccountsFile {
 	fileName: string;

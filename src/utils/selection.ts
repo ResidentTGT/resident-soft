@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
-import { LaunchParams } from './types/launchParams.type';
-import { FunctionParams } from './types/functionParams.type';
+import { type LaunchParams } from './types/launchParams.type';
+import { type FunctionParams } from './types/functionParams.type';
 
 export type Selector = 'ui' | 'terminal';
 type Choice = Selector | null;
