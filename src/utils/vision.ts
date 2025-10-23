@@ -137,19 +137,20 @@ export abstract class Vision {
 					const browser = await puppeteer.connect({
 						browserURL: `http://127.0.0.1:${profile.port}`,
 						defaultViewport: null,
+						protocolTimeout: 60_000,
 					});
 
-					const start = Date.now();
-					while (
-						typeof (browser as any).isConnected === 'function'
-							? !(browser as any).isConnected()
-							: !(browser as any).connected
-					) {
-						if (Date.now() - start > 10_000) {
-							throw new Error('Failed to connect to browser within 10 seconds');
-						}
-						await delayMs(100);
-					}
+					// const start = Date.now();
+					// while (
+					// 	typeof (browser as any).isConnected === 'function'
+					// 		? !(browser as any).isConnected()
+					// 		: !(browser as any).connected
+					// ) {
+					// 	if (Date.now() - start > 10_000) {
+					// 		throw new Error('Failed to connect to browser within 10 seconds');
+					// 	}
+					// 	await delayMs(100);
+					// }
 
 					return browser;
 				} catch (err) {

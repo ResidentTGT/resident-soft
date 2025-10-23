@@ -196,10 +196,10 @@ export default function StoragePage() {
 					<Tab value="decrypted" label="Расшифрованные" />
 					<Tab value="encrypted" label="Зашифрованные" />
 				</Tabs>
-				<Button sx={{ ml: 'auto' }} variant="outlined" color="secondary" onClick={() => openEncrypt(true)}>
+				<Button sx={{ ml: 'auto' }} variant="outlined" color="success" onClick={() => openEncrypt(true)}>
 					Зашифровать ключи
 				</Button>
-				<Button variant="outlined" onClick={() => openEncrypt(false)}>
+				<Button variant="outlined" color="secondary" onClick={() => openEncrypt(false)}>
 					Расшифровать ключи
 				</Button>
 			</Box>

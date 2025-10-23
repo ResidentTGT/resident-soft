@@ -210,10 +210,10 @@ export default function AccountsPage() {
 					<Tab value="encrypted" label="Зашифрованные" />
 				</Tabs>
 
-				<Button variant="outlined" color="secondary" onClick={() => openEncrypt(true)} sx={{ ml: 'auto' }}>
+				<Button variant="outlined" color="success" onClick={() => openEncrypt(true)} sx={{ ml: 'auto' }}>
 					Зашифровать аккаунты
 				</Button>
-				<Button variant="outlined" onClick={() => openEncrypt(false)}>
+				<Button variant="outlined" color="secondary" onClick={() => openEncrypt(false)}>
 					Расшифровать аккаунты
 				</Button>
 			</Box>
@@ -238,21 +238,23 @@ export default function AccountsPage() {
 				</FormControl>
 
 				{variant === 'decrypted' && (
-					<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving || !selectedFile}>
-						Сохранить изменения в файле
-					</Button>
+					<>
+						<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving || !selectedFile}>
+							Сохранить изменения в файле
+						</Button>
+						<Button
+							variant="outlined"
+							onClick={() => {
+								setNewFileName('accs_new.xlsx');
+								setOpenCreate(true);
+							}}
+							disabled={loading || saving}
+						>
+							Создать новый файл
+						</Button>
+					</>
 				)}
 
-				<Button
-					variant="outlined"
-					onClick={() => {
-						setNewFileName('accs_new.xlsx');
-						setOpenCreate(true);
-					}}
-					disabled={loading || saving}
-				>
-					Создать файл
-				</Button>
 				<Button
 					color="error"
 					variant="outlined"
