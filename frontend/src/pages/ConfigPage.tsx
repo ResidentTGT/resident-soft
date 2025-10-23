@@ -212,7 +212,7 @@ export default function ConfigPage() {
 								variant="contained"
 								onClick={save}
 								disabled={saved === 'process' || formInvalid}
-								sx={{ px: 3 }}
+								sx={{ px: 2 }}
 							>
 								Сохранить настройки
 							</Button>

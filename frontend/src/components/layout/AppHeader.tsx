@@ -8,7 +8,7 @@ export default function AppHeader() {
 	let value = '';
 	if (location.pathname.startsWith('/results')) value = 'results';
 	if (location.pathname.startsWith('/config')) value = 'config';
-	if (location.pathname.startsWith('/secrets')) value = 'secrets';
+	if (location.pathname.startsWith('/vault')) value = 'vault';
 
 	return (
 		<AppBar position="sticky">
@@ -34,7 +34,7 @@ export default function AppHeader() {
 				<Tabs value={value} textColor="inherit" indicatorColor="secondary">
 					<Tab label="Настройка запуска" value="config" component={RouterLink} to="/config" />
 					<Tab label="Результаты запусков" value="results" component={RouterLink} to="/results" />
-					<Tab label="Секретные данные" value="secrets" component={RouterLink} to="/secrets" />
+					<Tab label="Хранилище" value="vault" component={RouterLink} to="/vault" />
 				</Tabs>
 			</MuiToolbar>
 		</AppBar>

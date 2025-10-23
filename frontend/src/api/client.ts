@@ -130,3 +130,46 @@ export async function encryptSecrets(password: string, encryption: boolean) {
 	}
 	return r.json();
 }
+
+export async function encryptAccounts(password: string) {
+	const r = await fetch('/api/secrets/accounts/encrypt', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password }),
+	});
+	if (!r.ok) throw new Error(`encryptAccounts: ${r.status}`);
+	return r.json();
+}
+export async function decryptAccounts(password: string) {
+	const r = await fetch('/api/secrets/accounts/decrypt', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password }),
+	});
+	if (!r.ok) {
+		if (r.status === 403) throw Object.assign(new Error('Неправильный пароль'), { code: 403 });
+		throw new Error(`Accounts decryption failed: ${r.status}`);
+	}
+	return r.json();
+}
+export async function encryptStorage(password: string) {
+	const r = await fetch('/api/secrets/storage/encrypt', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password }),
+	});
+	if (!r.ok) throw new Error(`encryptStorage: ${r.status}`);
+	return r.json();
+}
+export async function decryptStorage(password: string) {
+	const r = await fetch('/api/secrets/storage/decrypt', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password }),
+	});
+	if (!r.ok) {
+		if (r.status === 403) throw Object.assign(new Error('Неправильный пароль'), { code: 403 });
+		throw new Error(`Storage decryption failed: ${r.status}`);
+	}
+	return r.json();
+}

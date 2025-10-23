@@ -306,14 +306,41 @@ export async function startHttpServer() {
 		}
 	});
 
-	app.post('/api/encryptsecrets', async (req, res) => {
+	app.post('/api/secrets/accounts/encrypt', async (req, res) => {
 		try {
-			const { password, encryption } = req.body || {};
+			const { password } = req.body || {};
+			await convertFromCsvToCsv(ACCOUNTS_ENCRYPTED_PATH, ACCOUNTS_DECRYPTED_PATH, password, true);
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
 
-			convertSecretStorage(SECRET_STORAGE_ENCRYPTED_PATH, SECRET_STORAGE_DECRYPTED_PATH, password, encryption);
+	app.post('/api/secrets/storage/encrypt', async (req, res) => {
+		try {
+			const { password } = req.body || {};
+			convertSecretStorage(SECRET_STORAGE_ENCRYPTED_PATH, SECRET_STORAGE_DECRYPTED_PATH, password, true);
+			res.json({ ok: true });
+		} catch (e: any) {
+			res.status(500).json({ error: e.message });
+		}
+	});
 
-			await convertFromCsvToCsv(ACCOUNTS_ENCRYPTED_PATH, ACCOUNTS_DECRYPTED_PATH, password, encryption);
+	app.post('/api/secrets/accounts/decrypt', async (req, res) => {
+		try {
+			const { password } = req.body || {};
+			await convertFromCsvToCsv(ACCOUNTS_ENCRYPTED_PATH, ACCOUNTS_DECRYPTED_PATH, password, false);
+			res.json({ ok: true });
+		} catch (e: any) {
+			if (e.message.toString().includes('invalid key')) res.status(403).json({ error: e.message });
+			else res.status(500).json({ error: e.message });
+		}
+	});
 
+	app.post('/api/secrets/storage/decrypt', async (req, res) => {
+		try {
+			const { password } = req.body || {};
+			convertSecretStorage(SECRET_STORAGE_ENCRYPTED_PATH, SECRET_STORAGE_DECRYPTED_PATH, password, false);
 			res.json({ ok: true });
 		} catch (e: any) {
 			if (e.message.toString().includes('invalid key')) res.status(403).json({ error: e.message });

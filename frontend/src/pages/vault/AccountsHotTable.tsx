@@ -132,7 +132,7 @@ export default function AccountsHotTable({ value, onChange, readOnly }: Accounts
 				afterCreateRow={readOnly ? undefined : handleAfterCreateRow}
 				afterRemoveRow={readOnly ? undefined : handleAfterRemoveRow}
 				minSpareRows={readOnly ? 0 : 1}
-				height={'calc(100vh - 350px)'}
+				height={'calc(100vh - 365px)'}
 				headerClassName="htLeft"
 			/>
 		</Box>
