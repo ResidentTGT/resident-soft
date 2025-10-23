@@ -7,7 +7,7 @@ import { parse } from 'jsonc-parser';
 import { SecretStorage } from './secretStorage.type';
 import fs from 'node:fs';
 
-export async function saveJsonAccountsToCsv(filePath: string, accounts: Account[]) {
+export async function saveJsonAccountsToCsv(filePath: string, accounts: Account[], changeName = true) {
 	const workbook = new Excel.Workbook();
 	const fileName = filePath.split('.xlsx')[0].split('/').pop();
 
@@ -21,7 +21,7 @@ export async function saveJsonAccountsToCsv(filePath: string, accounts: Account[
 			}
 		}
 
-		acc.name = acc.name.split(`${fileName}_`)[1];
+		if (changeName) acc.name = acc.name.split(`${fileName}_`)[1];
 		return acc;
 	});
 
@@ -40,7 +40,7 @@ export async function saveJsonAccountsToCsv(filePath: string, accounts: Account[
 	await workbook.xlsx.writeFile(filePath);
 }
 
-export async function convertFromCsvToJsonAccounts(filePath: string, writeToFile = false): Promise<Account[]> {
+export async function convertFromCsvToJsonAccounts(filePath: string, writeToFile = false, changeName = true): Promise<Account[]> {
 	const workbook = new Excel.Workbook();
 	await workbook.xlsx.readFile(filePath);
 	const fileName = filePath.split('.xlsx')[0].split('/').pop();
@@ -85,7 +85,7 @@ export async function convertFromCsvToJsonAccounts(filePath: string, writeToFile
 			columns?.forEach((column, columnIndex) => {
 				const value = row.getCell(columnIndex + 1).value;
 				if (columnIndex === 0) {
-					acc[column.key] = `${fileName}_${nameCell}`;
+					acc[column.key] = changeName ? `${fileName}_${nameCell}` : nameCell;
 				} else if (value !== null && value !== undefined && value.toString().trim() !== '') {
 					acc[column.key] = value;
 				}

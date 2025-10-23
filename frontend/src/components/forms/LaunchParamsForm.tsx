@@ -18,9 +18,6 @@ export default function LaunchParamsForm({
 	accountsFiles: string[];
 }) {
 	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
-	const setEncField = (key: keyof NonNullable<LaunchParams['ENCRYPTION']>, val: any) => {
-		onChange({ ENCRYPTION: { ...(launchParams.ENCRYPTION ?? {}), [key]: val } });
-	};
 
 	return (
 		<Paper variant="outlined" sx={{ p: 2 }}>
@@ -178,48 +175,8 @@ export default function LaunchParamsForm({
 							onChange={(e) => setField('USE_ENCRYPTION', e.target.checked)}
 						/>
 					}
-					label="Использовать зашифрованные аккаунты"
+					label="Использовать зашифрованные данные"
 				/>
-				{launchParams.USE_ENCRYPTION && (
-					<Grid container spacing={2}>
-						<Grid sx={{ xs: 12, sm: 6, width: '100%' }}>
-							<TextField
-								label="ACCOUNTS_ENCRYPTED_PATH"
-								size="small"
-								fullWidth
-								value={launchParams.ENCRYPTION?.ACCOUNTS_ENCRYPTED_PATH ?? ''}
-								onChange={(e) => setEncField('ACCOUNTS_ENCRYPTED_PATH', e.target.value || undefined)}
-							/>
-						</Grid>
-						<Grid sx={{ xs: 12, sm: 6, width: '100%' }}>
-							<TextField
-								label="ACCOUNTS_DECRYPTED_PATH"
-								size="small"
-								fullWidth
-								value={launchParams.ENCRYPTION?.ACCOUNTS_DECRYPTED_PATH ?? ''}
-								onChange={(e) => setEncField('ACCOUNTS_DECRYPTED_PATH', e.target.value || undefined)}
-							/>
-						</Grid>
-						<Grid sx={{ xs: 12, sm: 6, width: '100%' }}>
-							<TextField
-								label="SECRET_STORAGE_ENCRYPTED_PATH"
-								size="small"
-								fullWidth
-								value={launchParams.ENCRYPTION?.SECRET_STORAGE_ENCRYPTED_PATH ?? ''}
-								onChange={(e) => setEncField('SECRET_STORAGE_ENCRYPTED_PATH', e.target.value || undefined)}
-							/>
-						</Grid>
-						<Grid sx={{ xs: 12, sm: 6, width: '100%' }}>
-							<TextField
-								label="SECRET_STORAGE_DECRYPTED_PATH"
-								size="small"
-								fullWidth
-								value={launchParams.ENCRYPTION?.SECRET_STORAGE_DECRYPTED_PATH ?? ''}
-								onChange={(e) => setEncField('SECRET_STORAGE_DECRYPTED_PATH', e.target.value || undefined)}
-							/>
-						</Grid>
-					</Grid>
-				)}
 			</Box>
 		</Paper>
 	);

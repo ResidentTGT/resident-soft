@@ -6,10 +6,15 @@ import { getEncryptedOrDecryptedAccounts, getEncryptedOrDecryptedSecretStorage }
 import { filterAccounts } from '@utils/filterAccounts';
 import { SecretStorage } from '@utils/secretStorage.type';
 import { actionMode } from '@utils/actionMode';
-import { convertFromCsvToCsv, convertSecretStorage } from '@utils/workWithSecrets';
 import { parse } from 'jsonc-parser';
 import { GREEN_TEXT, Logger } from '@utils/logger';
 import prompts, { PromptObject } from 'prompts';
+import {
+	ACCOUNTS_DECRYPTED_PATH,
+	ACCOUNTS_ENCRYPTED_PATH,
+	SECRET_STORAGE_DECRYPTED_PATH,
+	SECRET_STORAGE_ENCRYPTED_PATH,
+} from '@src/constants';
 
 export enum CommandOption {
 	'Action Mode' = 1,
@@ -26,12 +31,7 @@ export class CommandHandler {
 
 	async handleActionMode(): Promise<void> {
 		const secretStorage = parse(
-			readFileSync(
-				this.aesKey
-					? this.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH
-					: this.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH,
-				'utf-8',
-			),
+			readFileSync(this.aesKey ? SECRET_STORAGE_ENCRYPTED_PATH : SECRET_STORAGE_DECRYPTED_PATH, 'utf-8'),
 		) as SecretStorage;
 		const decryptedSecretStorage = this.aesKey
 			? getEncryptedOrDecryptedSecretStorage(this.aesKey, secretStorage, false)
@@ -39,9 +39,7 @@ export class CommandHandler {
 		Logger.getInstance(decryptedSecretStorage.telegram);
 
 		const allAccounts = await getAllAccounts(
-			this.aesKey
-				? this.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH
-				: this.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH,
+			this.aesKey ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH,
 			this.launchParams.JOB_ACCOUNTS.map((a) => a.file),
 		);
 		const filteredAccs = await filterAccounts(allAccounts, this.launchParams);
@@ -50,35 +48,31 @@ export class CommandHandler {
 		await actionMode(accounts, decryptedSecretStorage, this.launchParams, this.functionParams, this.aesKey);
 	}
 
-	async handleAccountsEncryption(encrypt: boolean): Promise<void> {
-		if (!this.aesKey) throw new Error('Key for ecnryption/decryption is required!');
-		const encryptedFilePath = `${this.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH}`;
-		const decryptedFilePath = `${this.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH}`;
+	// async handleAccountsEncryption(encrypt: boolean): Promise<void> {
+	// 	if (!this.aesKey) throw new Error('Key for ecnryption/decryption is required!');
 
-		await convertFromCsvToCsv(encryptedFilePath, decryptedFilePath, this.aesKey, encrypt);
-	}
+	// 	await convertFromCsvToCsv(ACCOUNTS_ENCRYPTED_PATH, ACCOUNTS_DECRYPTED_PATH, this.aesKey, encrypt);
+	// }
 
-	handleSecretStorageEncryption(encrypt: boolean): void {
-		if (!this.aesKey) throw new Error('Key for ecnryption/decryption is required!');
-		const encryptedFilePath = this.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
-		const decryptedFilePath = this.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+	// handleSecretStorageEncryption(encrypt: boolean): void {
+	// 	if (!this.aesKey) throw new Error('Key for ecnryption/decryption is required!');
 
-		convertSecretStorage(encryptedFilePath, decryptedFilePath, this.aesKey, encrypt);
-	}
+	// 	convertSecretStorage(SECRET_STORAGE_ENCRYPTED_PATH, SECRET_STORAGE_DECRYPTED_PATH, this.aesKey, encrypt);
+	// }
 
 	async executeCommand(option: CommandOption): Promise<void> {
 		switch (option) {
 			case CommandOption['Action Mode']:
 				await this.handleActionMode();
 				break;
-			case CommandOption['Decrypt Accounts And SecretStorage']:
-				await this.handleAccountsEncryption(false);
-				this.handleSecretStorageEncryption(false);
-				break;
-			case CommandOption['Encrypt Accounts And SecretStorage']:
-				await this.handleAccountsEncryption(true);
-				this.handleSecretStorageEncryption(true);
-				break;
+			// case CommandOption['Decrypt Accounts And SecretStorage']:
+			// 	await this.handleAccountsEncryption(false);
+			// 	this.handleSecretStorageEncryption(false);
+			// 	break;
+			// case CommandOption['Encrypt Accounts And SecretStorage']:
+			// 	await this.handleAccountsEncryption(true);
+			// 	this.handleSecretStorageEncryption(true);
+			// 	break;
 			default:
 				throw new Error(`Unsupported option: ${option}`);
 		}
@@ -96,8 +90,8 @@ export async function promptUserForOption(launchParams: LaunchParams): Promise<C
 		message: 'Select option:',
 		choices: [
 			{ title: `${runAction}`, value: 'run' },
-			{ title: '🔑 Encrypt accounts and secretStorage', value: 'encrypt' },
-			{ title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
+			// { title: '🔑 Encrypt accounts and secretStorage', value: 'encrypt' },
+			// { title: '🔓 Decrypt accounts and secretStorage', value: 'decrypt' },
 			{ title: '❌ Exit', value: 'exit' },
 		],
 		hint: 'arrows ↑↓, Enter — select',
@@ -113,10 +107,10 @@ export async function promptUserForOption(launchParams: LaunchParams): Promise<C
 	switch (choice) {
 		case 'run':
 			return CommandOption['Action Mode'];
-		case 'encrypt':
-			return CommandOption['Encrypt Accounts And SecretStorage'];
-		case 'decrypt':
-			return CommandOption['Decrypt Accounts And SecretStorage'];
+		// case 'encrypt':
+		// 	return CommandOption['Encrypt Accounts And SecretStorage'];
+		// case 'decrypt':
+		// 	return CommandOption['Decrypt Accounts And SecretStorage'];
 		default:
 			return;
 	}

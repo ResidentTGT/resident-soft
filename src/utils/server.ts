@@ -8,8 +8,20 @@ import { selectionGate } from './selection';
 import { ACTIONS } from '@src/actions';
 import { Network } from '@src/utils/network';
 import { StandardState } from '@src/utils/state/standardState.interface';
-import { convertFromCsvToCsv, convertFromCsvToJsonAccounts, convertSecretStorage } from './workWithSecrets';
+import {
+	convertFromCsvToCsv,
+	convertFromCsvToJsonAccounts,
+	convertSecretStorage,
+	saveJsonAccountsToCsv,
+} from './workWithSecrets';
 import { Account } from './account';
+import type { AccountsFile } from '@utils/account';
+import {
+	ACCOUNTS_DECRYPTED_PATH,
+	ACCOUNTS_ENCRYPTED_PATH,
+	SECRET_STORAGE_DECRYPTED_PATH,
+	SECRET_STORAGE_ENCRYPTED_PATH,
+} from '@src/constants';
 
 export async function startHttpServer() {
 	const app = express();
@@ -76,9 +88,8 @@ export async function startHttpServer() {
 
 	app.get('/api/accsfiles', (_req, res) => {
 		try {
-			const snapshot = readConfigs();
-			const decryptedPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
-			const encryptedPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
+			const decryptedPath = ACCOUNTS_DECRYPTED_PATH;
+			const encryptedPath = ACCOUNTS_ENCRYPTED_PATH;
 			const decryptedfiles = fs.existsSync(decryptedPath)
 				? fs.readdirSync(decryptedPath).map((a) => a.replaceAll('.xlsx', ''))
 				: [];
@@ -142,9 +153,8 @@ export async function startHttpServer() {
 
 	app.get('/api/secrets/storage', (_req, res) => {
 		try {
-			const snapshot = readConfigs();
-			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
-			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+			const encPath = SECRET_STORAGE_ENCRYPTED_PATH;
+			const decPath = SECRET_STORAGE_DECRYPTED_PATH;
 			let encryptedData;
 			let decryptedData;
 			if (fs.existsSync(encPath)) encryptedData = readJsonc(encPath);
@@ -158,9 +168,8 @@ export async function startHttpServer() {
 
 	app.get('/api/secrets/accounts', async (_req, res) => {
 		try {
-			const snapshot = readConfigs();
-			const encPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
-			const decPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
+			const encPath = ACCOUNTS_ENCRYPTED_PATH;
+			const decPath = ACCOUNTS_DECRYPTED_PATH;
 
 			const decryptedFiles = fs.readdirSync(decPath).filter((f) => f.endsWith('.xlsx'));
 			const encryptedFiles = fs.readdirSync(encPath).filter((f) => f.endsWith('.xlsx'));
@@ -175,13 +184,13 @@ export async function startHttpServer() {
 
 			for (const file of decryptedFiles) {
 				const path = `${decPath}/${file}`;
-				const accs = await convertFromCsvToJsonAccounts(path, false);
+				const accs = await convertFromCsvToJsonAccounts(path, false, false);
 				accsFiles.decrypted.push({ fileName: file, accounts: accs });
 			}
 
 			for (const file of encryptedFiles) {
 				const path = `${encPath}/${file}`;
-				const accs = await convertFromCsvToJsonAccounts(path, false);
+				const accs = await convertFromCsvToJsonAccounts(path, false, false);
 				accsFiles.encrypted.push({ fileName: file, accounts: accs });
 			}
 
@@ -197,9 +206,9 @@ export async function startHttpServer() {
 		}
 		try {
 			const { encrypted, decrypted } = req.body || {};
-			const snapshot = readConfigs();
-			const encPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
-			const decPath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
+
+			const encPath = SECRET_STORAGE_ENCRYPTED_PATH;
+			const decPath = SECRET_STORAGE_DECRYPTED_PATH;
 			if (encrypted !== undefined) {
 				fs.mkdirSync(path.dirname(encPath), { recursive: true });
 				fs.writeFileSync(encPath, JSON.stringify(encrypted, null, '\t'));
@@ -214,15 +223,32 @@ export async function startHttpServer() {
 		}
 	});
 
-	app.post('/api/secrets/accounts', (req, res) => {
+	app.post('/api/secrets/accounts', express.text({ type: 'application/jsonl', limit: '50mb' }), async (req, res) => {
 		if (selectionGate.getStatus().chosenBy) {
 			return res.status(423).json({ error: 'Configs are locked (already chosen)' });
 		}
 		try {
-			const { encrypted, decrypted } = req.body || {};
+			const { encrypted: encryptedFiles, decrypted: decryptedFiles } = JSON.parse(req.body) as {
+				encrypted: AccountsFile[];
+				decrypted: AccountsFile[];
+			};
 			const snapshot = readConfigs();
-			const encPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
-			const decPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
+			const encPath = ACCOUNTS_ENCRYPTED_PATH;
+			const decPath = ACCOUNTS_DECRYPTED_PATH;
+
+			if (encryptedFiles.length > 0) {
+				for (const accsFile of encryptedFiles) {
+					fs.mkdirSync(encPath, { recursive: true });
+					await saveJsonAccountsToCsv(`${encPath}/${accsFile.fileName}`, accsFile.accounts, false);
+				}
+			}
+
+			if (decryptedFiles.length > 0) {
+				for (const accsFile of decryptedFiles) {
+					fs.mkdirSync(decPath, { recursive: true });
+					await saveJsonAccountsToCsv(`${decPath}/${accsFile.fileName}`, accsFile.accounts, false);
+				}
+			}
 
 			res.json({ ok: true });
 		} catch (e: any) {
@@ -233,12 +259,11 @@ export async function startHttpServer() {
 	app.post('/api/encryptsecrets', async (req, res) => {
 		try {
 			const { password, encryption } = req.body || {};
-			const snapshot = readConfigs();
 
-			const encStoragePath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_ENCRYPTED_PATH;
-			const decStoragePath = snapshot.launchParams.ENCRYPTION.SECRET_STORAGE_DECRYPTED_PATH;
-			const encAccsPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_ENCRYPTED_PATH;
-			const decAccsPath = snapshot.launchParams.ENCRYPTION.ACCOUNTS_DECRYPTED_PATH;
+			const encStoragePath = SECRET_STORAGE_ENCRYPTED_PATH;
+			const decStoragePath = SECRET_STORAGE_DECRYPTED_PATH;
+			const encAccsPath = ACCOUNTS_ENCRYPTED_PATH;
+			const decAccsPath = ACCOUNTS_DECRYPTED_PATH;
 
 			convertSecretStorage(encStoragePath, decStoragePath, password, encryption);
 			await convertFromCsvToCsv(encAccsPath, decAccsPath, password, encryption);

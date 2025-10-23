@@ -1,7 +1,7 @@
 import type { ActionsGroup } from '../../../src/actions';
+import type { AccountsFile } from '../../../src/utils/account';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
-import type { AccountsFile } from '../pages/secrets/AccountsPage';
 import type { SelectionStatus, Configs } from '../types';
 
 export async function getSelection(): Promise<SelectionStatus> {
@@ -90,7 +90,7 @@ export async function postSecrets(data: { encrypted: any; decrypted: any }) {
 export async function postAccounts(data: { encrypted: any; decrypted: any }) {
 	const r = await fetch('/api/secrets/accounts', {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: { 'Content-Type': 'application/jsonl' },
 		body: JSON.stringify(data),
 	});
 	if (!r.ok) throw new Error(`Accounts save failed: ${r.status}`);

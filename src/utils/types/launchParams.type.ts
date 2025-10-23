@@ -18,11 +18,5 @@ export interface LaunchParams {
 	DELAY_AFTER_ERROR_IN_S: number;
 	JOB_ACCOUNTS: JobAccount[];
 	USE_ENCRYPTION: boolean;
-	ENCRYPTION: {
-		ACCOUNTS_ENCRYPTED_PATH: string;
-		ACCOUNTS_DECRYPTED_PATH: string;
-		SECRET_STORAGE_ENCRYPTED_PATH: string;
-		SECRET_STORAGE_DECRYPTED_PATH: string;
-	};
 	LICENSE: string;
 }

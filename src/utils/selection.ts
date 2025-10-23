@@ -1,13 +1,19 @@
 import { EventEmitter } from 'events';
+import { LaunchParams } from './types/launchParams.type';
+import { FunctionParams } from './types/functionParams.type';
 
 export type Selector = 'ui' | 'terminal';
 type Choice = Selector | null;
+interface ConfigsSnapshot {
+	launchParams: LaunchParams;
+	functionParams: FunctionParams;
+}
 
 class SelectionGate extends EventEmitter {
 	private chosenBy: Choice = null;
-	private frozenSnapshot: { launchParams: any; functionParams: any } | null = null;
+	private frozenSnapshot: ConfigsSnapshot | null = null;
 
-	choose(by: Selector, snapshot?: { launchParams: any; functionParams: any }): boolean {
+	choose(by: Selector, snapshot?: ConfigsSnapshot): boolean {
 		if (this.chosenBy) return false; // уже выбрано
 		this.chosenBy = by;
 		if (snapshot) this.frozenSnapshot = snapshot; // фиксируем конфиг на момент выбора

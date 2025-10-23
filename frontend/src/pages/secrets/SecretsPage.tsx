@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
 	Alert,
+	Backdrop,
 	Box,
 	Button,
+	CircularProgress,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -18,7 +20,8 @@ import {
 import StoragePage from './StoragePage';
 import { encryptSecrets, getAccounts, getStorage, postAccounts, postSecrets } from '../../api/client';
 import type { SecretStorage } from '../../../../src/utils/secretStorage.type';
-import AccountsPage, { type AccountsFile } from './AccountsPage';
+import AccountsPage from './AccountsPage';
+import type { AccountsFile } from '../../../../src/utils/account';
 
 type DataType = 'accounts' | 'storage';
 interface Toast {
@@ -102,17 +105,18 @@ export default function SecretsPage() {
 		}
 	};
 
-	const saveAccounts = async () => {
+	const saveAccounts = async (toSave: { encrypted: AccountsFile[]; decrypted: AccountsFile[] }) => {
 		if (savingAccounts) return;
 		setSavingAccounts(true);
 		try {
-			await postAccounts({ encrypted: accountsEncrypted, decrypted: accountsDecrypted });
+			await postAccounts(toSave);
 			setToast({ open: true, severity: 'success', message: 'Аккаунты сохранены ✅' });
 		} catch (e: any) {
 			setToast({ open: true, severity: 'error', message: `Ошибка сохранения аккаунтов: ${e?.message ?? e}` });
 		} finally {
 			setSavingAccounts(false);
 		}
+		await fetchAllData();
 	};
 
 	const fetchAllData = async () => {
@@ -170,7 +174,11 @@ export default function SecretsPage() {
 				</Button>
 			</Box>
 
-			{dataType === 'storage' ? (
+			{loading ? (
+				<Backdrop open={loading}>
+					<CircularProgress />
+				</Backdrop>
+			) : dataType === 'storage' ? (
 				<StoragePage
 					encrypted={storageEncrypted}
 					decrypted={storageDecrypted}
@@ -188,7 +196,7 @@ export default function SecretsPage() {
 					setDecrypted={setAccountsDecrypted}
 					loading={loading}
 					saving={savingAccounts}
-					onSave={saveAccounts}
+					onSave={(s) => saveAccounts(s)}
 				/>
 			)}
 

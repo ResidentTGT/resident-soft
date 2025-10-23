@@ -3,11 +3,7 @@ import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, T
 
 import type { Account } from '../../../../src/utils/account/models/account.type';
 import AccountsHotTable from './AccountsHotTable';
-
-export interface AccountsFile {
-	fileName: string;
-	accounts: Account[];
-}
+import type { AccountsFile } from '../../../../src/utils/account';
 
 interface Props {
 	encrypted: AccountsFile[];
@@ -16,7 +12,7 @@ interface Props {
 	setDecrypted: React.Dispatch<React.SetStateAction<AccountsFile[]>>;
 	loading: boolean;
 	saving: boolean;
-	onSave: () => Promise<void> | void;
+	onSave: (toSave: { encrypted: AccountsFile[]; decrypted: AccountsFile[] }) => Promise<void> | void;
 }
 
 type Variant = 'encrypted' | 'decrypted';
@@ -65,7 +61,10 @@ export default function AccountsPage({ encrypted, decrypted, setEncrypted, setDe
 
 	const handleSave = async () => {
 		if (!onSave) return;
-		await onSave();
+		const file = files.find((f) => f.fileName === selectedFile?.fileName);
+		if (!file) return;
+		const toSave = variant === 'encrypted' ? { encrypted: [file], decrypted: [] } : { decrypted: [file], encrypted: [] };
+		await onSave(toSave);
 	};
 
 	return (
@@ -94,13 +93,8 @@ export default function AccountsPage({ encrypted, decrypted, setEncrypted, setDe
 				</FormControl>
 
 				{variant === 'decrypted' && (
-					<Button
-						variant="contained"
-						onClick={handleSave}
-						disabled={!!loading || !!saving || !selectedFile}
-						sx={{ ml: 'auto' }}
-					>
-						Сохранить изменения
+					<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving || !selectedFile}>
+						Сохранить изменения в файле
 					</Button>
 				)}
 			</Box>

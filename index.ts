@@ -1,7 +1,7 @@
-import { CommandHandler, CommandOption, promptUserForKey, promptUserForOption, waitForKeyPress } from '@utils/commandHandler';
+import { CommandHandler, promptUserForKey, waitForKeyPress } from '@utils/commandHandler';
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
-import { GREEN_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
+import { GREEN_TEXT, PURPLE_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
 import { readConfigs } from '@src/utils/config-io';
 import { startHttpServer } from '@src/utils/server';
 import { selectionGate } from '@src/utils/selection';
@@ -33,20 +33,26 @@ async function main() {
 			const licenseResult = await getVerifyLicenseMessage(launchParams);
 			await sendTelemetry(licenseResult);
 
-			const selectedOption = await promptUserForOption(launchParams);
-			if (!selectedOption) process.exit(0);
-			console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
+			// const selectedOption = await promptUserForOption(launchParams);
+			// if (!selectedOption) process.exit(0);
+			// console.log(`${GREEN_TEXT}${CommandOption[selectedOption]} started.${RESET}`);
+
+			console.log(
+				`${PURPLE_TEXT}🚀 ${snapshot.launchParams.ACTION_PARAMS.group} -> ${snapshot.launchParams.ACTION_PARAMS.action}\n${RESET}`,
+			);
 
 			let key;
 			if (
-				(selectedOption === CommandOption['Action Mode'] && launchParams.USE_ENCRYPTION) ||
-				selectedOption === CommandOption['Decrypt Accounts And SecretStorage']
+				// selectedOption === CommandOption['Action Mode'] &&
+				launchParams.USE_ENCRYPTION
+				// ||selectedOption === CommandOption['Decrypt Accounts And SecretStorage']
 			)
 				key = await promptUserForKey(true);
-			else if (selectedOption === CommandOption['Encrypt Accounts And SecretStorage']) key = await promptUserForKey(false);
+			// else if (selectedOption === CommandOption['Encrypt Accounts And SecretStorage']) key = await promptUserForKey(false);
 
 			const commandHandler = new CommandHandler(launchParams, functionParams, key);
-			await commandHandler.executeCommand(selectedOption);
+			// await commandHandler.executeCommand(selectedOption);
+			await commandHandler.handleActionMode();
 
 			selectionGate.reset();
 		} catch (error) {
