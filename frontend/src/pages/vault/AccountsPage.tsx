@@ -19,6 +19,7 @@ import {
 	TextField,
 	CircularProgress,
 	Backdrop,
+	Typography,
 } from '@mui/material';
 import type { Account } from '../../../../src/utils/account/models/account.type';
 import type { AccountsFile } from '../../../../src/utils/account';
@@ -330,8 +331,20 @@ export default function AccountsPage() {
 			<Dialog open={openCryptDialog} onClose={() => setOpenCryptDialog(false)}>
 				<DialogTitle>{isEncryption ? 'Зашифровать аккаунты' : 'Расшифровать аккаунты'}</DialogTitle>
 				<DialogContent>
-					<DialogContentText sx={{ mb: 2 }}>
-						{isEncryption ? 'Зашифрованные' : 'Расшифрованные'} файлы аккаунтов будут перезаписаны. Введите пароль:
+					<DialogContentText>
+						<Typography color="text.primary">
+							{isEncryption ? 'Зашифрованные' : 'Расшифрованные'} файлы аккаунтов будут перезаписаны.
+							{isEncryption && (
+								<>
+									<br />
+									<Typography component="span" color="error.main" fontWeight="bold">
+										ПАРОЛИ ШИФРОВАНИЯ АККАУНТОВ И КЛЮЧЕЙ ДОЛЖНЫ СОВПАДАТЬ
+									</Typography>
+								</>
+							)}
+							<br />
+							Введите пароль:
+						</Typography>
 					</DialogContentText>
 					<TextField
 						label="Пароль"

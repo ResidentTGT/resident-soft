@@ -347,8 +347,20 @@ export default function StoragePage() {
 			<Dialog open={openCryptDialog} onClose={() => setOpenCryptDialog(false)}>
 				<DialogTitle>{isEncryption ? 'Зашифровать ключи' : 'Расшифровать ключи'}</DialogTitle>
 				<DialogContent>
-					<DialogContentText sx={{ mb: 2 }}>
-						{isEncryption ? 'Зашифрованный' : 'Расшифрованный'} файл ключей будет перезаписан. Введите пароль:
+					<DialogContentText>
+						<Typography color="text.primary">
+							{isEncryption ? 'Зашифрованные' : 'Расшифрованные'} ключи будут перезаписаны.
+							{isEncryption && (
+								<>
+									<br />
+									<Typography component="span" color="error.main" fontWeight="bold">
+										ПАРОЛИ ШИФРОВАНИЯ АККАУНТОВ И КЛЮЧЕЙ ДОЛЖНЫ СОВПАДАТЬ
+									</Typography>
+								</>
+							)}
+							<br />
+							Введите пароль:
+						</Typography>
 					</DialogContentText>
 					<TextField
 						label="Пароль"

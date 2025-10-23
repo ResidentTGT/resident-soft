@@ -221,20 +221,20 @@ export async function checkBalances(
 		await logger.log(
 			`Balances for ${network.name}: ` +
 				finalMessage +
-				`\nData for ${network.name} saved to states/${jsonStateName}.json and states/${excelFileName}.xlsx\n`,
+				`\nData for ${network.name} saved to ${jsonStateName}.json and states/${excelFileName}.xlsx\n`,
 			MessageType.Info,
 		);
 	}
 
 	await Logger.getInstance().log(
-		`Balances for all networks (${allNetworks.map((a) => a.name).join(', ')}) checked and saved toand states/${excelFileName}.xlsx\n`,
+		`Balances for all networks (${allNetworks.map((a) => a.name).join(', ')}) checked and saved toand ${excelFileName}.xlsx\n`,
 		MessageType.Notice,
 	);
 }
 
 async function saveToExcel(state: State<BalanceState>, networkName: string, stateName: string) {
 	const workbook = new Workbook();
-	if (fs.existsSync(`states/${stateName}.xlsx`)) {
+	if (fs.existsSync(`${stateName}.xlsx`)) {
 		await workbook.xlsx.readFile(`states/${stateName}.xlsx`);
 	}
 
@@ -261,7 +261,7 @@ async function saveToExcel(state: State<BalanceState>, networkName: string, stat
 	sumRaw.font.color = { argb: 'FF800080' };
 	worksheet.getRow(1).font.bold = true;
 
-	const fullpath = `states/${stateName}.xlsx`;
+	const fullpath = `${stateName}.xlsx`;
 	fs.mkdirSync(path.dirname(fullpath), { recursive: true });
 	await workbook.xlsx.writeFile(fullpath);
 }
