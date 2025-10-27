@@ -1,6 +1,8 @@
 import { Bot as TelegramBot } from 'grammy';
 import { delay } from './delay';
 import fs from 'fs';
+import { broadcast } from './server/sse';
+import { getCurrentTaskId } from './taskManager';
 
 export const RED_TEXT = '\u001b[0;31m';
 export const RED_BOLD_TEXT = '\u001b[1;31m';
@@ -55,6 +57,16 @@ export class Logger {
 		}).format(new Date());
 
 		console.log(`${color}[${fulltime}] ${message} ${RESET}`);
+
+		const currentId = getCurrentTaskId();
+		if (currentId !== undefined) {
+			broadcast({
+				taskId: currentId,
+				eventName: 'log',
+				type: type,
+				payload: { message },
+			});
+		}
 
 		if (type === MessageType.Error || type === MessageType.Notice) {
 			if (this.telegramParams?.chatId && this.telegramBot) {

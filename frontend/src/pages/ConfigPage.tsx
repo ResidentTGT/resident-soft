@@ -28,8 +28,18 @@ export default function ConfigPage() {
 	}>({ open: false, severity: 'success', message: '' });
 
 	useBackendEvents({
-		run_started: () => setToast({ open: true, severity: 'success', message: 'Скрипт запущен' }),
-		decrypt_error: (d) => setToast({ open: true, severity: 'error', message: 'Ошибка расшифровки (неверный пароль)' }),
+		run_started: (m) => {
+			setToast({ open: true, severity: 'success', message: 'Скрипт запущен' });
+		},
+		run_finished: (m) => {
+			setToast({ open: true, severity: 'success', message: 'Выполнение завершено' });
+		},
+		run_failed: (m) => {
+			setToast({ open: true, severity: 'error', message: JSON.stringify(m.payload) });
+		},
+		decrypt_error: (m) => {
+			setToast({ open: true, severity: 'error', message: 'Ошибка расшифровки (неверный пароль)' });
+		},
 	});
 
 	const [encDialogOpen, setEncDialogOpen] = useState(false);

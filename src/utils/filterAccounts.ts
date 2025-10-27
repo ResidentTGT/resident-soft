@@ -17,8 +17,7 @@ export async function filterAccounts(accountsList: Account[], LAUNCH_PARAMS: Lau
 					return a.toString() === pp.name || `${jobAcc.file}_${a.toString()}` === pp.name;
 				});
 				if (!account) {
-					Logger.getInstance().log(`There is no ${jobAcc.file}_${a} account`, MessageType.Error);
-					throw new Error();
+					throw new Error(`There is no ${jobAcc.file}_${a} account`);
 				}
 				accsSet.add(account);
 			});

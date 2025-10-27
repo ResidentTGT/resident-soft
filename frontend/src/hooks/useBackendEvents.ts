@@ -1,26 +1,28 @@
 import { useEffect } from 'react';
-import { backendEventBus, type BackendEventName, type BackendEventPayload } from '../lib/backendEvents';
+import { backendEventBus, type SSEMessage, type Status } from '../lib/backendEvents';
+import { type EventName } from '../../../src/utils/server/eventName.type.ts';
 
-type HandlerMap = Partial<Record<BackendEventName, (payload: BackendEventPayload) => void>>;
+type HandlerMap = Partial<Record<EventName, (msg: SSEMessage) => void>>;
 
 export function useBackendEvents(handlers: HandlerMap) {
 	useEffect(() => {
 		const unsubs: (() => void)[] = [];
-		for (const [name, fn] of Object.entries(handlers) as [BackendEventName, (p: BackendEventPayload) => void][]) {
-			if (typeof fn === 'function') {
-				unsubs.push(backendEventBus.on(name, (payload) => fn(payload)));
-			}
-		}
+
+		(Object.entries(handlers) as [EventName, (m: SSEMessage) => void][]).forEach(([name, fn]) => {
+			if (typeof fn !== 'function') return;
+			unsubs.push(backendEventBus.on(name, (msg) => fn(msg)));
+		});
+
 		return () => {
 			unsubs.forEach((u) => u());
 		};
-	}, [JSON.stringify(Object.keys(handlers))]);
+	}, [JSON.stringify(Object.keys(handlers).sort())]);
 }
 
-export function useBackendConnection(onStatus: (s: { connected: boolean; lastError?: string }) => void) {
+export function useBackendConnection(onStatus: (s: Status) => void) {
 	useEffect(() => backendEventBus.onStatus(onStatus), [onStatus]);
 }
 
-export function useBackendAny(onAny: (name: BackendEventName, payload: BackendEventPayload) => void) {
-	useEffect(() => backendEventBus.onAny((n, p) => onAny(n, p)), [onAny]);
+export function useBackendAny(onAny: (msg: SSEMessage) => void) {
+	useEffect(() => backendEventBus.onAny((m) => onAny(m)), [onAny]);
 }

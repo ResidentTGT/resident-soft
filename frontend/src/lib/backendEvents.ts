@@ -1,8 +1,15 @@
-export type BackendEventName = 'run_started' | 'decrypt_error' | 'run_finished' | 'run_failed' | (string & {}); // расширяемость
+import { type EventName } from '../../../src/utils/server/eventName.type.ts';
 
-export type BackendEventPayload = Record<string, unknown>;
+export interface SSEMessage<T = unknown> {
+	eventName: EventName;
+	taskId?: number;
+	type?: number;
+	timestamp: string;
+	payload?: T;
+	sequence?: number;
+}
 
-type EventHandler = (payload: BackendEventPayload, raw: MessageEvent) => void;
+type AnyHandler = (msg: SSEMessage, raw: MessageEvent) => void;
 interface Status {
 	connected: boolean;
 	lastError?: string;
@@ -10,88 +17,99 @@ interface Status {
 
 class BackendEventBus {
 	private es: EventSource | null = null;
-	private listeners = new Map<BackendEventName, Set<EventHandler>>();
-	private attached = new Map<BackendEventName, (e: MessageEvent) => void>(); // на ES
-	private anyListeners = new Set<(name: BackendEventName, payload: BackendEventPayload, raw: MessageEvent) => void>();
-	private statusListeners = new Set<(s: Status) => void>();
+	private url = '/api/events';
+
+	private byEvent = new Map<EventName, Set<AnyHandler>>();
+	private anyHandlers = new Set<AnyHandler>();
+	private statusHandlers = new Set<(s: Status) => void>();
 	private status: Status = { connected: false };
 
-	private ensureConnected() {
-		if (this.es) return;
-		this.es = new EventSource('/api/events');
+	connect(url = this.url) {
+		if (this.es) return this.es;
+
+		this.url = url;
+		this.es = new EventSource(url);
 
 		this.es.addEventListener('open', () => {
 			this.setStatus({ connected: true, lastError: undefined });
 		});
+
 		this.es.addEventListener('error', (e: any) => {
 			this.setStatus({ connected: false, lastError: e?.message || 'SSE error' });
 		});
+
+		this.es.onmessage = (evt: MessageEvent) => {
+			const chunks = typeof evt.data === 'string' ? evt.data.split(/\n{2,}/).filter(Boolean) : [evt.data];
+
+			for (const chunk of chunks) {
+				let msg: SSEMessage | null = null;
+				try {
+					msg = JSON.parse(String(chunk));
+				} catch {
+					continue;
+				}
+				if (!msg || !msg.eventName) continue;
+
+				const set = this.byEvent.get(msg.eventName);
+				if (set) for (const h of Array.from(set)) h(msg, evt);
+
+				for (const h of Array.from(this.anyHandlers)) h(msg, evt);
+			}
+		};
+
+		return this.es;
 	}
 
 	private setStatus(s: Status) {
 		this.status = s;
-		for (const cb of this.statusListeners) cb(this.status);
+		for (const cb of Array.from(this.statusHandlers)) cb(this.status);
 	}
 
 	getStatus() {
 		return this.status;
 	}
 
-	on(name: BackendEventName, handler: EventHandler): () => void {
-		this.ensureConnected();
+	on<E extends EventName>(name: E, handler: AnyHandler): () => void {
+		this.connect();
 
-		let set = this.listeners.get(name);
+		let set = this.byEvent.get(name);
 		if (!set) {
-			set = new Set<EventHandler>();
-			this.listeners.set(name, set);
+			set = new Set<AnyHandler>();
+			this.byEvent.set(name, set);
 		}
 		set.add(handler);
 
-		if (!this.attached.has(name) && this.es) {
-			const dispatch = (e: MessageEvent) => {
-				let payload: BackendEventPayload = {};
-				try {
-					payload = e.data ? JSON.parse(e.data) : {};
-				} catch {
-					payload = { message: String(e.data ?? '') };
-				}
-
-				const list = this.listeners.get(name);
-				if (list) for (const h of list) h(payload, e);
-
-				for (const any of this.anyListeners) any(name, payload, e);
-			};
-			this.es.addEventListener(name, dispatch as any);
-			this.attached.set(name, dispatch);
-		}
-
 		return () => {
-			const set = this.listeners.get(name);
-			if (!set) return;
-			set.delete(handler);
-			if (set.size === 0) {
-				this.listeners.delete(name);
-
-				const fn = this.attached.get(name);
-				if (fn && this.es) {
-					this.es.removeEventListener(name, fn as any);
-					this.attached.delete(name);
-				}
-			}
+			const cur = this.byEvent.get(name);
+			if (!cur) return;
+			cur.delete(handler);
+			if (cur.size === 0) this.byEvent.delete(name);
 		};
 	}
 
-	onAny(handler: (name: BackendEventName, payload: BackendEventPayload, raw: MessageEvent) => void): () => void {
-		this.ensureConnected();
-		this.anyListeners.add(handler);
-		return () => this.anyListeners.delete(handler);
+	onAny(handler: AnyHandler): () => void {
+		this.connect();
+		this.anyHandlers.add(handler);
+		return () => this.anyHandlers.delete(handler);
 	}
 
 	onStatus(handler: (s: Status) => void): () => void {
-		handler(this.status); // мгновенно отдать текущее
-		this.statusListeners.add(handler);
-		return () => this.statusListeners.delete(handler);
+		handler(this.status);
+		this.statusHandlers.add(handler);
+		return () => this.statusHandlers.delete(handler);
+	}
+
+	disconnect() {
+		try {
+			this.es?.close();
+		} finally {
+			this.es = null;
+			this.byEvent.clear();
+			this.anyHandlers.clear();
+			this.setStatus({ connected: false });
+		}
 	}
 }
 
 export const backendEventBus = new BackendEventBus();
+export type { Status };
