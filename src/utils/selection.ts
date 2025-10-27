@@ -12,11 +12,13 @@ interface ConfigsSnapshot {
 class SelectionGate extends EventEmitter {
 	private chosenBy: Choice = null;
 	private frozenSnapshot: ConfigsSnapshot | null = null;
+	private uiKey?: string;
 
-	choose(by: Selector, snapshot?: ConfigsSnapshot): boolean {
-		if (this.chosenBy) return false; // уже выбрано
+	choose(by: Selector, snapshot?: ConfigsSnapshot, key?: string): boolean {
+		if (this.chosenBy) return false;
 		this.chosenBy = by;
-		if (snapshot) this.frozenSnapshot = snapshot; // фиксируем конфиг на момент выбора
+		if (snapshot) this.frozenSnapshot = snapshot;
+		this.uiKey = by === 'ui' && typeof key === 'string' && key.length > 0 ? key : undefined;
 		this.emit('chosen', by);
 		return true;
 	}
@@ -34,9 +36,14 @@ class SelectionGate extends EventEmitter {
 		return this.frozenSnapshot;
 	}
 
+	getUiKey() {
+		return this.uiKey;
+	}
+
 	reset() {
 		this.chosenBy = null;
 		this.frozenSnapshot = null;
+		this.uiKey = undefined;
 	}
 }
 

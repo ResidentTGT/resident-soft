@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Container, Paper, Typography, Grid, Alert, CircularProgress, Snackbar } from '@mui/material';
 import LaunchParamsForm from '../components/forms/LaunchParamsForm';
 import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
+import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 import type { FunctionParams } from '../../../src/utils/types/functionParams.type';
+import DecryptionKeyDialog from './DecryptionKeyDialog';
+import { useBackendEvents } from '../hooks/useBackendEvents';
 
 export default function ConfigPage() {
 	const [launchParams, setLaunchParams] = useState<LaunchParams>();
@@ -24,6 +26,13 @@ export default function ConfigPage() {
 		severity: 'success' | 'error' | 'info';
 		message: string;
 	}>({ open: false, severity: 'success', message: '' });
+
+	useBackendEvents({
+		run_started: () => setToast({ open: true, severity: 'success', message: 'Скрипт запущен' }),
+		decrypt_error: (d) => setToast({ open: true, severity: 'error', message: 'Ошибка расшифровки (неверный пароль)' }),
+	});
+
+	const [encDialogOpen, setEncDialogOpen] = useState(false);
 
 	const handleToastClose = () => setToast((t) => ({ ...t, open: false }));
 
@@ -144,6 +153,53 @@ export default function ConfigPage() {
 			setSaved('idle');
 		}
 	}
+
+	async function start() {
+		if (formInvalid || !launchParams || !functionParams) return;
+		setSaved('process');
+		try {
+			await postConfigs({ launchParams, functionParams });
+
+			let key: string | undefined;
+			if (launchParams.USE_ENCRYPTION) {
+				key = await askEncryptionKey();
+				if (!key) {
+					setToast({ open: true, severity: 'error', message: 'Ключ не введён — запуск отменён' });
+					setSaved('idle');
+					return;
+				}
+			}
+
+			await chooseUI(key);
+			setSaved('idle');
+		} catch (e: any) {
+			const msg = e.code === 409 ? 'Уже выполняется запуск' : `Ошибка: ${e.message}`;
+			setToast({ open: true, severity: 'error', message: msg });
+			setSaved('idle');
+		}
+	}
+
+	const encResolveRef = useRef<((key: string | undefined) => void) | null>(null);
+
+	function askEncryptionKey(): Promise<string | undefined> {
+		return new Promise((resolve) => {
+			encResolveRef.current = resolve;
+			setEncDialogOpen(true);
+		});
+	}
+
+	const handleEncCancel = () => {
+		setEncDialogOpen(false);
+		encResolveRef.current?.(undefined);
+		encResolveRef.current = null;
+	};
+
+	const handleEncSubmit = (key: string) => {
+		setEncDialogOpen(false);
+		encResolveRef.current?.(key);
+		encResolveRef.current = null;
+	};
+
 	if (loading) return <CircularProgress />;
 
 	if (!launchParams || !functionParams) return <div>Не удалось загрузить данные. Проверьте бэкенд.</div>;
@@ -216,9 +272,19 @@ export default function ConfigPage() {
 							>
 								Сохранить настройки
 							</Button>
+							<Button
+								variant="contained"
+								onClick={start}
+								disabled={saved === 'process' || formInvalid}
+								sx={{ px: 2, ml: 2 }}
+							>
+								Запустить
+							</Button>
 						</Box>
 					</Paper>
 				</Box>
+
+				<DecryptionKeyDialog open={encDialogOpen} onCancel={handleEncCancel} onSubmit={handleEncSubmit} />
 			</Container>
 
 			<Snackbar

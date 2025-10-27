@@ -9,6 +9,17 @@ import { BaseHandler } from './handler';
 import { verifyLicense } from './licenses';
 import { Network } from './network';
 import { shuffleArray } from './shuffleArray';
+import { parse } from 'jsonc-parser';
+import {
+	SECRET_STORAGE_ENCRYPTED_PATH,
+	SECRET_STORAGE_DECRYPTED_PATH,
+	ACCOUNTS_ENCRYPTED_PATH,
+	ACCOUNTS_DECRYPTED_PATH,
+} from '@src/constants';
+import { readFileSync } from 'fs';
+import { getEncryptedOrDecryptedSecretStorage, getEncryptedOrDecryptedAccounts } from './decryption';
+import { filterAccounts } from './filterAccounts';
+import { getAllAccounts } from './getAllAccounts';
 
 export interface ActionModeParams {
 	ACCOUNTS_TO_DO: Account[];
@@ -19,14 +30,20 @@ export interface ActionModeParams {
 	ITERATION: number;
 }
 
-export async function actionMode(
-	ACCOUNTS: Account[],
-	SECRET_STORAGE: SecretStorage,
-	LAUNCH_PARAMS: LaunchParams,
-	FUNCTION_PARAMS: any,
-	AES_KEY?: string,
-) {
-	const logger = Logger.getInstance();
+export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
+	const secretStorage = parse(
+		readFileSync(AES_KEY ? SECRET_STORAGE_ENCRYPTED_PATH : SECRET_STORAGE_DECRYPTED_PATH, 'utf-8'),
+	) as SecretStorage;
+	const SECRET_STORAGE = AES_KEY ? getEncryptedOrDecryptedSecretStorage(AES_KEY, secretStorage, false) : secretStorage;
+
+	const logger = Logger.getInstance(SECRET_STORAGE.telegram);
+
+	const allAccounts = await getAllAccounts(
+		AES_KEY ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH,
+		LAUNCH_PARAMS.JOB_ACCOUNTS.map((a) => a.file),
+	);
+	const filteredAccs = await filterAccounts(allAccounts, LAUNCH_PARAMS);
+	const ACCOUNTS = AES_KEY ? getEncryptedOrDecryptedAccounts(AES_KEY, filteredAccs, false) : filteredAccs;
 
 	const group = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group);
 

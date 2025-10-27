@@ -1,10 +1,10 @@
 import express from 'express';
 import path from 'path';
-import { readConfigs, readJsonc, writeConfigs } from './config-io';
+import { readConfigs, readJsonc, writeConfigs } from '../config-io';
 import * as sea from 'node:sea';
 import fs from 'node:fs';
 
-import { selectionGate } from './selection';
+import { selectionGate } from '../selection';
 import { ACTIONS } from '@src/actions';
 import { Network } from '@src/utils/network';
 import { StandardState } from '@src/utils/state/standardState.interface';
@@ -13,8 +13,8 @@ import {
 	convertFromCsvToJsonAccounts,
 	convertSecretStorage,
 	saveJsonAccountsToCsv,
-} from './workWithSecrets';
-import { Account } from './account';
+} from '../workWithSecrets';
+import { Account } from '../account';
 import type { AccountsFile } from '@utils/account';
 import {
 	ACCOUNTS_DECRYPTED_PATH,
@@ -22,12 +22,14 @@ import {
 	SECRET_STORAGE_DECRYPTED_PATH,
 	SECRET_STORAGE_ENCRYPTED_PATH,
 } from '@src/constants';
+import { eventsHandler } from './sse';
 
 export async function startHttpServer() {
 	const app = express();
 	app.use(express.json());
 
-	// API: прочитать конфиги
+	app.get('/api/events', eventsHandler);
+
 	app.get('/api/configs', (_req, res) => {
 		try {
 			res.json(readConfigs());
@@ -36,7 +38,6 @@ export async function startHttpServer() {
 		}
 	});
 
-	// API: записать конфиги
 	app.post('/api/configs', (req, res) => {
 		if (selectionGate.getStatus().chosenBy) {
 			return res.status(423).json({ error: 'Configs are locked (already chosen)' });
@@ -56,8 +57,8 @@ export async function startHttpServer() {
 
 	app.post('/api/selection/choose', (req, res) => {
 		const by = (req.body?.by as 'ui' | 'terminal') || 'ui';
-		const snapshot = readConfigs(); // фиксируем текущие конфиги
-		const ok = selectionGate.choose(by, snapshot);
+		const snapshot = readConfigs();
+		const ok = selectionGate.choose(by, snapshot, req.body?.key);
 		if (!ok) return res.status(409).json({ error: 'Already chosen', ...selectionGate.getStatus() });
 		return res.json({ ok: true, ...selectionGate.getStatus() });
 	});

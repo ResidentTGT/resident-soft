@@ -1,4 +1,4 @@
-import { Paper, Typography, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import { Paper, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 
 import ActionSelector from './fields/ActionSelector';
 import DelayArrayInput from './fields/DelayArrayInput';
@@ -21,12 +21,6 @@ export default function LaunchParamsForm({
 
 	return (
 		<Paper variant="outlined" sx={{ p: 2 }}>
-			<Typography variant="h6" gutterBottom>
-				Конфигурация выполнения
-			</Typography>
-
-			<Divider sx={{ my: 2 }} />
-
 			<ActionSelector
 				actions={actions}
 				value={launchParams.ACTION_PARAMS}
