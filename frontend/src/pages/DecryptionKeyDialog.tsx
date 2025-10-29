@@ -1,5 +1,4 @@
-// web/src/components/DecryptionKeyDialog.tsx
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	Button,
 	Dialog,

@@ -215,7 +215,7 @@ export interface FunctionParams {
 			browser: string;
 		};
 	};
-	Twitter?: any;
+
 	Discord?: any;
 	Berachain?: {
 		FlyTradeSwap?: {
@@ -246,6 +246,16 @@ export interface FunctionParams {
 	Polymarket?: {
 		ClaimUi?: {
 			browser: string;
+		};
+	};
+	Twitter?: {
+		Login?: {
+			browser: string;
+			closeBrowser: boolean;
+		};
+		LoginByToken?: {
+			browser: string;
+			closeBrowser: boolean;
 		};
 	};
 }

@@ -672,6 +672,29 @@ const Form_Polymarket_ClaimUi = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
+/* -------- / Twitter -------- */
+
+const Form_Twitter_Login = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<FormControl size="small">
+			<InputLabel>Антидетект браузер</InputLabel>
+			<Select
+				label="Антидетект браузер"
+				value={params.browser ?? ''}
+				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
+			>
+				<MenuItem value="Vision">Vision</MenuItem>
+				<MenuItem value="AdsPower">AdsPower</MenuItem>
+			</Select>
+		</FormControl>
+		<BoolField
+			label="Закрыть браузер после выполнения"
+			checked={params.closeBrowser}
+			onChange={(v) => set('closeBrowser', v)}
+		/>
+	</Grid>
+);
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -743,5 +766,10 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Polymarket]: {
 		[ActionName.ClaimUi]: Form_Polymarket_ClaimUi,
+	},
+
+	[ActionsGroupName.Twitter]: {
+		[ActionName.Login]: Form_Twitter_Login,
+		[ActionName.LoginByToken]: Form_Twitter_Login,
 	},
 };

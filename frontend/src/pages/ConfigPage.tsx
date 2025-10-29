@@ -28,16 +28,16 @@ export default function ConfigPage() {
 	}>({ open: false, severity: 'success', message: '' });
 
 	useBackendEvents({
-		run_started: (m) => {
+		run_started: (_m) => {
 			setToast({ open: true, severity: 'success', message: 'Скрипт запущен' });
 		},
-		run_finished: (m) => {
+		run_finished: (_m) => {
 			setToast({ open: true, severity: 'success', message: 'Выполнение завершено' });
 		},
 		run_failed: (m) => {
 			setToast({ open: true, severity: 'error', message: JSON.stringify(m.payload) });
 		},
-		decrypt_error: (m) => {
+		decrypt_error: (_m) => {
 			setToast({ open: true, severity: 'error', message: 'Ошибка расшифровки (неверный пароль)' });
 		},
 	});

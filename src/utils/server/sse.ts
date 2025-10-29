@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { MessageType } from '../logger';
 import { nextSeq, tasks } from '../taskManager';
-import { EventName } from './eventName.type';
+import { type EventName } from './eventName.type';
 
 export interface SSEMessage<T = unknown> {
 	eventName: EventName;
