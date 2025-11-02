@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { MessageType } from '../logger';
-import { nextSeq, tasks } from '../taskManager';
+import { getAllTasks } from '../taskManager';
 import { type EventName } from './eventName.type';
 
 export interface SSEMessage<T = unknown> {
@@ -36,11 +36,28 @@ function nowIso() {
 	return new Date().toISOString();
 }
 
-export function broadcast<T = unknown>(msg: Omit<SSEMessage<T>, 'timestamp' | 'sequence'> & { sequence?: number }) {
+const seqByTask = new Map<number, number>();
+function nextSeq(taskId?: number) {
+	const key = taskId ?? 0;
+	const n = (seqByTask.get(key) ?? 0) + 1;
+	seqByTask.set(key, n);
+	return n;
+}
+
+export function broadcast<T = unknown>(msg: {
+	eventName: EventName;
+	payload?: T;
+	type?: MessageType;
+	taskId?: number;
+	sequence?: number;
+}) {
 	const finalMsg: SSEMessage<T> = {
 		timestamp: nowIso(),
 		sequence: msg.sequence ?? nextSeq(msg.taskId),
-		...msg,
+		eventName: msg.eventName,
+		taskId: msg.taskId,
+		type: msg.type,
+		payload: msg.payload,
 	};
 	sseHub.sendJSON(finalMsg);
 }
@@ -49,15 +66,17 @@ export function eventsHandler(req: Request, res: Response) {
 	res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
 	res.setHeader('Cache-Control', 'no-cache, no-transform');
 	res.setHeader('Connection', 'keep-alive');
-	res.flushHeaders?.();
+	(res as any).flushHeaders?.();
 
-	for (const t of tasks.values()) {
+	for (const t of getAllTasks()) {
+		const group = (t.launchParams as any)?.ACTION_PARAMS?.group;
+		const action = (t.launchParams as any)?.ACTION_PARAMS?.action;
 		sseHub.sendJSON({
-			eventName: 'run_started',
+			eventName: 'task_started',
 			timestamp: nowIso(),
 			taskId: t.id,
 			type: MessageType.Notice,
-			payload: { group: t.group, action: t.action },
+			payload: { group, action },
 		});
 	}
 

@@ -2,7 +2,8 @@ import { Bot as TelegramBot } from 'grammy';
 import { delay } from './delay';
 import fs from 'fs';
 import { broadcast } from './server/sse';
-import { getCurrentTaskId } from './taskManager';
+import { getCurrentTaskId, appendTaskLog } from './taskManager';
+import type { EventName } from './server/eventName.type';
 
 export const RED_TEXT = '\u001b[0;31m';
 export const RED_BOLD_TEXT = '\u001b[1;31m';
@@ -41,15 +42,20 @@ export class Logger {
 	}
 
 	public static getInstance(telegramParams?: TelegramParams): Logger {
-		if (!Logger._instance) {
-			Logger._instance = new Logger(telegramParams);
-		}
+		if (!Logger._instance) Logger._instance = new Logger(telegramParams);
 		return Logger._instance;
 	}
 
-	public async log(message: any, type: MessageType = MessageType.Trace, logToFile = false): Promise<void> {
+	public setTelegramParams(telegramParams: TelegramParams) {
+		if (telegramParams && telegramParams.apiKey) {
+			this.telegramParams = telegramParams;
+			if (this.telegramParams.apiKey) this.telegramBot = new TelegramBot(this.telegramParams.apiKey);
+		}
+	}
+
+	public async log(message: any, type: MessageType = MessageType.Trace, eventName?: EventName): Promise<void> {
 		const color = this._getColor(type);
-		const fulldate = new Date().toISOString().replace('Z', '');
+		// const fulldate = new Date().toISOString().replace('Z', '');
 		const fulltime = new Intl.DateTimeFormat('ru-RU', {
 			dateStyle: 'short',
 			timeStyle: 'medium',
@@ -60,50 +66,38 @@ export class Logger {
 
 		const currentId = getCurrentTaskId();
 		if (currentId !== undefined) {
-			broadcast({
-				taskId: currentId,
-				eventName: 'log',
-				type: type,
-				payload: { message },
-			});
+			broadcast({ eventName: eventName ?? 'log', taskId: currentId, type, payload: message });
+			appendTaskLog(currentId, String(message), type);
 		}
 
 		if (type === MessageType.Error || type === MessageType.Notice) {
-			if (this.telegramParams?.chatId && this.telegramBot) {
-				let success;
-				let attempts = 0;
-				const TRIES = 5;
-				while (!success && attempts < TRIES) {
-					attempts++;
-					try {
-						const r = await fetch(`https://api.telegram.org/bot${this.telegramParams.apiKey}/sendMessage`, {
-							method: 'POST',
-							headers: { 'content-type': 'application/json' },
-							body: JSON.stringify({
-								chat_id: this.telegramParams.chatId,
-								text: message.toString().slice(0, 4090),
-							}),
-						});
-						if (!r.ok) throw new Error(`${await r.text()}`);
-
-						// await this.telegramBot.api.sendMessage(this.telegramParams.chatId, message.toString().slice(0, 4090));
-						success = true;
-					} catch (e) {
-						if (attempts < TRIES) {
-							await delay(3);
-						} else {
-							console.log(`Error during sending message to Telegram with ${TRIES} attempts:\n${e}`);
-							break;
-						}
-					}
-				}
-			}
+			await this.sendTelegram(String(message));
 		}
 
-		if (logToFile) this._writeLogToFile(fulldate, message);
+		// if (logToFile) this.writeLogToFile(fulldate, message);
 	}
 
-	private _writeLogToFile(fulldate: string, message: string) {
+	async sendTelegram(message: string) {
+		if (!this.telegramParams?.chatId || !this.telegramBot) return;
+		let success = false;
+		const TRIES = 5;
+		for (let attempts = 0; attempts < TRIES && !success; attempts++) {
+			try {
+				const r = await fetch(`https://api.telegram.org/bot${this.telegramParams.apiKey}/sendMessage`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ chat_id: this.telegramParams.chatId, text: message.slice(0, 4090) }),
+				});
+				if (!r.ok) throw new Error(`${await r.text()}`);
+				success = true;
+			} catch (e) {
+				if (attempts < TRIES - 1) await delay(3);
+				else console.log(`Error during sending message to Telegram after ${TRIES} attempts:\n${e}`);
+			}
+		}
+	}
+
+	writeLogToFile(fulldate: string, message: string) {
 		const time = fulldate.split('T')[1];
 		const date = fulldate.split('T')[0];
 
