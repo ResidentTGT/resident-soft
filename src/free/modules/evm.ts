@@ -58,6 +58,70 @@ export class Evm {
 		}
 	}
 
+	static async increaseAllowance(network: Network, privateKey: string, spender: string, tokenSymbol: string, amount: string) {
+		const token = network.tokens.find((t) => t.symbol === tokenSymbol);
+		if (!token) throw new Error(`There is no ${tokenSymbol} in tokens list in ${network.name}`);
+
+		if (tokenSymbol === network.nativeCoin) {
+			await Logger.getInstance().log(`There is no need to increase allowance for native coin ${tokenSymbol}`);
+		} else {
+			try {
+				const provider = network.getProvider();
+				const decimals = await this.getDecimals(network, token);
+
+				const amountBn = ethers.parseUnits(amount, decimals);
+
+				const tokenContract = new ethers.Interface(ERC20_ABI);
+
+				await Logger.getInstance().log(`Start increasing allowance ${amount} ${tokenSymbol} for ${spender} ...`);
+
+				const data = tokenContract.encodeFunctionData('increaseAllowance', [spender, amountBn]);
+
+				const transaction = await Evm.generateTransactionRequest(provider, privateKey, token.address, BigInt(0), data);
+
+				await this.makeTransaction(provider, privateKey, transaction);
+
+				await Logger.getInstance().log(`Allowance increased for ${amount} ${tokenSymbol} for ${spender}`);
+			} catch (e: any) {
+				if (e.toString().includes('too many decimals for format'))
+					throw new Error(`Wrong amount (${amount}) for increase allowance. Too many decimals.\n${e}`);
+				throw e;
+			}
+		}
+	}
+
+	static async decreaseAllowance(network: Network, privateKey: string, spender: string, tokenSymbol: string, amount: string) {
+		const token = network.tokens.find((t) => t.symbol === tokenSymbol);
+		if (!token) throw new Error(`There is no ${tokenSymbol} in tokens list in ${network.name}`);
+
+		if (tokenSymbol === network.nativeCoin) {
+			await Logger.getInstance().log(`There is no need to decrease allowance for native coin ${tokenSymbol}`);
+		} else {
+			try {
+				const provider = network.getProvider();
+				const decimals = await this.getDecimals(network, token);
+
+				const amountBn = ethers.parseUnits(amount, decimals);
+
+				const tokenContract = new ethers.Interface(ERC20_ABI);
+
+				await Logger.getInstance().log(`Start decreasing allowance ${amount} ${tokenSymbol} for ${spender} ...`);
+
+				const data = tokenContract.encodeFunctionData('decreaseAllowance', [spender, amountBn]);
+
+				const transaction = await Evm.generateTransactionRequest(provider, privateKey, token.address, BigInt(0), data);
+
+				await this.makeTransaction(provider, privateKey, transaction);
+
+				await Logger.getInstance().log(`Allowance decreased for ${amount} ${tokenSymbol} for ${spender}`);
+			} catch (e: any) {
+				if (e.toString().includes('too many decimals for format'))
+					throw new Error(`Wrong amount (${amount}) for decrease allowance. Too many decimals.\n${e}`);
+				throw e;
+			}
+		}
+	}
+
 	static async approveErc21Nft(privateKey: string, network: Network, nftContract: string, spender: string, tokenId: string) {
 		await Logger.getInstance().log(`Start approving  NFT (${nftContract}) with Id ${tokenId} for ${spender} ...`);
 		const provider = network.getProvider();
@@ -485,7 +549,7 @@ export class Evm {
 	}
 
 	static async wrap(network: Network, privateKey: string, amount: string) {
-		await Logger.getInstance().log(`Start wrapping ${amount} ${network.nativeCoin} ...`, MessageType.Info);
+		await Logger.getInstance().log(`Start wrapping ${amount} ${network.nativeCoin} ...`);
 		const provider = network.getProvider();
 
 		const amt = ethers.parseEther(amount);
@@ -499,14 +563,11 @@ export class Evm {
 
 		await this.makeTransaction(provider, privateKey, transaction);
 
-		await Logger.getInstance().log(`${amount} ${network.nativeCoin} wrapped`, MessageType.Info);
+		await Logger.getInstance().log(`${amount} ${network.nativeCoin} wrapped`);
 	}
 
 	static async unwrap(network: Network, privateKey: string, amount?: string) {
-		await Logger.getInstance().log(
-			`Start unwrapping ${amount ? amount : 'max'} W${network.nativeCoin} ...`,
-			MessageType.Info,
-		);
+		await Logger.getInstance().log(`Start unwrapping ${amount ? amount : 'max'} W${network.nativeCoin} ...`);
 		const provider = network.getProvider();
 		const wallet = new ethers.Wallet(privateKey);
 		const amt = amount ? ethers.parseEther(amount) : await this.getBalance(network, wallet.address, `W${network.nativeCoin}`);

@@ -8,7 +8,8 @@ const CONTRACTS = new Map<ChainId, string>()
 	.set(ChainId.ZksyncEra, '0xD48e3caf0D948203434646a3f3e80f8Ee18007dc')
 	.set(ChainId.Linea, '0xd7487D1ff3b2433B32E6d4c333F70A462B99F300')
 	.set(ChainId.Scroll, '0xe6feca764b7548127672c189d303eb956c3ba372')
-	.set(ChainId.Blast, '0xeff847da094d82f852cf4c2678e28fa39285dbfe');
+	.set(ChainId.Soneium, '0xBF6B575e5a2a1272AE7bAEdABc00Cf016f2f437c')
+	.set(ChainId.Base, '0x26637c9fDbD5Ecdd76a9E21Db7ea533e1B0713b6');
 
 export abstract class Owlto {
 	static async dailyCheckIn(ACCOUNT: Account, network: Network) {

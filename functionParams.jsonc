@@ -255,4 +255,13 @@
 			"closeBrowser": false,
 		},
 	},
+	"Superchain": {
+		"MakeTransactions": {
+			"count": 2500,
+			"forBadges": true,
+			"refuelFromChainId": "8453",
+			"delayBetweenTransactions": [0, 0],
+			"chainIds": ["1868", "10", "34443", "1135", "57073", "8453", "130", "480"],
+		},
+	},
 }

@@ -258,4 +258,13 @@ export interface FunctionParams {
 			closeBrowser: boolean;
 		};
 	};
+	Superchain?: {
+		MakeTransactions?: {
+			chainIds: ChainId[];
+			count: number;
+			forBadges: boolean;
+			refuelFromChainId: ChainId;
+			delayBetweenTransactions: [number, number];
+		};
+	};
 }

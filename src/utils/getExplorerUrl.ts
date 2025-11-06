@@ -37,7 +37,12 @@ const EXPLORER_URLS = new Map<ChainId, string>()
 	.set(ChainId.Flow, 'https://evm.flowscan.io/')
 	.set(ChainId.Shape, 'https://shapescan.xyz/')
 	.set(ChainId.Abstract, 'https://abscan.org/')
-	.set(ChainId.Sophon, 'https://explorer.sophon.xyz/');
+	.set(ChainId.Sophon, 'https://explorer.sophon.xyz/')
+	.set(ChainId.Lisk, 'https://blockscout.lisk.com/')
+	.set(ChainId.Ink, 'https://explorer.inkonchain.com/')
+	.set(ChainId.World, 'https://worldchain-mainnet.explorer.alchemy.com/')
+	.set(ChainId.Mode, 'https://explorer.mode.network/')
+	.set(ChainId.Unichain, 'https://unichain.blockscout.com/');
 
 export function getExplorerUrl(chainId: ChainId, account?: Account, transactionHash?: string): string {
 	let url = ``;

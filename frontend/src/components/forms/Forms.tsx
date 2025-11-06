@@ -12,6 +12,7 @@ import { CsvField } from './fields/CsvField';
 import { StrField } from './fields/StrField';
 import { ChainIdSelect } from './fields/ChainIdSelect';
 import { ChainIdMultiSelect } from './fields/ChainIdMultiSelect';
+import { ChainId } from '../../../../src/utils/network/chainId';
 
 /* -------- Common -------- */
 
@@ -695,6 +696,54 @@ const Form_Twitter_Login = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
+/* -------- / Superchain -------- */
+
+const Form_Make_Transactions = ({ params, set, networks }: FormCtx) => {
+	const allowedChains = [
+		ChainId.Base,
+		ChainId.Optimism,
+		ChainId.Lisk,
+		ChainId.Ink,
+		ChainId.Soneium,
+		ChainId.Mode,
+		ChainId.World,
+		ChainId.Unichain,
+	];
+	const allowedNets = networks.filter((n) => allowedChains.includes(n.chainId));
+
+	const allowedRefuelChains = [ChainId.Base, ChainId.Optimism, ChainId.Arbitrum, ChainId.Bsc, ChainId.Linea, ChainId.Polygon];
+	const allowedRefuelNets = networks.filter((n) => allowedRefuelChains.includes(n.chainId));
+	return (
+		<Grid container spacing={2} width={'100%'}>
+			<ChainIdMultiSelect
+				label="В сетях"
+				value={params.chainIds}
+				onChange={(v) => set('chainIds', v)}
+				networks={allowedNets}
+			/>
+			<BoolField label="Набивать до последнего бейджа" checked={params.forBadges} onChange={(v) => set('forBadges', v)} />
+			{!params.forBadges && (
+				<NumField label="Нужно транзакций на кошельке" value={params.count} onChange={(v) => set('count', v ?? 0)} />
+			)}
+			<Grid sx={{ minWidth: '30%' }}>
+				<ChainIdSelect
+					label="Рефьэл из сети"
+					value={params.refuelFromChainId}
+					onChange={(v) => set('refuelFromChainId', v)}
+					networks={allowedRefuelNets}
+				/>
+			</Grid>
+			<Grid sx={{ width: '100%' }}>Задержка между транзакциями, с.</Grid>
+			<RangeField
+				labelFrom="От"
+				labelTo="До"
+				value={params.delayBetweenTransactions}
+				onChange={(v) => set('delayBetweenTransactions', v)}
+			/>
+		</Grid>
+	);
+};
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -771,5 +820,8 @@ export const FORMS = {
 	[ActionsGroupName.Twitter]: {
 		[ActionName.Login]: Form_Twitter_Login,
 		[ActionName.LoginByToken]: Form_Twitter_Login,
+	},
+	[ActionsGroupName.Superchain]: {
+		[ActionName.MakeTransactions]: Form_Make_Transactions,
 	},
 };

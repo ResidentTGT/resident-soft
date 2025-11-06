@@ -337,7 +337,14 @@
 	},
 	{
 		"chainId": "1868",
-		"tokens": [{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" }],
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "ASTR", "address": "0x2CAE934a1e84F693fbb78CA5ED3B0A6893259441" },
+			{ "symbol": "USDC.e", "address": "0xbA9986D2381edf1DA03B0B9c1f8b00dc4AacC369" },
+			{ "symbol": "USDT", "address": "0x3A337a6adA9d885b6Ad95ec48F9b75f197b5AE35" },
+			{ "symbol": "WBTC", "address": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c" },
+		],
 	},
 	{
 		"chainId": "80094",
@@ -383,5 +390,59 @@
 	{
 		"chainId": "50104",
 		"tokens": [{ "symbol": "SOPH", "address": "0x000000000000000000000000000000000000800A" }],
+	},
+	{
+		"chainId": "1135",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "LSK", "address": "0xac485391EB2d7D88253a7F1eF18C37f4242D1A24" },
+			{ "symbol": "USDT", "address": "0x05D032ac25d322df992303dCa074EE7392C117b9" },
+			{ "symbol": "USDC.e", "address": "0xF242275d3a6527d877f2c927a82D9b057609cc71" },
+			{ "symbol": "WBTC", "address": "0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3" },
+		],
+	},
+	{
+		"chainId": "57073",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "USDT", "address": "0x0200C29006150606B650577BBE7B6248F58470c1" },
+			{ "symbol": "USDC.e", "address": "0xF1815bd50389c46847f0Bda824eC8da914045D14" },
+		],
+	},
+	{
+		"chainId": "480",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "WLD", "address": "0x2cFc85d8E48F8EAB294be644d9E25C3030863003" },
+			{ "symbol": "USDC", "address": "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1" },
+			{ "symbol": "ORO", "address": "0xcd1E32B86953D79a6AC58e813D2EA7a1790cAb63" },
+			{ "symbol": "PI", "address": "0xDB0207bD76d6774aAa247376B7d9E5Dd09460843" },
+			{ "symbol": "WBTC", "address": "0x03C7054BCB39f7b2e5B2c7AcB37583e32D70Cfa3" },
+			{ "symbol": "ORB", "address": "0xF3F92A60e6004f3982F0FdE0d43602fC0a30a0dB" },
+			{ "symbol": "DNA", "address": "0xED49fE44fD4249A09843C2Ba4bba7e50BECa7113" },
+		],
+	},
+	{
+		"chainId": "34443",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "MODE", "address": "0xDfc7C877a950e49D2610114102175A06C2e3167a" },
+			{ "symbol": "USDC", "address": "0xd988097fb8612cc24eeC14542bC03424c656005f" },
+			{ "symbol": "USDT", "address": "0xf0F161fDA2712DB8b566946122a5af183995e2eD" },
+		],
+	},
+	{
+		"chainId": "130",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "WETH", "address": "0x4200000000000000000000000000000000000006" },
+			{ "symbol": "WBTC", "address": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c" },
+			{ "symbol": "USDC", "address": "0x078D782b760474a361dDA0AF3839290b0EF57AD6" },
+			{ "symbol": "UNI", "address": "0x8f187aA05619a017077f5308904739877ce9eA21" },
+		],
 	},
 ]

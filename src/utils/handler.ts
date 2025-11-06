@@ -229,9 +229,10 @@ export abstract class BaseHandler implements Handler {
 			const l = Object.keys(actionModeParams.FUNCTION_PARAMS)
 				.filter((k) => k.toUpperCase().includes('CHAINID'))
 				.map((k) => actionModeParams.FUNCTION_PARAMS[k]);
-			if (l[0]) chainId = l[0];
+
+			if (l[0] && typeof l[0] === 'string') chainId = l[0];
 		}
 
-		return chainId;
+		return chainId as ChainId;
 	}
 }

@@ -37,6 +37,52 @@ export const ERC20_ABI = [
 		type: 'function',
 	},
 	{
+		constant: false,
+		inputs: [
+			{
+				name: 'spender',
+				type: 'address',
+			},
+			{
+				name: 'increment',
+				type: 'uint256',
+			},
+		],
+		name: 'increaseAllowance',
+		outputs: [
+			{
+				name: '',
+				type: 'bool',
+			},
+		],
+		payable: false,
+		stateMutability: 'nonpayable',
+		type: 'function',
+	},
+	{
+		constant: false,
+		inputs: [
+			{
+				name: 'spender',
+				type: 'address',
+			},
+			{
+				name: 'decrement',
+				type: 'uint256',
+			},
+		],
+		name: 'decreaseAllowance',
+		outputs: [
+			{
+				name: '',
+				type: 'bool',
+			},
+		],
+		payable: false,
+		stateMutability: 'nonpayable',
+		type: 'function',
+	},
+	{
 		constant: true,
 		inputs: [],
 		name: 'totalSupply',

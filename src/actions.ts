@@ -32,6 +32,7 @@ export enum ActionsGroupName {
 	Vision = 'Vision',
 	Meteora = 'Meteora',
 	Polymarket = 'Polymarket',
+	Superchain = 'Superchain',
 }
 
 export enum ActionName {
@@ -120,6 +121,7 @@ export enum ActionName {
 	ParseIsotopes = 'ParseIsotopes',
 	Spin = 'Spin',
 	AddLiquidity = 'AddLiquidity',
+	MakeTransactions = 'MakeTransactions',
 }
 
 export interface Action {
@@ -536,5 +538,12 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Polymarket',
 		allowed: true,
 		actions: [{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм наград (UI)' }],
+	},
+	{
+		group: ActionsGroupName.Superchain,
+		premium: true,
+		name: 'Superchain',
+		allowed: true,
+		actions: [{ action: ActionName.MakeTransactions, isolated: true, allowed: true, name: 'Набив транзакций' }],
 	},
 ];

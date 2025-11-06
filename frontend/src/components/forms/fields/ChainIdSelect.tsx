@@ -14,7 +14,7 @@ export function ChainIdSelect({
 }) {
 	return (
 		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
-			<FormControl size="small">
+			<FormControl size="small" sx={{ width: '100%' }}>
 				<InputLabel>{label}</InputLabel>
 				<Select label={label} value={value} onChange={(e) => onChange(e.target.value as ChainId)}>
 					{networks.map((n) => (

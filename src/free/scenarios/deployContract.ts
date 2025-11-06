@@ -1,4 +1,5 @@
 // secretlint-disable @secretlint/secretlint-rule-secp256k1-privatekey
+import Random from '@src/utils/random';
 import { Account } from '@utils/account';
 import { Logger } from '@utils/logger';
 import { Network } from '@utils/network';
@@ -10,12 +11,12 @@ export async function deployContract(account: Account, network: Network) {
 	const provider = network.getProvider();
 	const wallet = new ethers.Wallet(account.wallets.evm.private, provider);
 
-	const byteCode = EMPTY_CONTRACT_BYTECODE; //[OWN_CONTRACT_BYTECODE, MERKLY_BYTECODE][Random.intFromInterval(1, 2) - 1];
+	const byteCode = Random.choose([OWN_CONTRACT_BYTECODE, MERKLY_BYTECODE, EMPTY_CONTRACT_BYTECODE]);
 	const factory = new ContractFactory(DEPLOY_ABI, byteCode, wallet);
 
 	const contract = await factory.deploy();
 
-	await Logger.getInstance().log(`${await contract.getAddress()} deployed on Scroll from ${account.wallets?.evm?.address}`);
+	await Logger.getInstance().log(`Contract ${await contract.getAddress()} deployed on ${network.name}`);
 }
 
 export const DEPLOY_ABI = [

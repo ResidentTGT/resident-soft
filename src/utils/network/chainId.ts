@@ -57,4 +57,7 @@ export enum ChainId {
 	Sei = '1329',
 	Mode = '34443',
 	Fraxtal = '252',
+	Lisk = '1135',
+	Ink = '57073',
+	World = '480',
 }

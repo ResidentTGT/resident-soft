@@ -67,7 +67,7 @@
 			"https://mainnet.base.org",
 			// "https://base.drpc.org",
 			"https://base-rpc.publicnode.com",
-			"https://0xrpc.io/base",
+			// "https://0xrpc.io/base",
 		],
 	},
 	{
@@ -279,5 +279,29 @@
 		"name": "Fraxtal",
 		"nativeCoin": "FRAX",
 		"rpc": ["https://rpc.frax.com"],
+	},
+	{
+		"chainId": "1135",
+		"name": "Lisk",
+		"nativeCoin": "ETH",
+		"rpc": ["https://lisk.drpc.org", "https://rpc.api.lisk.com"],
+	},
+	{
+		"chainId": "57073",
+		"name": "Ink",
+		"nativeCoin": "ETH",
+		"rpc": ["https://ink-public.nodies.app", "https://rpc-qnd.inkonchain.com"],
+	},
+	{
+		"chainId": "480",
+		"name": "World",
+		"nativeCoin": "ETH",
+		"rpc": ["https://worldchain-mainnet.g.alchemy.com/public", "https://480.rpc.thirdweb.com"],
+	},
+	{
+		"chainId": "130",
+		"name": "Unichain",
+		"nativeCoin": "ETH",
+		"rpc": ["https://unichain-rpc.publicnode.com", "https://unichain.drpc.org"],
 	},
 ]
