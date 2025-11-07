@@ -1,25 +1,37 @@
 import axios from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { Proxy } from '@utils/account';
-import { Logger } from './logger';
+import { HttpProxyAgent } from 'http-proxy-agent';
 import { SocksProxyAgent } from 'socks-proxy-agent';
 import { FetchRequest } from 'ethers';
+import { Logger } from './logger';
 import { MissingFieldError } from './errors';
+import { Proxy } from './account';
 
 export async function setProxy(proxy?: Proxy) {
 	if (!proxy?.type) throw new MissingFieldError('proxy.type');
+	if (!['http', 'socks5'].includes(proxy.type)) throw new Error('Allowed proxy types: http, socks5');
+	if (!proxy.ip) throw new MissingFieldError('proxy.ip');
+	if (!proxy.port) throw new MissingFieldError('proxy.port');
 
-	if (!['http', 'socks5'].includes(proxy.type)) throw new Error(`Invalid proxy type: ${proxy.type}. Allowed sock5, http.`);
-	if (!proxy?.ip) throw new MissingFieldError('proxy.ip');
-	if (!proxy?.port) throw new MissingFieldError('proxy.port');
+	const auth =
+		proxy.login && proxy.password ? `${encodeURIComponent(proxy.login)}:${encodeURIComponent(proxy.password)}@` : ':@';
+	const scheme = proxy.type === 'socks5' ? 'socks5' : 'http';
+	const proxyUrl = `${scheme}://${auth}${proxy.ip}:${proxy.port}`;
 
-	const socks5Url = `socks5://${proxy.login ? encodeURIComponent(proxy.login) : ''}:${proxy.password ? encodeURIComponent(proxy.password) : ''}@${proxy.ip}:${proxy.port}`;
-	const httpUrl = `http://${proxy.login ? encodeURIComponent(proxy.login) : ''}:${proxy.password ? encodeURIComponent(proxy.password) : ''}@${proxy.ip}:${proxy.port}`;
+	if (proxy.type === 'http') {
+		axios.defaults.httpAgent = new HttpProxyAgent(proxyUrl, { keepAlive: true });
+		axios.defaults.httpsAgent = new HttpsProxyAgent(proxyUrl, { keepAlive: true });
+	} else {
+		const socks = new SocksProxyAgent(proxyUrl, { keepAlive: true });
+		axios.defaults.httpAgent = socks;
+		axios.defaults.httpsAgent = socks;
+	}
+	axios.defaults.timeout = 60_000;
 
-	const proxyAgent = proxy.type === 'socks5' ? new SocksProxyAgent(socks5Url) : new HttpsProxyAgent(httpUrl);
-
-	axios.defaults.httpAgent = proxyAgent;
-	axios.defaults.httpsAgent = proxyAgent;
+	const proxyAgent =
+		proxy.type === 'http'
+			? new HttpsProxyAgent(proxyUrl, { keepAlive: true })
+			: new SocksProxyAgent(proxyUrl, { keepAlive: true });
 
 	FetchRequest.registerGetUrl(
 		FetchRequest.createGetUrlFunc({
@@ -27,7 +39,7 @@ export async function setProxy(proxy?: Proxy) {
 		}),
 	);
 
-	await Logger.getInstance().log(`Proxy: ${proxy.type === 'socks5' ? socks5Url : httpUrl}`);
+	await Logger.getInstance().log(`Proxy: ${proxyUrl}`);
 }
 
 export async function resetProxy() {
