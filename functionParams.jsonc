@@ -261,7 +261,10 @@
 			"forBadges": true,
 			"refuelFromChainId": "8453",
 			"delayBetweenTransactions": [0, 0],
-			"chainIds": ["1868", "10", "34443", "1135", "57073", "8453", "130", "480"],
+			"chainIds": ["1135", "57073", "8453", "34443", "10", "1868", "130", "480"],
+		},
+		"ClaimUi": {
+			"browser": "Vision",
 		},
 	},
 }

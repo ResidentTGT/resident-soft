@@ -544,6 +544,9 @@ export const ACTIONS: ActionsGroup[] = [
 		premium: true,
 		name: 'Superchain',
 		allowed: true,
-		actions: [{ action: ActionName.MakeTransactions, isolated: true, allowed: true, name: 'Набив транзакций' }],
+		actions: [
+			{ action: ActionName.MakeTransactions, isolated: true, allowed: true, name: 'Набив транзакций' },
+			{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм бейджей через UI' },
+		],
 	},
 ];

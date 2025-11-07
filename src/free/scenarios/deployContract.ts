@@ -6,7 +6,7 @@ import { Network } from '@utils/network';
 import { ContractFactory, ethers } from 'ethers';
 
 export async function deployContract(account: Account, network: Network) {
-	if (!account.wallets?.evm?.address || !account.wallets?.evm?.private) throw new Error(`There is no account.wallets?.evm!`);
+	if (!account.wallets?.evm?.private) throw new Error(`There is no account.wallets?.evm!`);
 
 	const provider = network.getProvider();
 	const wallet = new ethers.Wallet(account.wallets.evm.private, provider);

@@ -13,6 +13,14 @@ import { StrField } from './fields/StrField';
 import { ChainIdSelect } from './fields/ChainIdSelect';
 import { ChainIdMultiSelect } from './fields/ChainIdMultiSelect';
 import { ChainId } from '../../../../src/utils/network/chainId';
+import { BrowserField } from './fields/BrowserField';
+
+/* -------- Browser Form -------- */
+const Form_Browser = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+	</Grid>
+);
 
 /* -------- Common -------- */
 
@@ -486,17 +494,7 @@ function Form_ExchangeWithdraw_ChainId({ params, set, networks, tokens }: FormCt
 function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<FormControl size="small">
-				<InputLabel>Антидетект браузер</InputLabel>
-				<Select
-					label="Антидетект браузер"
-					value={params.browser ?? ''}
-					onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-				>
-					<MenuItem value="Vision">Vision</MenuItem>
-					<MenuItem value="AdsPower">AdsPower</MenuItem>
-				</Select>
-			</FormControl>
+			<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
 			<CsvField
 				label="Ссылки на страницы"
 				value={params.pageUrls}
@@ -519,17 +517,7 @@ function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
 
 const Form_CommonUi_RestoreMetamask = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
 		<BoolField
 			label="Закрыть браузер после выполнения"
 			checked={params.closeBrowser}
@@ -538,28 +526,12 @@ const Form_CommonUi_RestoreMetamask = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
-const Form_CommonUi_LoginInMetamask = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
-	</Grid>
-);
-
 const Form_CommonUi_RestorePetra = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreBackpack = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreArgent = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestoreRabby = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestorePhantom = Form_CommonUi_RestoreMetamask;
-const Form_CommonUi_LoginInRabby = Form_CommonUi_LoginInMetamask;
+const Form_CommonUi_LoginInRabby = Form_Browser;
 
 /* -------- AdsPower / Vision -------- */
 
@@ -580,17 +552,7 @@ const Form_Vision_GetProfiles = ({ params, set }: FormCtx) => (
 
 const Form_Opensea_SweepByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
 		<CsvField label="Ссылки на коллекции" value={params.links} onChange={(v) => set('links', v)} />
 		<NumField label="Сколько NFT купить" value={params.count} onChange={(v) => set('count', v ?? 0)} />
 	</Grid>
@@ -598,34 +560,8 @@ const Form_Opensea_SweepByLink = ({ params, set }: FormCtx) => (
 
 const Form_Opensea_SellCollectionByLink = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
 		<StrField label="Ссылка на коллекцию" value={params.link} onChange={(v) => set('link', v)} />
-	</Grid>
-);
-
-const Form_Opensea_ClaimUi = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
 	</Grid>
 );
 
@@ -637,57 +573,11 @@ const Form_ZksyncLite_SendToken = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
-/* -------- / Meteora -------- */
-
-const Form_Meteora_AddLiquidity = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
-	</Grid>
-);
-
-/* -------- / Polymarket -------- */
-
-const Form_Polymarket_ClaimUi = ({ params, set }: FormCtx) => (
-	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
-	</Grid>
-);
-
 /* -------- / Twitter -------- */
 
 const Form_Twitter_Login = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
-		<FormControl size="small">
-			<InputLabel>Антидетект браузер</InputLabel>
-			<Select
-				label="Антидетект браузер"
-				value={params.browser ?? ''}
-				onChange={(e) => set('browser', (e.target.value as string) || undefined)}
-			>
-				<MenuItem value="Vision">Vision</MenuItem>
-				<MenuItem value="AdsPower">AdsPower</MenuItem>
-			</Select>
-		</FormControl>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
 		<BoolField
 			label="Закрыть браузер после выполнения"
 			checked={params.closeBrowser}
@@ -756,7 +646,7 @@ export const FORMS = {
 	[ActionsGroupName.CommonUi]: {
 		[ActionName.OpenPages]: Form_CommonUi_OpenPages,
 		[ActionName.RestoreMetamask]: Form_CommonUi_RestoreMetamask,
-		[ActionName.LoginInMetamask]: Form_CommonUi_LoginInMetamask,
+		[ActionName.LoginInMetamask]: Form_Browser,
 		[ActionName.RestorePetra]: Form_CommonUi_RestorePetra,
 		[ActionName.RestoreBackpack]: Form_CommonUi_RestoreBackpack,
 		[ActionName.RestoreArgent]: Form_CommonUi_RestoreArgent,
@@ -790,13 +680,13 @@ export const FORMS = {
 	[ActionsGroupName.Opensea]: {
 		[ActionName.SweepByLink]: Form_Opensea_SweepByLink,
 		[ActionName.SellCollectionByLink]: Form_Opensea_SellCollectionByLink,
-		[ActionName.ClaimUi]: Form_Opensea_ClaimUi,
+		[ActionName.ClaimUi]: Form_Browser,
 	},
 	[ActionsGroupName.ZksyncLite]: {
 		[ActionName.SendToken]: Form_ZksyncLite_SendToken,
 	},
 	[ActionsGroupName.Meteora]: {
-		[ActionName.AddLiquidity]: Form_Meteora_AddLiquidity,
+		[ActionName.AddLiquidity]: Form_Browser,
 	},
 	[ActionsGroupName.Okx]: {
 		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
@@ -814,7 +704,7 @@ export const FORMS = {
 		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
 	},
 	[ActionsGroupName.Polymarket]: {
-		[ActionName.ClaimUi]: Form_Polymarket_ClaimUi,
+		[ActionName.ClaimUi]: Form_Browser,
 	},
 
 	[ActionsGroupName.Twitter]: {
@@ -823,5 +713,6 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Superchain]: {
 		[ActionName.MakeTransactions]: Form_Make_Transactions,
+		[ActionName.ClaimUi]: Form_Browser,
 	},
 };

@@ -266,5 +266,8 @@ export interface FunctionParams {
 			refuelFromChainId: ChainId;
 			delayBetweenTransactions: [number, number];
 		};
+		ClaimUi?: {
+			browser: string;
+		};
 	};
 }
