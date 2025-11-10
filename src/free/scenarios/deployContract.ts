@@ -1,77 +1,145 @@
 // secretlint-disable @secretlint/secretlint-rule-secp256k1-privatekey
+import { MissingFieldError } from '@src/utils/errors';
 import Random from '@src/utils/random';
 import { Account } from '@utils/account';
 import { Logger } from '@utils/logger';
 import { Network } from '@utils/network';
 import { ContractFactory, ethers } from 'ethers';
+import { Evm } from '../modules/evm';
 
-export async function deployContract(account: Account, network: Network) {
+export enum CustomContractType {
+	Store = 'Store',
+	Vote = 'Vote',
+	Lend = 'Lend',
+	Borrow = 'Borrow',
+	Swap = 'Swap',
+	Repay = 'Repay',
+	Deposit = 'Deposit',
+	Withdraw = 'Withdraw',
+}
+
+export interface CustomContract {
+	type: CustomContractType;
+	address?: string;
+	abi: string;
+	bytecode: string;
+}
+
+const CONTRACTS: CustomContract[] = [
+	{
+		type: CustomContractType.Store,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "store","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec11460345780636057361d14604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea264697066735822122063f96a57b86a37af1ac0fbf522233470beb0ae3e330dcafa317cb897259fa87364736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Vote,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "vote","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80630121b93f1460345780632e64cec114604c575b5f5ffd5b604a60048036038101906046919060a9565b6066565b005b6052606f565b604051605d919060dc565b60405180910390f35b805f8190555050565b5f5f54905090565b5f5ffd5b5f819050919050565b608b81607b565b81146094575f5ffd5b50565b5f8135905060a3816084565b92915050565b5f6020828403121560bb5760ba6077565b5b5f60c6848285016097565b91505092915050565b60d681607b565b82525050565b5f60208201905060ed5f83018460cf565b9291505056fea264697066735822122059767032b429392a28ab9c503ebf23082e95b2825a86ad8d0023aaa979fa506a64736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Lend,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "lend","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec1146034578063a6aa57ce14604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea264697066735822122053c5ae1884bbf581b144a7c411282e48b278e983323e29ae325d5c0715d37d8964736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Borrow,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "borrow","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec1146034578063c5ebeaec14604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea264697066735822122056df35965d58c28c3e8401255fd6d478c76d40d165910e8637fdacc5416c776964736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Swap,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "swap","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec114603457806394b918de14604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea26469706673582212203fea1af672939ab5c12c0943afb928a014692c2beee539f46069d5769132f63664736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Repay,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "repay","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec1146034578063371fd8e614604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea26469706673582212201df80718d82ce64148244e1d2b40aefca5cdcbf9e72be384ce2809bb22a850af64736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Deposit,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "deposit","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e64cec1146034578063b6b55f2514604e575b5f5ffd5b603a6066565b60405160459190608d565b60405180910390f35b606460048036038101906060919060cd565b606e565b005b5f5f54905090565b805f8190555050565b5f819050919050565b6087816077565b82525050565b5f602082019050609e5f8301846080565b92915050565b5f5ffd5b60af816077565b811460b8575f5ffd5b50565b5f8135905060c78160a8565b92915050565b5f6020828403121560df5760de60a4565b5b5f60ea8482850160bb565b9150509291505056fea264697066735822122063206e766e744049270b01a19a14202a3a92a98bec2a0f09e01e2b28e287f68e64736f6c634300081e0033',
+	},
+	{
+		type: CustomContractType.Withdraw,
+		abi: `[{"inputs": [{ "internalType": "uint256", "name": "num", "type": "uint256" }],"name": "withdraw","outputs": [],"stateMutability": "nonpayable","type": "function"}]`,
+		bytecode:
+			'0x6080604052348015600e575f5ffd5b506101298061001c5f395ff3fe6080604052348015600e575f5ffd5b50600436106030575f3560e01c80632e1a7d4d1460345780632e64cec114604c575b5f5ffd5b604a60048036038101906046919060a9565b6066565b005b6052606f565b604051605d919060dc565b60405180910390f35b805f8190555050565b5f5f54905090565b5f5ffd5b5f819050919050565b608b81607b565b81146094575f5ffd5b50565b5f8135905060a3816084565b92915050565b5f6020828403121560bb5760ba6077565b5b5f60c6848285016097565b91505092915050565b60d681607b565b82525050565b5f60208201905060ed5f83018460cf565b9291505056fea2646970667358221220889aee06eedf00e8ef25cd499b94926b3be0f866d7c360e2d9c4c50e24f8e12964736f6c634300081e0033',
+	},
+];
+
+export async function deployCustomContract(
+	account: Account,
+	network: Network,
+	contractType?: CustomContractType,
+): Promise<CustomContract> {
 	if (!account.wallets?.evm?.private) throw new Error(`There is no account.wallets?.evm!`);
 
 	const provider = network.getProvider();
 	const wallet = new ethers.Wallet(account.wallets.evm.private, provider);
 
-	const byteCode = Random.choose([OWN_CONTRACT_BYTECODE, MERKLY_BYTECODE, EMPTY_CONTRACT_BYTECODE]);
-	const factory = new ContractFactory(DEPLOY_ABI, byteCode, wallet);
+	const customContract = contractType ? CONTRACTS.find((c) => c.type === contractType) : Random.choose(CONTRACTS);
+	if (!customContract) throw new Error(`There is no ${contractType} contract!`);
+
+	const factory = new ContractFactory(customContract.abi, customContract.bytecode, wallet);
 
 	const contract = await factory.deploy();
+	await contract.waitForDeployment();
+	const address = await contract.getAddress();
+	customContract.address = address;
 
-	await Logger.getInstance().log(`Contract ${await contract.getAddress()} deployed on ${network.name}`);
+	await Logger.getInstance().log(`Contract ${customContract.type} (${customContract.address}) deployed on ${network.name}`);
+
+	return customContract;
 }
 
-export const DEPLOY_ABI = [
-	{
-		inputs: [],
-		stateMutability: 'nonpayable',
-		type: 'constructor',
-	},
-	{
-		inputs: [],
-		name: 'getBalance',
-		outputs: [
-			{
-				internalType: 'uint256',
-				name: '',
-				type: 'uint256',
-			},
-		],
-		stateMutability: 'view',
-		type: 'function',
-	},
-	{
-		inputs: [],
-		name: 'owner',
-		outputs: [
-			{
-				internalType: 'address payable',
-				name: '',
-				type: 'address',
-			},
-		],
-		stateMutability: 'view',
-		type: 'function',
-	},
-	{
-		inputs: [
-			{
-				internalType: 'uint256',
-				name: '_amount',
-				type: 'uint256',
-			},
-		],
-		name: 'withdraw',
-		outputs: [],
-		stateMutability: 'nonpayable',
-		type: 'function',
-	},
-	{
-		stateMutability: 'payable',
-		type: 'receive',
-	},
-] as const;
+export async function interactCustomContract(account: Account, network: Network, customContract: CustomContract): Promise<void> {
+	if (!customContract.address) throw new Error(`There is no customContract.address!`);
+	if (!account.wallets?.evm?.private) throw new MissingFieldError(`wallets.evm.private`);
 
-export const EMPTY_CONTRACT_BYTECODE = '';
-export const OWN_CONTRACT_BYTECODE =
-	'0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610258806100606000396000f3fe6080604052600436106100385760003560e01c806312065fe0146100445780632e1a7d4d1461006f5780638da5cb5b146100aa5761003f565b3661003f57005b600080fd5b34801561005057600080fd5b506100596100eb565b6040518082815260200191505060405180910390f35b34801561007b57600080fd5b506100a86004803603602081101561009257600080fd5b81019080803590602001909291905050506100f3565b005b3480156100b657600080fd5b506100bf6101fe565b604051808273ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b600047905090565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff16146101b4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601f8152602001807f4f6e6c7920746865204f776e65722063616c6c2074686973206d6574686f640081525060200191505060405180910390fd5b3373ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f193505050501580156101fa573d6000803e3d6000fd5b5050565b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff168156fea26469706673582212200e37ede00b52138cd97343ee0b979ed1ae10992c82f64d42a97932fbebb9e4e164736f6c63430007060033' as const;
-export const MERKLY_BYTECODE =
-	'0x60806040526000805461ffff1916905534801561001b57600080fd5b5060fb8061002a6000396000f3fe6080604052348015600f57600080fd5b506004361060325760003560e01c80630c55699c146037578063b49004e914605b575b600080fd5b60005460449061ffff1681565b60405161ffff909116815260200160405180910390f35b60616063565b005b60008054600191908190607a90849061ffff166096565b92506101000a81548161ffff021916908361ffff160217905550565b61ffff81811683821601908082111560be57634e487b7160e01b600052601160045260246000fd5b509291505056fea2646970667358221220666c87ec501268817295a4ca1fc6e3859faf241f38dd688f145135970920009264736f6c63430008120033';
+	const provider = network.getProvider();
+	const wallet = new ethers.Wallet(account.wallets.evm.private, provider);
+
+	const contract = new ethers.Contract(customContract.address, customContract.abi, wallet);
+
+	let data = '';
+	switch (customContract.type) {
+		case CustomContractType.Store:
+			data = contract.interface.encodeFunctionData('store', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Vote:
+			data = contract.interface.encodeFunctionData('vote', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Lend:
+			data = contract.interface.encodeFunctionData('lend', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Borrow:
+			data = contract.interface.encodeFunctionData('borrow', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Swap:
+			data = contract.interface.encodeFunctionData('swap', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Repay:
+			data = contract.interface.encodeFunctionData('repay', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Deposit:
+			data = contract.interface.encodeFunctionData('deposit', [Random.int(1, 100000)]);
+			break;
+		case CustomContractType.Withdraw:
+			data = contract.interface.encodeFunctionData('withdraw', [Random.int(1, 100000)]);
+			break;
+
+		default:
+			throw new Error(`There is no interaction with ${customContract.type} contract!`);
+	}
+
+	await Evm.generateAndMakeTransaction(provider, account.wallets.evm.private, customContract.address, BigInt(0), data);
+}
