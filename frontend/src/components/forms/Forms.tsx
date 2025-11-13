@@ -128,12 +128,14 @@ function Form_Common_GenerateWallets({ params, set }: FormCtx) {
 function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect
-				label="Из сети"
-				value={params.fromChainId}
-				onChange={(v) => set('fromChainId', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="Из сети"
+					value={params.fromChainId}
+					onChange={(v) => set('fromChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
@@ -147,12 +149,14 @@ function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 				onChange={(v) => set('minBalanceToKeep', v)}
 			/>
 			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<ChainIdMultiSelect
-				label="В сети"
-				value={params.toChainIds}
-				onChange={(v) => set('toChainIds', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdMultiSelect
+					label="В сети"
+					value={params.toChainIds}
+					onChange={(v) => set('toChainIds', v)}
+					networks={networks}
+				/>
+			</Grid>
 		</Grid>
 	);
 }
@@ -160,24 +164,28 @@ function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect
-				label="Из сети"
-				value={params.fromChainId}
-				onChange={(v) => set('fromChainId', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="Из сети"
+					value={params.fromChainId}
+					onChange={(v) => set('fromChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
 				value={params.amount}
 				onChange={(v) => set('amount', v)}
 			/>
-			<ChainIdMultiSelect
-				label="В сети"
-				value={params.toChainIds}
-				onChange={(v) => set('toChainIds', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdMultiSelect
+					label="В сети"
+					value={params.toChainIds}
+					onChange={(v) => set('toChainIds', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<CsvField label="Адреса" value={params.addresses} onChange={(v) => set('addresses', v)} />
 		</Grid>
 	);
@@ -186,12 +194,14 @@ function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect
-				label="Из сети"
-				value={params.fromChainId}
-				onChange={(v) => set('fromChainId', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="Из сети"
+					value={params.fromChainId}
+					onChange={(v) => set('fromChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
@@ -205,7 +215,14 @@ function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 				onChange={(v) => set('minBalanceToKeep', v)}
 			/>
 			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<ChainIdSelect label="в сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="в сеть"
+					value={params.toChainId}
+					onChange={(v) => set('toChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 		</Grid>
 	);
 }
@@ -213,19 +230,28 @@ function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 function Form_Common_RefuelManyRelayLink({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
-			<ChainIdSelect
-				label="Из сети"
-				value={params.fromChainId}
-				onChange={(v) => set('fromChainId', v)}
-				networks={networks}
-			/>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="Из сети"
+					value={params.fromChainId}
+					onChange={(v) => set('fromChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
 				value={params.amount}
 				onChange={(v) => set('amount', v)}
 			/>
-			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="В сеть"
+					value={params.toChainId}
+					onChange={(v) => set('toChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
 			<CsvField label="Адреса" value={params.addresses} onChange={(v) => set('addresses', v)} />
 		</Grid>
 	);
@@ -634,6 +660,29 @@ const Form_Make_Transactions = ({ params, set, networks }: FormCtx) => {
 	);
 };
 
+/* -------- / Abstract -------- */
+
+function Form_Abstract_RefuelGasZip({ params, set, networks }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
+				<ChainIdSelect
+					label="Из сети"
+					value={params.fromChainId}
+					onChange={(v) => set('fromChainId', v)}
+					networks={networks}
+				/>
+			</Grid>
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+		</Grid>
+	);
+}
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -717,5 +766,7 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Abstract]: {
 		[ActionName.RegisterUi]: Form_Browser,
+		[ActionName.RefuelGasZip]: Form_Abstract_RefuelGasZip,
+		[ActionName.Vote]: Form_Browser,
 	},
 };

@@ -14,6 +14,7 @@ const OUTBOUND_CHAIN_IDS = new Map<ChainId, number>([
 	[ChainId.Aptos, 348],
 	[ChainId.Arbitrum, 57],
 	[ChainId.AvalancheC, 15],
+	[ChainId.Abstract, 110],
 	[ChainId.Base, 54],
 	[ChainId.Blast, 96],
 	[ChainId.Bsc, 14],

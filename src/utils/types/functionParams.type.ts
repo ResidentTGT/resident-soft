@@ -274,5 +274,12 @@ export interface FunctionParams {
 		RegisterUi?: {
 			browser: string;
 		};
+		RefuelGasZip?: {
+			fromChainId: ChainId;
+			amount: [number, number];
+		};
+		Vote?: {
+			browser: string;
+		};
 	};
 }
