@@ -715,4 +715,7 @@ export const FORMS = {
 		[ActionName.MakeTransactions]: Form_Make_Transactions,
 		[ActionName.ClaimUi]: Form_Browser,
 	},
+	[ActionsGroupName.Abstract]: {
+		[ActionName.RegisterUi]: Form_Browser,
+	},
 };

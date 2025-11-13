@@ -270,4 +270,9 @@ export interface FunctionParams {
 			browser: string;
 		};
 	};
+	Abstract?: {
+		RegisterUi?: {
+			browser: string;
+		};
+	};
 }

@@ -33,6 +33,7 @@ export enum ActionsGroupName {
 	Meteora = 'Meteora',
 	Polymarket = 'Polymarket',
 	Superchain = 'Superchain',
+	Abstract = 'Abstract',
 }
 
 export enum ActionName {
@@ -548,5 +549,12 @@ export const ACTIONS: ActionsGroup[] = [
 			{ action: ActionName.MakeTransactions, isolated: true, allowed: true, name: 'Набив транзакций' },
 			{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм бейджей через UI' },
 		],
+	},
+	{
+		group: ActionsGroupName.Abstract,
+		premium: true,
+		name: 'Abstract',
+		allowed: true,
+		actions: [{ action: ActionName.RegisterUi, isolated: true, allowed: true, name: 'Регистрация UI' }],
 	},
 ];
