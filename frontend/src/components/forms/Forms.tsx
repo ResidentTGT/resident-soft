@@ -683,7 +683,7 @@ function Form_Abstract_RefuelGasZip({ params, set, networks }: FormCtx) {
 	);
 }
 
-function Form_Abstract_Swap({ params, set, networks, tokens }: FormCtx) {
+function Form_Abstract_Swap({ params, set, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
