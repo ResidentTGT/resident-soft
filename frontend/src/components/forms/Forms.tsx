@@ -683,6 +683,48 @@ function Form_Abstract_RefuelGasZip({ params, set, networks }: FormCtx) {
 	);
 }
 
+function Form_Abstract_Swap({ params, set, networks, tokens }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+			<FormControl size="small">
+				<InputLabel>Из токена</InputLabel>
+				<Select
+					label="Из токена"
+					value={params.fromToken ?? ''}
+					onChange={(e) => set('fromToken', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(ChainId.Abstract))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<FormControl size="small">
+				<InputLabel>В токен</InputLabel>
+				<Select
+					label="В токен"
+					value={params.toToken ?? ''}
+					onChange={(e) => set('toToken', (e.target.value as string) || undefined)}
+				>
+					{(tokens.find((g) => String(g.chainId) === String(ChainId.Abstract))?.tokens ?? []).map((tok) => (
+						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+							{String(tok.symbol)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+		</Grid>
+	);
+}
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -768,5 +810,8 @@ export const FORMS = {
 		[ActionName.RegisterUi]: Form_Browser,
 		[ActionName.RefuelGasZip]: Form_Abstract_RefuelGasZip,
 		[ActionName.Vote]: Form_Browser,
+		[ActionName.ConnectTwitter]: Form_Browser,
+		[ActionName.Swap]: Form_Abstract_Swap,
+		[ActionName.ClaimUi]: Form_Browser,
 	},
 };

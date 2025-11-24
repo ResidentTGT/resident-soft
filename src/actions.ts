@@ -426,22 +426,19 @@ export const ACTIONS: ActionsGroup[] = [
 			{
 				action: ActionName.OpenseaBuyByLink,
 				isolated: true,
-
 				allowed: false,
 				name: 'Покупка 1 NFT по ссылке',
 			},
-			{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм XP в квестах' },
+			{ action: ActionName.ClaimUi, isolated: true, allowed: false, name: 'Клейм XP в квестах' },
 			{
 				action: ActionName.SweepByLink,
 				isolated: true,
-
 				allowed: true,
 				name: 'Sweep коллекции по флору',
 			},
 			{
 				action: ActionName.SellCollectionByLink,
 				isolated: true,
-
 				allowed: true,
 				name: 'Продать все NFT из коллекции',
 			},
@@ -531,7 +528,7 @@ export const ACTIONS: ActionsGroup[] = [
 		group: ActionsGroupName.Meteora,
 		premium: true,
 		name: 'Meteora',
-		allowed: true,
+		allowed: false,
 		actions: [{ action: ActionName.AddLiquidity, isolated: true, allowed: true, name: 'Добавить LP' }],
 	},
 	{
@@ -560,6 +557,9 @@ export const ACTIONS: ActionsGroup[] = [
 			{ action: ActionName.RegisterUi, isolated: true, allowed: true, name: 'Регистрация UI' },
 			{ action: ActionName.RefuelGasZip, isolated: true, allowed: true, name: 'Пополнить аккаунт через GasZip' },
 			{ action: ActionName.Vote, isolated: true, allowed: true, name: 'Vote' },
+			{ action: ActionName.ConnectTwitter, isolated: true, allowed: true, name: 'Подключить Твиттер' },
+			{ action: ActionName.Swap, isolated: true, allowed: true, name: 'Trade' },
+			{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм бейджей и проверка XP' },
 		],
 	},
 ];

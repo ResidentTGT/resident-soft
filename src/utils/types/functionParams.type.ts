@@ -281,5 +281,17 @@ export interface FunctionParams {
 		Vote?: {
 			browser: string;
 		};
+		ConnectTwitter?: {
+			browser: string;
+		};
+		Swap?: {
+			browser: string;
+			fromToken: string;
+			toToken: string;
+			amount: [number, number];
+		};
+		ClaimUi?: {
+			browser: string;
+		};
 	};
 }

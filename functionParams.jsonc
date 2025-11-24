@@ -3,7 +3,7 @@
 		"CheckBalances": {
 			"networks": [
 				{
-					"chainId": "8453",
+					"chainId": "1",
 					"tokenNames": ["ETH"],
 					"tokenAlert": {
 						"symbol": "",
@@ -24,10 +24,10 @@
 			"toChainIds": ["8453"],
 		},
 		"RefuelManyGasZip": {
-			"fromChainId": "43114",
-			"amount": [0.0001, 0.0001],
-			"toChainIds": ["137"],
-			"addresses": ["0x2", "0x1"],
+			"fromChainId": "8453",
+			"amount": [0.004, 0.0046],
+			"toChainIds": ["1"],
+			"addresses": [],
 		},
 		"RefuelRelayLink": {
 			"fromChainId": "8453",
@@ -149,7 +149,7 @@
 	"CommonUi": {
 		"OpenPages": {
 			"browser": "Vision",
-			"pageUrls": ["https://opensea.io/"],
+			"pageUrls": ["https://sale.aztec.network/identity"],
 			"loginInRabby": true,
 			"loginInPetra": false,
 		},
@@ -273,9 +273,21 @@
 		},
 		"RefuelGasZip": {
 			"fromChainId": "8453",
-			"amount": [0.00015, 0.0002],
+			"amount": [0.0003, 0.00035],
 		},
 		"Vote": {
+			"browser": "Vision",
+		},
+		"ConnectTwitter": {
+			"browser": "Vision",
+		},
+		"Swap": {
+			"browser": "Vision",
+			"fromToken": "PENGU",
+			"toToken": "ETH",
+			"amount": [null, 0],
+		},
+		"ClaimUi": {
 			"browser": "Vision",
 		},
 	},
