@@ -101,7 +101,6 @@ export enum ActionName {
 	Mint = 'Mint',
 	OtomMineMolecule = 'OtomMineMolecule',
 	GetProfileInfo = 'GetProfileInfo',
-	OnetLogin = 'OnetLogin',
 	LoginByToken = 'LoginByToken',
 	OutlookLogin = 'OutlookLogin',
 	OtomCraftPkax = 'OtomCraftPkax',
@@ -124,6 +123,8 @@ export enum ActionName {
 	AddLiquidity = 'AddLiquidity',
 	MakeTransactions = 'MakeTransactions',
 	Vote = 'Vote',
+	Post = 'Post',
+	Quote = 'Quote',
 }
 
 export interface Action {
@@ -226,15 +227,16 @@ export const ACTIONS: ActionsGroup[] = [
 		name: 'Twitter',
 		allowed: true,
 		actions: [
-			{ action: ActionName.Follow, isolated: true, allowed: false, name: '' },
-			{ action: ActionName.LikeAndRetweet, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.Follow, isolated: true, allowed: true, name: 'Подписаться' },
+			{ action: ActionName.LikeAndRetweet, isolated: true, allowed: true, name: 'Лайк и ретвит' },
 			{ action: ActionName.Login, isolated: true, allowed: true, name: 'Логин через логин/пароль' },
 			{ action: ActionName.LoginByToken, isolated: true, allowed: false, name: 'Логин по токену' },
-			{ action: ActionName.OnetLogin, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.Post, isolated: true, allowed: true, name: 'Написать пост' },
+			{ action: ActionName.Quote, isolated: true, allowed: true, name: 'Quote' },
 			{ action: ActionName.OutlookLogin, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.ChangeName, isolated: true, allowed: false, name: '' },
 			{ action: ActionName.GetProfileInfo, isolated: true, allowed: false, name: '' },
-			{ action: ActionName.Reply, isolated: true, allowed: false, name: '' },
+			{ action: ActionName.Reply, isolated: true, allowed: true, name: 'Reply' },
 		],
 	},
 	{

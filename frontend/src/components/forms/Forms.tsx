@@ -612,6 +612,36 @@ const Form_Twitter_Login = ({ params, set }: FormCtx) => (
 	</Grid>
 );
 
+const Form_Twitter_Follow = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+		<CsvField label="Профили" value={params.profiles} onChange={(v) => set('profiles', v)} />
+	</Grid>
+);
+
+const Form_Twitter_Post = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+		<StrField label="Пост" value={params.message} onChange={(v) => set('message', v)} />
+	</Grid>
+);
+
+const Form_Twitter_QuoteReply = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+		<StrField label="Ссылка на твит" value={params.tweetUrl} onChange={(v) => set('tweetUrl', v)} />
+		<StrField label="Сообщение" value={params.message} onChange={(v) => set('message', v)} />
+	</Grid>
+);
+
+const Form_Twitter_LikeAndRetweet = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+		<CsvField label="Ссылки на твиты" value={params.urls} onChange={(v) => set('urls', v)} />
+		<BoolField label="Сделать ретвит" checked={params.retweet} onChange={(v) => set('retweet', v)} />
+	</Grid>
+);
+
 /* -------- / Superchain -------- */
 
 const Form_Make_Transactions = ({ params, set, networks }: FormCtx) => {
@@ -801,6 +831,11 @@ export const FORMS = {
 	[ActionsGroupName.Twitter]: {
 		[ActionName.Login]: Form_Twitter_Login,
 		[ActionName.LoginByToken]: Form_Twitter_Login,
+		[ActionName.Follow]: Form_Twitter_Follow,
+		[ActionName.Post]: Form_Twitter_Post,
+		[ActionName.Quote]: Form_Twitter_QuoteReply,
+		[ActionName.Reply]: Form_Twitter_QuoteReply,
+		[ActionName.LikeAndRetweet]: Form_Twitter_LikeAndRetweet,
 	},
 	[ActionsGroupName.Superchain]: {
 		[ActionName.MakeTransactions]: Form_Make_Transactions,

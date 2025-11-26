@@ -52,29 +52,28 @@ export async function getElementProperty(element: ElementHandle<Element>, proper
 }
 
 export async function getPage(browser: Browser, url = '', mouseHelper = false) {
+	if (!url) {
+		throw new Error('getPage: url is required');
+	}
+
 	try {
 		const page = await browser.newPage();
 
-		await browser.pages().then(async (pages) => {
-			const existedPages = pages.filter((p) => p.url().includes(url));
+		const pages = await browser.pages();
+		const existedPages = pages.filter((p) => p !== page && p.url().includes(url));
 
-			if (existedPages.length) {
-				for (const page of existedPages) {
-					await safeClosePage(page);
-				}
-			}
-		});
+		for (const p of existedPages) {
+			await safeClosePage(p);
+		}
 
 		if (mouseHelper) await installMouseHelper(page);
 		await page.goto(url, { timeout: 60_000 });
 
 		return page;
 	} catch (e: any) {
-		if (e.toString().includes('net::ERR_TIMED_OUT at')) throw new Error(`Couldnt open page ${url} in 60s`);
-		else if (
-			e.toString().includes('net::ERR_PROXY_CONNECTION_FAILED at') ||
-			e.toString().includes('net::ERR_CONNECTION_RESET at')
-		)
+		const msg = String(e);
+		if (msg.includes('net::ERR_TIMED_OUT at')) throw new Error(`Couldnt open page ${url} in 60s`);
+		else if (msg.includes('net::ERR_PROXY_CONNECTION_FAILED at') || msg.includes('net::ERR_CONNECTION_RESET at'))
 			throw new Error(`Couldnt open page ${url}. Maybe need proxy?`);
 		else throw e;
 	}
@@ -142,21 +141,36 @@ export async function safeClosePage(page: Page | null | undefined) {
 		/* ignore */
 	}
 
+	let browser: Browser | undefined;
+	try {
+		browser = page.browser?.();
+	} catch {
+		/* ignore */
+	}
+
+	if (!browser) return;
+
 	let isBrowserConnected = true;
 	try {
-		const browser = page.browser?.();
-		if (browser) {
-			if ('connected' in browser) {
-				isBrowserConnected = (browser as any).connected as boolean;
-			} else if (typeof (browser as any).isConnected === 'function') {
-				isBrowserConnected = (browser as any).isConnected() as boolean;
-			}
+		if ('connected' in browser) {
+			isBrowserConnected = (browser as any).connected as boolean;
+		} else if (typeof (browser as any).isConnected === 'function') {
+			isBrowserConnected = (browser as any).isConnected() as boolean;
 		}
 	} catch {
 		/* ignore */
 	}
 
 	if (!isBrowserConnected) {
+		return;
+	}
+
+	try {
+		const pages = await browser.pages();
+		if (pages.length <= 1) {
+			return;
+		}
+	} catch {
 		return;
 	}
 

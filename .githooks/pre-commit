@@ -7,3 +7,4 @@ npm run typecheck
 npm run secretlint
 npm run lint
 npm run prettier
+npm run build:frontend

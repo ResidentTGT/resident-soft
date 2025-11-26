@@ -257,6 +257,29 @@ export interface FunctionParams {
 			browser: string;
 			closeBrowser: boolean;
 		};
+		Follow?: {
+			browser: string;
+			profiles: string[];
+		};
+		Post?: {
+			browser: string;
+			message: string;
+		};
+		Quote?: {
+			browser: string;
+			message: string;
+			tweetUrl: string;
+		};
+		LikeAndRetweet?: {
+			browser: string;
+			urls: string[];
+			retweet: boolean;
+		};
+		Reply?: {
+			browser: string;
+			message: string;
+			tweetUrl: string;
+		};
 	};
 	Superchain?: {
 		MakeTransactions?: {

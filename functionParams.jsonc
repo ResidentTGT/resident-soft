@@ -254,6 +254,29 @@
 			"browser": "Vision",
 			"closeBrowser": false,
 		},
+		"Follow": {
+			"browser": "Vision",
+			"profiles": ["saylor"],
+		},
+		"Post": {
+			"browser": "Vision",
+			"message": "empty",
+		},
+		"Quote": {
+			"browser": "Vision",
+			"message": "agreed",
+			"tweetUrl": "https://x.com/cz_binance/status/1981404850832494666",
+		},
+		"LikeAndRetweet": {
+			"browser": "Vision",
+			"urls": ["https://x.com/cz_binance/status/1981404850832494666"],
+			"retweet": true,
+		},
+		"Reply": {
+			"browser": "Vision",
+			"message": "agreed",
+			"tweetUrl": "https://x.com/cz_binance/status/1981404850832494666",
+		},
 	},
 	"Superchain": {
 		"MakeTransactions": {
