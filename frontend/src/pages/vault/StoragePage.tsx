@@ -29,7 +29,7 @@ import { WalletForm } from './WalletForm';
 import type { Wallet } from '../../../../src/utils/account/models/wallet.type';
 
 // 👇 ожидаемые функции клиента (см. блок "API-клиент" ниже)
-import { getStorage, postSecrets, encryptStorage, decryptStorage } from '../../api/client';
+import { getStorage, postSecrets, encryptStorage, decryptStorage } from '../../api';
 
 type Variant = 'encrypted' | 'decrypted';
 interface Toast {
@@ -207,11 +207,11 @@ export default function StoragePage() {
 			<Box sx={{ display: 'flex', mb: 2, gap: 2 }}>
 				{variant === 'decrypted' && (
 					<>
-						<Button variant="outlined" color="secondary" onClick={handleResetAll}>
-							Очистить все поля
-						</Button>
 						<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving}>
 							Сохранить изменения
+						</Button>
+						<Button variant="outlined" color="secondary" onClick={handleResetAll}>
+							Очистить все поля
 						</Button>
 					</>
 				)}

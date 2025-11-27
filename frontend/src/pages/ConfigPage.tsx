@@ -5,7 +5,7 @@ import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api/client';
+import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 import type { FunctionParams } from '../../../src/utils/types/functionParams.type';

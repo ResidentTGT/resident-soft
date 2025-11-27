@@ -36,7 +36,7 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 	) as SecretStorage;
 	const SECRET_STORAGE = AES_KEY ? getEncryptedOrDecryptedSecretStorage(AES_KEY, secretStorage, false) : secretStorage;
 
-	const logger = Logger.getInstance(SECRET_STORAGE.telegram);
+	const logger = Logger.getInstance({ telegramParams: SECRET_STORAGE.telegram });
 
 	const allAccounts = await getAllAccounts(
 		AES_KEY ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH,
@@ -49,8 +49,9 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 
 	if (!group) throw new Error(`Group doesn't exist: ${LAUNCH_PARAMS.ACTION_PARAMS.group}`);
 
-	if (group.premium && !(await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok)
-		throw new Error(`Group is only for PREMIUM users: ${LAUNCH_PARAMS.ACTION_PARAMS.group}`);
+	const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+
+	if (group.premium && !licenseValid) throw new Error(`Group is only for PREMIUM users: ${LAUNCH_PARAMS.ACTION_PARAMS.group}`);
 
 	const action = group.actions.find((a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action);
 	if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}`);
@@ -67,7 +68,7 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 	const allHandlers = new Map(FREE_HANDLERS);
 
 	let handler;
-	if ((await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok) {
+	if (licenseValid) {
 		let PREMIUM_HANDLERS: any;
 		try {
 			// eslint-disable-next-line @typescript-eslint/no-require-imports

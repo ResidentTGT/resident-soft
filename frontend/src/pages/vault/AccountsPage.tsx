@@ -9,6 +9,7 @@ import {
 	DialogContentText,
 	DialogTitle,
 	FormControl,
+	IconButton,
 	InputLabel,
 	MenuItem,
 	Paper,
@@ -19,8 +20,10 @@ import {
 	TextField,
 	CircularProgress,
 	Backdrop,
+	Tooltip,
 	Typography,
 } from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import type { Account } from '../../../../src/utils/account/models/account.type';
 import type { AccountsFile } from '../../../../src/utils/account';
 import AccountsHotTable from './AccountsHotTable';
@@ -30,9 +33,10 @@ import {
 	postAccounts,
 	createAccountsFile,
 	deleteAccountsFile,
+	deleteAllAccountsFiles,
 	encryptAccounts,
 	decryptAccounts,
-} from '../../api/client';
+} from '../../api';
 
 type Variant = 'encrypted' | 'decrypted';
 interface Toast {
@@ -61,6 +65,8 @@ export default function AccountsPage() {
 
 	const [openDelete, setOpenDelete] = useState(false);
 	const [deleting, setDeleting] = useState(false);
+	const [openDeleteAll, setOpenDeleteAll] = useState(false);
+	const [deletingAll, setDeletingAll] = useState(false);
 	const [openCreate, setOpenCreate] = useState(false);
 	const [creating, setCreating] = useState(false);
 	const [newFileName, setNewFileName] = useState('accs_new.xlsx');
@@ -198,6 +204,25 @@ export default function AccountsPage() {
 		}
 	};
 
+	const confirmDeleteAll = async () => {
+		setDeletingAll(true);
+		try {
+			const result = await deleteAllAccountsFiles({ variant });
+			setSelectedFileName(undefined);
+			setOpenDeleteAll(false);
+			setToast({
+				open: true,
+				severity: 'success',
+				message: `Удалено ${result.deleted} файлов 🗑️`,
+			});
+			await fetchAccounts();
+		} catch (e: any) {
+			setToast({ open: true, severity: 'error', message: `Не удалось удалить файлы: ${e?.message ?? e}` });
+		} finally {
+			setDeletingAll(false);
+		}
+	};
+
 	const closeToast = (_e?: any, reason?: string) => {
 		if (reason === 'clickaway') return;
 		setToast((p) => ({ ...p, open: false }));
@@ -243,26 +268,33 @@ export default function AccountsPage() {
 						<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving || !selectedFile}>
 							Сохранить изменения в файле
 						</Button>
-						<Button
-							variant="outlined"
-							onClick={() => {
-								setNewFileName('accs_new.xlsx');
-								setOpenCreate(true);
-							}}
-							disabled={loading || saving}
-						>
-							Создать новый файл
-						</Button>
+						<Tooltip title="Создать новый файл">
+							<IconButton
+								color="success"
+								onClick={() => {
+									setNewFileName('accs_new.xlsx');
+									setOpenCreate(true);
+								}}
+								disabled={loading || saving}
+							>
+								<AddIcon />
+							</IconButton>
+						</Tooltip>
 					</>
 				)}
 
+				<Tooltip title="Удалить выбранный файл">
+					<IconButton color="error" onClick={() => setOpenDelete(true)} disabled={loading || saving || !selectedFile}>
+						<DeleteIcon />
+					</IconButton>
+				</Tooltip>
 				<Button
 					color="error"
 					variant="outlined"
-					onClick={() => setOpenDelete(true)}
-					disabled={loading || saving || !selectedFile}
+					onClick={() => setOpenDeleteAll(true)}
+					disabled={loading || saving || !files.length}
 				>
-					Удалить файл
+					Удалить все файлы
 				</Button>
 			</Box>
 
@@ -289,6 +321,9 @@ export default function AccountsPage() {
 				<DialogTitle>Удалить файл</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
+						<Typography color="error" fontWeight="bold" sx={{ mb: 1 }}>
+							ВНИМАНИЕ! Это действие необратимо!
+						</Typography>
 						Вы точно хотите удалить файл <b>{selectedFile?.fileName ?? '(не выбран)'}</b>?
 					</DialogContentText>
 				</DialogContent>
@@ -298,6 +333,30 @@ export default function AccountsPage() {
 					</Button>
 					<Button color="error" variant="contained" onClick={confirmDelete} disabled={!selectedFile || deleting}>
 						Удалить
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			<Dialog open={openDeleteAll} onClose={() => setOpenDeleteAll(false)}>
+				<DialogTitle>Удалить все файлы</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						<Typography color="error" fontWeight="bold" sx={{ mb: 1 }}>
+							ВНИМАНИЕ! Это действие необратимо!
+						</Typography>
+						Вы точно хотите удалить все {variant === 'encrypted' ? 'зашифрованные' : 'расшифрованные'} файлы
+						аккаунтов?
+						<br />
+						<br />
+						Будет удалено файлов: <b>{files.length}</b>
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setOpenDeleteAll(false)} disabled={deletingAll}>
+						Отмена
+					</Button>
+					<Button color="error" variant="contained" onClick={confirmDeleteAll} disabled={deletingAll}>
+						Удалить все
 					</Button>
 				</DialogActions>
 			</Dialog>

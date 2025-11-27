@@ -27,7 +27,8 @@
 		"encrypt_premium": "node ./scripts/decryption.js encryption=true filePath=src/premium.zip folderPath=src/premium",
 		"decrypt_premium": "node ./scripts/decryption.js encryption=false filePath=src/premium.zip folderPath=src/premium",
 		"secretlint": "npx secretlint --secretlintrc ./configs/.secretlintrc.json --secretlintignore ./configs/.secretlintignore \"**/*\"",
-		"typecheck": "tsc -p tsconfig.json --noEmit"
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"check_all": "npm run typecheck  && npm run lint && npm run prettier &&npm run build:frontend && npm run secretlint"
 	},
 	"author": "",
 	"license": "ISC",
