@@ -252,7 +252,7 @@
 		},
 		"LoginByToken": {
 			"browser": "Vision",
-			"closeBrowser": false,
+			"closeBrowser": true,
 		},
 		"Follow": {
 			"browser": "Vision",
@@ -260,7 +260,7 @@
 		},
 		"Post": {
 			"browser": "Vision",
-			"message": "empty",
+			"message": "test",
 		},
 		"Quote": {
 			"browser": "Vision",
@@ -296,7 +296,7 @@
 		},
 		"RefuelGasZip": {
 			"fromChainId": "8453",
-			"amount": [0.0003, 0.00035],
+			"amount": [0.00035, 0.00035],
 		},
 		"Vote": {
 			"browser": "Vision",
