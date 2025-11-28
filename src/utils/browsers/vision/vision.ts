@@ -4,8 +4,8 @@ import axios from 'axios';
 import { Browser, ResourceType } from 'rebrowser-puppeteer-core';
 import puppeteer from 'puppeteer-extra';
 import BlockResourcesPlugin from 'puppeteer-extra-plugin-block-resources';
-import { delay, delayMs } from './delay';
-import { Logger, MessageType } from './logger';
+import { delay, delayMs } from '../../delay';
+import { Logger, MessageType } from '../../logger';
 import Excel from 'exceljs';
 
 export const DEFAULT_LOCALAPI_URL = 'http://127.0.0.1:3030/';

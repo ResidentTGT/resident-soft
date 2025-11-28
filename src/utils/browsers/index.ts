@@ -2,7 +2,7 @@ import { Browser, ElementHandle, Page } from 'rebrowser-puppeteer-core';
 import { installMouseHelper } from 'ghost-cursor';
 import { Account } from '@utils/account';
 import { AdsPower } from './adsPower';
-import { MissingFieldError } from './errors';
+import { MissingFieldError } from '../errors';
 import { Vision } from './vision';
 
 const ALLOWED_BROWSERS = ['AdsPower', 'Vision'];
