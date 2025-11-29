@@ -14,7 +14,8 @@ router.get('/', async (_req, res) => {
 		const failed: { name: string; error?: string }[] = [];
 
 		for (const f of files) {
-			const name = path.basename(f, '.json');
+			// Decode URL-encoded filename (node-localstorage encodes Cyrillic/special chars)
+			const name = decodeURIComponent(path.basename(f, '.json'));
 			const filePath = path.join(PROCESS_DIR, f);
 			try {
 				const raw = await fs.readFileSync(filePath, 'utf8');
@@ -48,6 +49,39 @@ router.get('/', async (_req, res) => {
 		res.json({ states: ok, failed });
 	} catch (e: any) {
 		res.status(500).json({ error: 'Failed to list states', details: e?.message });
+	}
+});
+
+router.post('/delete', async (req, res) => {
+	try {
+		const { fileName } = req.body as { fileName: string };
+
+		// Validation
+		if (!fileName || !fileName.trim()) {
+			return res.status(400).json({ error: 'fileName is required' });
+		}
+
+		// Security: prevent path traversal
+		const safeName = path.basename(fileName);
+		if (safeName !== fileName || !safeName.endsWith('.json')) {
+			return res.status(400).json({ error: 'Invalid fileName format' });
+		}
+
+		// Extract name without extension and encode it (node-localstorage uses URL encoding)
+		const nameWithoutExt = path.basename(safeName, '.json');
+		const encodedName = encodeURIComponent(nameWithoutExt) + '.json';
+
+		const PROCESS_DIR = path.resolve(process.cwd(), 'states');
+		const filePath = path.join(PROCESS_DIR, encodedName);
+
+		if (!fs.existsSync(filePath)) {
+			return res.status(404).json({ error: 'State file not found' });
+		}
+
+		fs.unlinkSync(filePath);
+		res.json({ ok: true });
+	} catch (e: any) {
+		res.status(500).json({ error: 'Failed to delete state', details: e?.message });
 	}
 });
 
