@@ -5,7 +5,7 @@ import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs } from '../api';
+import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs, getStates } from '../api';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 import type { FunctionParams } from '../../../src/utils/types/functionParams.type';
@@ -19,6 +19,13 @@ export default function ConfigPage() {
 	const [networks, setNetworks] = useState<NetworkConfig[]>([]);
 	const [tokens, setTokens] = useState<TokenConfig[]>([]);
 	const [accsFiles, setAccsFiles] = useState<string[]>([]);
+	const [availableStates, setAvailableStates] = useState<
+		{
+			name: string;
+			successCount: number;
+			failCount: number;
+		}[]
+	>([]);
 	const [loading, setLoading] = useState(true);
 	const [saved, setSaved] = useState<'idle' | 'process'>('idle');
 	const [toast, setToast] = useState<{
@@ -51,14 +58,31 @@ export default function ConfigPage() {
 			try {
 				const collator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true });
 
-				const [cfg, acts, ntwrks, accs, tkns] = await Promise.all([
+				const [cfg, acts, ntwrks, accs, tkns, states] = await Promise.all([
 					getConfigs(),
 					getActions(),
 					getNetworks(),
 					getAccountsFiles(),
 					getTokens(),
+					getStates(),
 				]);
-				setLaunchParams(cfg.launchParams);
+
+				const statesWithStats = states.states.map((s) => ({
+					name: s.name,
+					successCount: s.data.successes.length,
+					failCount: s.data.fails.length,
+				}));
+
+				let launchParamsToSet = cfg.launchParams;
+				if (statesWithStats.length === 0 && cfg.launchParams.TAKE_STATE) {
+					launchParamsToSet = {
+						...cfg.launchParams,
+						TAKE_STATE: false,
+						STATE_NAME: '',
+					};
+				}
+
+				setLaunchParams(launchParamsToSet);
 				setFunctionParams(cfg.functionParams);
 
 				const sortedacts = acts.slice().sort((a, b) => +a.premium - +b.premium);
@@ -77,6 +101,8 @@ export default function ConfigPage() {
 					return { ...entry, tokens };
 				});
 				setTokens(sortedtkns);
+
+				setAvailableStates(statesWithStats);
 			} catch (e) {
 				console.error(e);
 				alert(`Не удалось загрузить данные. ${e}.`);
@@ -98,13 +124,6 @@ export default function ConfigPage() {
 		if (!lp.ACTION_PARAMS?.group || !lp.ACTION_PARAMS?.action) {
 			errs.push('Выберите группу и действие.');
 			return errs;
-		}
-
-		if (lp.TAKE_STATE === true) {
-			const name = (lp as any).STATE_NAME;
-			if (typeof name !== 'string' || !name.trim()) {
-				errs.push('Включён TAKE_STATE — необходимо заполнить STATE_NAME (строка, не пустая).');
-			}
 		}
 
 		const ja: any = lp.JOB_ACCOUNTS[0];
@@ -224,6 +243,7 @@ export default function ConfigPage() {
 							onChange={(patch) => setLaunchParams((p) => ({ ...p, ...patch }) as any)}
 							actions={actions}
 							accountsFiles={accsFiles}
+							availableStates={availableStates}
 						/>
 					</Grid>
 					<Grid size={{ xs: 12, sm: 6 }}>

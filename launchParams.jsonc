@@ -1,24 +1,21 @@
 {
 	"ACTION_PARAMS": {
 		"group": "Common",
-		"action": "CheckBalances"
+		"action": "CheckBalances",
 	},
 	"SHUFFLE_ACCOUNTS": false,
 	"TAKE_STATE": false,
-	"STATE_NAME": "refuel",
+	"STATE_NAME": "",
 	"JOB_ACCOUNTS": [
 		{
 			"file": "accs",
 			"start": 1,
 			"end": 500,
 			"include": [],
-			"exclude": []
-		}
+			"exclude": [],
+		},
 	],
-	"DELAY_BETWEEN_ACCS_IN_S": [
-		1,
-		5
-	],
+	"DELAY_BETWEEN_ACCS_IN_S": [1, 5],
 	"DELAY_AFTER_ERROR_IN_S": 1,
 	"ATTEMPTS_UNTIL_SUCCESS": 1,
 	"NUMBER_OF_THREADS": 2,
@@ -26,5 +23,5 @@
 	"PROXY": false,
 	"ROTATE_PROXY": false,
 	"USE_ENCRYPTION": false,
-	"LICENSE": ""
+	"LICENSE": "",
 }

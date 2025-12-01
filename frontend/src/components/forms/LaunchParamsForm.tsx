@@ -1,4 +1,19 @@
-import { Paper, Grid, Divider, TextField, Box, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import {
+	Paper,
+	Grid,
+	Divider,
+	TextField,
+	Box,
+	FormGroup,
+	FormControlLabel,
+	Checkbox,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
+	Chip,
+	Typography,
+} from '@mui/material';
 
 import ActionSelector from './fields/ActionSelector';
 import DelayArrayInput from './fields/DelayArrayInput';
@@ -11,11 +26,13 @@ export default function LaunchParamsForm({
 	onChange,
 	actions,
 	accountsFiles,
+	availableStates,
 }: {
 	launchParams: LaunchParams;
 	onChange: (patch: Partial<LaunchParams>) => void;
 	actions: ActionsGroup[];
 	accountsFiles: string[];
+	availableStates: { name: string; successCount: number; failCount: number }[];
 }) {
 	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
 
@@ -101,27 +118,70 @@ export default function LaunchParamsForm({
 						/>
 					)}
 				</Grid>
-				<Grid container spacing={2}>
-					<Grid sx={{ xs: 12, sm: 6 }}>
+
+				<Grid container spacing={2} sx={{ width: '100%' }}>
+					<Grid sx={{ xs: 12, sm: 3, width: '180px' }}>
 						<FormControlLabel
 							control={
 								<Checkbox
 									checked={!!launchParams.TAKE_STATE}
-									onChange={(e) => setField('TAKE_STATE', e.target.checked)}
+									disabled={availableStates.length === 0}
+									onChange={(e) => {
+										const checked = e.target.checked;
+										let newStateName = '';
+
+										if (checked) {
+											const currentStateName = launchParams.STATE_NAME;
+											const stateExists = availableStates.some((s) => s.name === currentStateName);
+
+											if (stateExists) {
+												newStateName = currentStateName;
+											} else if (availableStates.length > 0) {
+												newStateName = availableStates[0].name;
+											}
+										}
+
+										onChange({
+											TAKE_STATE: checked,
+											STATE_NAME: newStateName,
+										});
+									}}
 								/>
 							}
-							label="Сохранять и учитывать стейт"
+							label="Учитывать стейт"
 						/>
 					</Grid>
 					{launchParams.TAKE_STATE && (
-						<Grid sx={{ xs: 12, sm: 6 }}>
-							<TextField
-								label="Имя стейта"
-								size="small"
-								fullWidth
-								value={launchParams.STATE_NAME ?? ''}
-								onChange={(e) => setField('STATE_NAME', e.target.value || undefined)}
-							/>
+						<Grid sx={{ xs: 12, sm: 9, width: 'calc(100% - 180px - 32px)' }}>
+							<FormControl size="small" fullWidth sx={{ width: '100%' }}>
+								<InputLabel>Имя стейта</InputLabel>
+								<Select
+									label="Имя стейта"
+									value={launchParams.STATE_NAME ?? ''}
+									onChange={(e) => setField('STATE_NAME', e.target.value)}
+									sx={{ width: '100%' }}
+								>
+									{availableStates.map((state) => (
+										<MenuItem key={state.name} value={state.name}>
+											<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+												<Typography>{state.name}</Typography>
+												<Chip
+													label={`✓ ${state.successCount}`}
+													size="small"
+													color="success"
+													variant="outlined"
+												/>
+												<Chip
+													label={`✗ ${state.failCount}`}
+													size="small"
+													color="error"
+													variant="outlined"
+												/>
+											</Box>
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
 						</Grid>
 					)}
 				</Grid>

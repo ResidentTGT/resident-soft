@@ -57,10 +57,14 @@ export abstract class BaseHandler implements Handler {
 
 		const logger = Logger.getInstance();
 
-		const action = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group)?.actions.find(
-			(a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action,
-		);
+		const group = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group);
+		const action = group?.actions.find((a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action);
 		if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}`);
+
+		if (!LAUNCH_PARAMS.TAKE_STATE || !LAUNCH_PARAMS.STATE_NAME) {
+			const timestamp = this.formatTimestampRussian(new Date());
+			LAUNCH_PARAMS.STATE_NAME = `${group?.name}_${action.name}_${timestamp}`;
+		}
 
 		let ACCOUNTS_TO_DO = actionModeParams.ACCOUNTS_TO_DO.slice();
 
@@ -104,12 +108,11 @@ export abstract class BaseHandler implements Handler {
 					successes.push(accountName);
 					fails = fails.filter((f) => f !== accountName);
 
-					if (LAUNCH_PARAMS.TAKE_STATE && LAUNCH_PARAMS.STATE_NAME) {
-						const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
-						STATE.successes.push(accountName);
-						STATE.fails = STATE.fails.filter((f: string) => f !== accountName);
-						STATE.save();
-					}
+					const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
+					STATE.successes.push(accountName);
+					STATE.fails = STATE.fails.filter((f: string) => f !== accountName);
+					STATE.save();
+
 					await logger.log(
 						this.generateAccountMessage(
 							index,
@@ -134,13 +137,13 @@ export abstract class BaseHandler implements Handler {
 					if (!fails.includes(accountName)) {
 						fails.push(accountName);
 					}
-					if (LAUNCH_PARAMS.TAKE_STATE && LAUNCH_PARAMS.STATE_NAME) {
-						const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
-						if (!STATE.fails.includes(accountName)) {
-							STATE.fails.push(accountName);
-							STATE.save();
-						}
+
+					const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
+					if (!STATE.fails.includes(accountName)) {
+						STATE.fails.push(accountName);
+						STATE.save();
 					}
+
 					await logger.log(
 						this.generateAccountMessage(
 							index,
@@ -235,5 +238,19 @@ export abstract class BaseHandler implements Handler {
 		}
 
 		return chainId as ChainId;
+	}
+
+	/**
+	 *  30.11.2025_09-08-39
+	 */
+	private formatTimestampRussian(date: Date): string {
+		const day = String(date.getDate()).padStart(2, '0');
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const year = date.getFullYear();
+		const hours = String(date.getHours()).padStart(2, '0');
+		const minutes = String(date.getMinutes()).padStart(2, '0');
+		const seconds = String(date.getSeconds()).padStart(2, '0');
+
+		return `${day}.${month}.${year}_${hours}-${minutes}-${seconds}`;
 	}
 }
