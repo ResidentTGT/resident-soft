@@ -1,5 +1,6 @@
 import React from 'react';
-import { Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Grid, FormControl, InputLabel, Select, MenuItem, Box, Typography, IconButton, Tooltip } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import type { ActionsGroup } from '../../../../../src/actions';
 import type { LaunchParams } from '../../../../../src/utils/types/launchParams.type';
 
@@ -51,52 +52,66 @@ export default function ActionSelector({
 	}, [selectedGroup, selectedAction, currentGroup, allowedGroups, allowedActionsInGroup, onChange, value]);
 
 	return (
-		<Grid container spacing={2}>
-			<Grid sx={{ xs: 12, sm: 6 }}>
-				<FormControl fullWidth size="small">
-					<InputLabel>Группа действий</InputLabel>
-					<Select
-						label="Группа действий"
-						value={selectedGroup ?? ''}
-						onChange={(e) => {
-							const group = e.target.value as string;
-							const groupObj = allowedGroups.find((g) => g.group === group);
-							const firstAllowedAction = groupObj?.actions?.find((a) => a.allowed)?.action;
-							onChange({
-								group: group as any,
-								action: (firstAllowedAction ?? undefined) as any,
-							});
-						}}
+		<>
+			<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+				<Typography variant="h6">Общие параметры</Typography>
+				<Tooltip title="Открыть документацию по настройкам запуска" arrow>
+					<IconButton
+						href="https://resident.gitbook.io/resident-soft/nastroiki-zapuska"
+						target="_blank"
+						rel="noopener noreferrer"
 					>
-						{allowedGroups.map((g) => (
-							<MenuItem key={g.group} value={g.group}>
-								{g.name || g.group} {g.premium ? '(PREMIUM)' : ''}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-			</Grid>
+						<HelpOutlineIcon />
+					</IconButton>
+				</Tooltip>
+			</Box>
+			<Grid container spacing={2}>
+				<Grid sx={{ xs: 12, sm: 6 }}>
+					<FormControl fullWidth size="small">
+						<InputLabel>Группа действий</InputLabel>
+						<Select
+							label="Группа действий"
+							value={selectedGroup ?? ''}
+							onChange={(e) => {
+								const group = e.target.value as string;
+								const groupObj = allowedGroups.find((g) => g.group === group);
+								const firstAllowedAction = groupObj?.actions?.find((a) => a.allowed)?.action;
+								onChange({
+									group: group as any,
+									action: (firstAllowedAction ?? undefined) as any,
+								});
+							}}
+						>
+							{allowedGroups.map((g) => (
+								<MenuItem key={g.group} value={g.group}>
+									{g.name || g.group} {g.premium ? '(PREMIUM)' : ''}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
 
-			<Grid sx={{ xs: 12, sm: 6 }}>
-				<FormControl fullWidth size="small" disabled={!currentGroup}>
-					<InputLabel>Действие</InputLabel>
-					<Select
-						label="Действие"
-						value={selectedAction ?? ''}
-						onChange={(e) => {
-							const action = e.target.value as string;
-							if (!currentGroup) return;
-							onChange({ group: currentGroup.group as any, action: action as any });
-						}}
-					>
-						{allowedActionsInGroup.map((a) => (
-							<MenuItem key={a.action} value={a.action}>
-								{a.name || a.action}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+				<Grid sx={{ xs: 12, sm: 6 }}>
+					<FormControl fullWidth size="small" disabled={!currentGroup}>
+						<InputLabel>Действие</InputLabel>
+						<Select
+							label="Действие"
+							value={selectedAction ?? ''}
+							onChange={(e) => {
+								const action = e.target.value as string;
+								if (!currentGroup) return;
+								onChange({ group: currentGroup.group as any, action: action as any });
+							}}
+						>
+							{allowedActionsInGroup.map((a) => (
+								<MenuItem key={a.action} value={a.action}>
+									{a.name || a.action}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
 			</Grid>
-		</Grid>
+		</>
 	);
 }

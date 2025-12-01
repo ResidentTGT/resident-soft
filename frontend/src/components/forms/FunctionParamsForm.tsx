@@ -1,4 +1,5 @@
-import { Paper, Typography, Alert } from '@mui/material';
+import { Paper, Typography, Alert, Box, IconButton, Tooltip } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 import { type ActionParams } from '../../../../src/actions';
 import type { NetworkConfig } from '../../../../src/utils/network';
@@ -50,9 +51,18 @@ export default function FunctionParamsForm({
 
 	return (
 		<Paper variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-			<Typography variant="h6" gutterBottom>
-				Параметры действия
-			</Typography>
+			<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+				<Typography variant="h6">Параметры действия</Typography>
+				<Tooltip title="Открыть документацию по действиям и параметрам" arrow>
+					<IconButton
+						href="https://resident.gitbook.io/resident-soft/spisok-deistvii-i-neobkhodimykh-dannykh"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<HelpOutlineIcon />
+					</IconButton>
+				</Tooltip>
+			</Box>
 
 			{!actionParams.group || !actionParams.action ? (
 				<Alert severity="info">Выбери действие слева.</Alert>
