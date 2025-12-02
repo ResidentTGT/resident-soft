@@ -18,6 +18,8 @@ export const SHEETS: Sheet[] = [
 			{ header: 'Vision Token', key: 'vision.token' },
 			{ header: 'Vision Folder Id', key: 'vision.folderId' },
 			{ header: 'Vision Profile Id', key: 'vision.profileId' },
+			{ header: 'Afina API Key', key: 'afina.apiKey' },
+			{ header: 'Afina Profile Id', key: 'afina.profileId' },
 			{ header: 'Proxy Type', key: 'proxy.type' },
 			{ header: 'Proxy Ip', key: 'proxy.ip' },
 			{ header: 'Proxy Port', key: 'proxy.port' },

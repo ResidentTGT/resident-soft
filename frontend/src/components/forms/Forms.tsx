@@ -559,7 +559,7 @@ const Form_CommonUi_RestoreRabby = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_RestorePhantom = Form_CommonUi_RestoreMetamask;
 const Form_CommonUi_LoginInRabby = Form_Browser;
 
-/* -------- AdsPower / Vision -------- */
+/* -------- AdsPower / Vision / Afina -------- */
 
 const Form_AdsPower_GetProfiles = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
@@ -571,6 +571,12 @@ const Form_Vision_GetProfiles = ({ params, set }: FormCtx) => (
 	<Grid container spacing={2}>
 		<StrField label="API токен" value={params.token} onChange={(v) => set('token', v)} />
 		<StrField label="Id папки с профилями" value={params.folderId} onChange={(v) => set('folderId', v)} />
+	</Grid>
+);
+
+const Form_Afina_GetProfiles = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<StrField label="API ключ" value={params.apiKey} onChange={(v) => set('apiKey', v)} />
 	</Grid>
 );
 
@@ -848,5 +854,8 @@ export const FORMS = {
 		[ActionName.ConnectTwitter]: Form_Browser,
 		[ActionName.Swap]: Form_Abstract_Swap,
 		[ActionName.ClaimUi]: Form_Browser,
+	},
+	[ActionsGroupName.Afina]: {
+		[ActionName.GetProfiles]: Form_Afina_GetProfiles,
 	},
 };

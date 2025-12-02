@@ -3,7 +3,7 @@ import { promptUserForKey, waitForKeyPress } from '@src/utils/prompts';
 import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
 import { sendTelemetry } from '@src/utils/telemetry';
 import { GREEN_TEXT, PURPLE_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
-import { readConfigs } from '@src/utils/config-io';
+import { readConfigs, validateAndFixFunctionParams } from '@src/utils/config-io';
 import { startHttpServer, stopHttpServer } from '@src/utils/server/server';
 import { selectionGate, type Selector } from '@src/utils/selection';
 import { Network } from '@src/utils/network';
@@ -19,6 +19,7 @@ import {
 	getCurrentTaskId,
 	tasks,
 } from '@src/utils/taskManager';
+import { validateAndFixAccountFiles } from '@src/utils/workWithSecrets';
 
 // Server configuration
 const SERVER_URL = `http://localhost:3000`;
@@ -185,6 +186,9 @@ async function main() {
 	await Network.loadNetworksAndTokensConfigs();
 	await startHttpServer();
 	await welcomeMessage();
+
+	validateAndFixFunctionParams();
+	await validateAndFixAccountFiles();
 
 	while (true) {
 		await executeTaskIteration();

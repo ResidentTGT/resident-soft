@@ -8,6 +8,7 @@ export function BrowserField({ value, onChange }: { value: string | undefined; o
 				<Select label="Антидетект браузер" value={value ?? ''} onChange={(e) => onChange(e.target.value)}>
 					<MenuItem value="Vision">Vision</MenuItem>
 					<MenuItem value="AdsPower">AdsPower</MenuItem>
+					<MenuItem value="Afina">Afina</MenuItem>
 				</Select>
 			</FormControl>
 		</Grid>

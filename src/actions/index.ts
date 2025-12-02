@@ -40,6 +40,7 @@ import { eclipseActions } from './groups/premium/eclipse.actions';
 import { adsPowerActions } from './groups/premium/adsPower.actions';
 import { visionActions } from './groups/premium/vision.actions';
 import { testPremiumActions } from './groups/premium/TEST_PREMIUM.actions';
+import { afinaActions } from './groups/premium/afina.actions';
 
 import type { ActionsGroup } from './types/action.types';
 
@@ -98,6 +99,7 @@ export const ACTIONS: ActionsGroup[] = [
 	checkersActions,
 	adsPowerActions,
 	visionActions,
+	afinaActions,
 
 	// Test actions (disabled by default)
 	testActions,

@@ -53,6 +53,7 @@ export enum ActionsGroupName {
 	Polymarket = 'Polymarket',
 	Superchain = 'Superchain',
 	Abstract = 'Abstract',
+	Afina = 'Afina',
 }
 
 export enum ActionName {

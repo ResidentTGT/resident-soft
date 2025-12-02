@@ -16,6 +16,13 @@ export function getEncryptedOrDecryptedAccounts(aesKey: string, accounts: Accoun
 				};
 			}
 
+			if (accountCopy.afina) {
+				accountCopy.afina = {
+					apiKey: accountCopy.afina.apiKey ? func(aesKey, accountCopy.afina.apiKey) : undefined,
+					profileId: accountCopy.afina.profileId,
+				};
+			}
+
 			if (accountCopy.wallets) {
 				if (accountCopy.wallets.evm) {
 					accountCopy.wallets.evm = {

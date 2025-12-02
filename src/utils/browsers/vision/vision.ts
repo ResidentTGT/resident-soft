@@ -59,7 +59,7 @@ export const DEFAULT_CHROMIUM_ARGS = [
 	// maximize windows
 	// '--start-maximized',
 	'--window-position=0,0',
-	'--window-size=1920,1080',
+	// '--window-size=1920,1080',
 	//'--auto-open-devtools-for-tabs',
 ];
 

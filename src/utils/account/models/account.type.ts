@@ -14,6 +14,10 @@ export interface Account {
 		folderId?: string;
 		profileId?: string;
 	};
+	afina?: {
+		apiKey?: string;
+		profileId?: string;
+	};
 	wallets?: {
 		evm?: Wallet;
 		starknet?: Wallet;

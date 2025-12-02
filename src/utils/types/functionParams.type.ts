@@ -317,4 +317,9 @@ export interface FunctionParams {
 			browser: string;
 		};
 	};
+	Afina?: {
+		GetProfiles?: {
+			apiKey: string;
+		};
+	};
 }

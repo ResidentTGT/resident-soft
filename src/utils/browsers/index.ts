@@ -4,8 +4,9 @@ import { Account } from '@utils/account';
 import { AdsPower } from './adsPower';
 import { MissingFieldError } from '../errors';
 import { Vision } from './vision';
+import { Afina } from './afina/afina';
 
-const ALLOWED_BROWSERS = ['AdsPower', 'Vision'];
+const ALLOWED_BROWSERS = ['AdsPower', 'Vision', 'Afina'];
 
 export async function openBrowser(browserName: string, account: Account): Promise<Browser> {
 	let browser;
@@ -17,6 +18,10 @@ export async function openBrowser(browserName: string, account: Account): Promis
 		if (!account.vision?.folderId) throw new MissingFieldError('vision.folderId');
 		if (!account.vision?.profileId) throw new MissingFieldError('vision.profileId');
 		browser = await Vision.openBrowser(account.vision.token, account.vision.folderId, account.vision.profileId, []);
+	} else if (browserName === 'Afina') {
+		if (!account.afina?.apiKey) throw new MissingFieldError('afina.apiKey');
+		if (!account.afina?.profileId) throw new MissingFieldError('afina.profileId');
+		browser = await Afina.openBrowser(account.afina.apiKey, account.afina.profileId, []);
 	} else {
 		throw new Error(`Browser ${browserName} is not supported! Allowed browsers: ${ALLOWED_BROWSERS.join(', ')}`);
 	}
@@ -31,10 +36,14 @@ export async function closeBrowser(browserName: string, account: Account): Promi
 	if (browserName === 'AdsPower') {
 		if (!account.adsPower?.profileId) throw new MissingFieldError('adsPower.profileId');
 		await AdsPower.stopProfile(account.adsPower.profileId);
-	} else {
+	} else if (browserName === 'Vision') {
 		if (!account.vision?.folderId) throw new MissingFieldError('vision.folderId');
 		if (!account.vision?.profileId) throw new MissingFieldError('vision.profileId');
 		await Vision.stopProfile(account.vision.folderId, account.vision.profileId);
+	} else if (browserName === 'Afina') {
+		if (!account.afina?.apiKey) throw new MissingFieldError('afina.apiKey');
+		if (!account.afina?.profileId) throw new MissingFieldError('afina.profileId');
+		await Afina.stopProfile(account.afina.apiKey, account.afina.profileId);
 	}
 }
 
