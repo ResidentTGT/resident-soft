@@ -74,7 +74,7 @@
 		"chainId": "42220",
 		"name": "Celo",
 		"nativeCoin": "CELO",
-		"rpc": ["https://forno.celo.org"],
+		"rpc": ["https://rpc.ankr.com/celo", "https://celo.drpc.org"],
 	},
 	{
 		"chainId": "100",

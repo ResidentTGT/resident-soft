@@ -660,6 +660,7 @@ const Form_Make_Transactions = ({ params, set, networks }: FormCtx) => {
 		ChainId.Mode,
 		ChainId.World,
 		ChainId.Unichain,
+		ChainId.Celo,
 	];
 	const allowedNets = networks.filter((n) => allowedChains.includes(n.chainId));
 

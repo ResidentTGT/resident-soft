@@ -9,7 +9,8 @@ const CONTRACTS = new Map<ChainId, string>()
 	.set(ChainId.Linea, '0xd7487D1ff3b2433B32E6d4c333F70A462B99F300')
 	.set(ChainId.Scroll, '0xe6feca764b7548127672c189d303eb956c3ba372')
 	.set(ChainId.Soneium, '0xBF6B575e5a2a1272AE7bAEdABc00Cf016f2f437c')
-	.set(ChainId.Base, '0x26637c9fDbD5Ecdd76a9E21Db7ea533e1B0713b6');
+	.set(ChainId.Base, '0x26637c9fDbD5Ecdd76a9E21Db7ea533e1B0713b6')
+	.set(ChainId.Ink, '0xF40448F38d99A2Db70de37416B22B4338A1c2Ad7');
 
 export abstract class Owlto {
 	static async dailyCheckIn(ACCOUNT: Account, network: Network) {

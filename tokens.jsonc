@@ -206,7 +206,13 @@
 	},
 	{
 		"chainId": "42220",
-		"tokens": [{ "symbol": "CELO", "address": "0x0000000000000000000000000000000000000000" }],
+		"tokens": [
+			{ "symbol": "CELO", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "cUSD", "address": "0x765DE816845861e75A25fCA122bb6898B8B1282a" },
+			{ "symbol": "USDC", "address": "0xcebA9300f2b948710d2653dD7B07f33A8B32118C" },
+			{ "symbol": "USDT", "address": "0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e" },
+			{ "symbol": "cEUR", "address": "0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73" },
+		],
 	},
 	{
 		"chainId": "59144",
