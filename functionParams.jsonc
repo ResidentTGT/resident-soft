@@ -319,4 +319,9 @@
 			"apiKey": "",
 		},
 	},
+	"Shape": {
+		"Bubbles": {
+			"browser": "Vision",
+		},
+	},
 }

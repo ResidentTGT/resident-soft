@@ -859,4 +859,7 @@ export const FORMS = {
 	[ActionsGroupName.Afina]: {
 		[ActionName.GetProfiles]: Form_Afina_GetProfiles,
 	},
+	[ActionsGroupName.Shape]: {
+		[ActionName.Bubbles]: Form_Browser,
+	},
 };

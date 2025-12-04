@@ -145,4 +145,5 @@ export enum ActionName {
 	Vote = 'Vote',
 	Post = 'Post',
 	Quote = 'Quote',
+	Bubbles = 'Bubbles',
 }

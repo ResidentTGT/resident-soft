@@ -322,4 +322,9 @@ export interface FunctionParams {
 			apiKey: string;
 		};
 	};
+	Shape?: {
+		Bubbles?: {
+			browser: string;
+		};
+	};
 }
