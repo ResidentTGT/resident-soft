@@ -762,6 +762,28 @@ function Form_Abstract_Swap({ params, set, tokens }: FormCtx) {
 	);
 }
 
+function Form_Abstract_CollectRedBullNft({ params, set }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+			<FormControl size="small">
+				<InputLabel>День</InputLabel>
+				<Select
+					label="День"
+					value={params.day ?? ''}
+					onChange={(e) => set('day', (e.target.value as string) || undefined)}
+				>
+					{[1, 2, 3].map((day) => (
+						<MenuItem key={String(day)} value={String(day)}>
+							{String(day)}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
+		</Grid>
+	);
+}
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -855,6 +877,7 @@ export const FORMS = {
 		[ActionName.ConnectTwitter]: Form_Browser,
 		[ActionName.Swap]: Form_Abstract_Swap,
 		[ActionName.ClaimUi]: Form_Browser,
+		[ActionName.CollectRedBullNft]: Form_Abstract_CollectRedBullNft,
 	},
 	[ActionsGroupName.Afina]: {
 		[ActionName.GetProfiles]: Form_Afina_GetProfiles,

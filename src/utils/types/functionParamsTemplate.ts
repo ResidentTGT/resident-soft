@@ -321,6 +321,10 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 		ClaimUi: {
 			browser: 'Vision',
 		},
+		CollectRedBullNft: {
+			browser: 'Vision',
+			day: 1,
+		},
 	},
 	Afina: {
 		GetProfiles: {

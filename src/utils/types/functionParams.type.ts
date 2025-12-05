@@ -316,6 +316,10 @@ export interface FunctionParams {
 		ClaimUi?: {
 			browser: string;
 		};
+		CollectRedBullNft?: {
+			browser: string;
+			day: number;
+		};
 	};
 	Afina?: {
 		GetProfiles?: {

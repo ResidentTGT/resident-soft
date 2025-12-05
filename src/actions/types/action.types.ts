@@ -146,4 +146,5 @@ export enum ActionName {
 	Post = 'Post',
 	Quote = 'Quote',
 	Bubbles = 'Bubbles',
+	CollectRedBullNft = 'CollectRedBullNft',
 }
