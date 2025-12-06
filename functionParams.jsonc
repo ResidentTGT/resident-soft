@@ -315,17 +315,12 @@
 		},
 		"CollectRedBullNft": {
 			"browser": "Vision",
-			"day": "1",
+			"day": "2",
 		},
 	},
 	"Afina": {
 		"GetProfiles": {
 			"apiKey": "",
-		},
-	},
-	"Shape": {
-		"Bubbles": {
-			"browser": "Vision",
 		},
 	},
 }

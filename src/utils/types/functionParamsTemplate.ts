@@ -331,9 +331,4 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			apiKey: '',
 		},
 	},
-	Shape: {
-		Bubbles: {
-			browser: 'Vision',
-		},
-	},
 };

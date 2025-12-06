@@ -33,7 +33,7 @@ export default function AppHeader() {
 
 				<Tabs value={value} textColor="inherit" indicatorColor="secondary">
 					<Tab label="Настройка запуска" value="config" component={RouterLink} to="/config" />
-					<Tab label="Результаты запусков" value="results" component={RouterLink} to="/results" />
+					<Tab label="Запуски" value="results" component={RouterLink} to="/results" />
 					<Tab label="Хранилище" value="vault" component={RouterLink} to="/vault" />
 				</Tabs>
 			</MuiToolbar>
