@@ -312,10 +312,11 @@
 		},
 		"ClaimUi": {
 			"browser": "Vision",
+			"badgesIds": [],
 		},
 		"CollectRedBullNft": {
 			"browser": "Vision",
-			"day": "2",
+			"day": "3",
 		},
 	},
 	"Afina": {

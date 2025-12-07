@@ -320,6 +320,7 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 		},
 		ClaimUi: {
 			browser: 'Vision',
+			badgesIds: [],
 		},
 		CollectRedBullNft: {
 			browser: 'Vision',

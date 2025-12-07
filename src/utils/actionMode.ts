@@ -2,7 +2,7 @@ import { SecretStorage } from '@utils/secretStorage.type';
 import { Account } from '@utils/account';
 import { LaunchParams } from '@utils/types/launchParams.type';
 import { Logger, MessageType } from './logger';
-import { ACTIONS, ActionsGroupName } from '@src/actions';
+import { ACTIONS, ActionsGroupName, ActionsGroup, Action } from '@src/actions';
 
 import { FREE_HANDLERS } from '@src/free/handlersList';
 import { BaseHandler } from './handler';
@@ -30,81 +30,217 @@ export interface ActionModeParams {
 	ITERATION: number;
 }
 
-export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
-	const secretStorage = parse(
-		readFileSync(AES_KEY ? SECRET_STORAGE_ENCRYPTED_PATH : SECRET_STORAGE_DECRYPTED_PATH, 'utf-8'),
-	) as SecretStorage;
-	const SECRET_STORAGE = AES_KEY ? getEncryptedOrDecryptedSecretStorage(AES_KEY, secretStorage, false) : secretStorage;
+interface LoadedData {
+	secretStorage: SecretStorage;
+	accounts: Account[];
+	logger: Logger;
+}
 
-	const logger = Logger.getInstance({ telegramParams: SECRET_STORAGE.telegram });
+interface ValidatedAction {
+	group: ActionsGroup;
+	action: Action;
+}
 
-	const allAccounts = await getAllAccounts(
-		AES_KEY ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH,
-		LAUNCH_PARAMS.JOB_ACCOUNTS.map((a) => a.file),
-	);
-	const filteredAccs = await filterAccounts(allAccounts, LAUNCH_PARAMS);
-	const ACCOUNTS = AES_KEY ? getEncryptedOrDecryptedAccounts(AES_KEY, filteredAccs, false) : filteredAccs;
+/**
+ * Loads and decrypts secret storage
+ */
+function loadSecretStorage(aesKey?: string): SecretStorage {
+	const storagePath = aesKey ? SECRET_STORAGE_ENCRYPTED_PATH : SECRET_STORAGE_DECRYPTED_PATH;
+	const secretStorage = parse(readFileSync(storagePath, 'utf-8')) as SecretStorage;
 
-	const group = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group);
+	return aesKey ? getEncryptedOrDecryptedSecretStorage(aesKey, secretStorage, false) : secretStorage;
+}
 
-	if (!group) throw new Error(`Group doesn't exist: ${LAUNCH_PARAMS.ACTION_PARAMS.group}`);
+/**
+ * Loads, filters and decrypts accounts
+ */
+async function loadAccounts(launchParams: LaunchParams, aesKey?: string): Promise<Account[]> {
+	const accountsPath = aesKey ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH;
+	const accountFiles = launchParams.JOB_ACCOUNTS.map((a) => a.file);
 
-	const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+	const allAccounts = await getAllAccounts(accountsPath, accountFiles);
+	const filteredAccs = await filterAccounts(allAccounts, launchParams);
 
-	if (group.premium && !licenseValid) throw new Error(`Group is only for PREMIUM users: ${LAUNCH_PARAMS.ACTION_PARAMS.group}`);
+	return aesKey ? getEncryptedOrDecryptedAccounts(aesKey, filteredAccs, false) : filteredAccs;
+}
 
-	const action = group.actions.find((a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action);
-	if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}`);
+/**
+ * Loads all necessary data (secrets, accounts, logger)
+ */
+async function loadData(launchParams: LaunchParams, aesKey?: string): Promise<LoadedData> {
+	const secretStorage = loadSecretStorage(aesKey);
+	const logger = Logger.getInstance({ telegramParams: secretStorage.telegram });
+	const accounts = await loadAccounts(launchParams, aesKey);
 
-	let message = `Action: ${LAUNCH_PARAMS.ACTION_PARAMS.group} | ${LAUNCH_PARAMS.ACTION_PARAMS.action}`;
-	const groupFParams = FUNCTION_PARAMS[LAUNCH_PARAMS.ACTION_PARAMS.group];
-	if (groupFParams && groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action]) {
-		FUNCTION_PARAMS = groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action];
-		message += ` | ${JSON.stringify(groupFParams[LAUNCH_PARAMS.ACTION_PARAMS.action])}\n`;
+	return { secretStorage, accounts, logger };
+}
+
+/**
+ * Validates that the requested action and group exist and are accessible
+ */
+async function validateActionAndGroup(launchParams: LaunchParams): Promise<ValidatedAction> {
+	const group = ACTIONS.find((g) => g.group === launchParams.ACTION_PARAMS.group);
+
+	if (!group) {
+		throw new Error(`Group doesn't exist: ${launchParams.ACTION_PARAMS.group}`);
 	}
 
-	await logger.log(message, MessageType.Info);
+	const licenseValid = (await verifyLicense(launchParams.LICENSE)).ok;
 
+	if (group.premium && !licenseValid) {
+		throw new Error(`Group is only for PREMIUM users: ${launchParams.ACTION_PARAMS.group}`);
+	}
+
+	const action = group.actions.find((a) => a.action === launchParams.ACTION_PARAMS.action);
+
+	if (!action) {
+		throw new Error(`Action doesn't exist: ${JSON.stringify(launchParams.ACTION_PARAMS)}`);
+	}
+
+	return { group, action };
+}
+
+/**
+ * Extracts function parameters for specific action
+ */
+function extractFunctionParams(allParams: any, launchParams: LaunchParams): any {
+	const groupParams = allParams[launchParams.ACTION_PARAMS.group];
+
+	if (groupParams && groupParams[launchParams.ACTION_PARAMS.action]) {
+		return groupParams[launchParams.ACTION_PARAMS.action];
+	}
+
+	return {};
+}
+
+/**
+ * Builds log message for action execution
+ */
+function buildLogMessage(launchParams: LaunchParams, functionParams: any): string {
+	let message = `Action: ${launchParams.ACTION_PARAMS.group} | ${launchParams.ACTION_PARAMS.action}`;
+
+	if (functionParams && Object.keys(functionParams).length > 0) {
+		message += ` | ${JSON.stringify(functionParams)}\n`;
+	}
+
+	return message;
+}
+
+/**
+ * Loads premium handlers if available
+ */
+function loadPremiumHandlers(): Map<ActionsGroupName, BaseHandler> {
+	try {
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
+		const premiumModule = require('src/premium/handlersList');
+		return premiumModule.PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>;
+	} catch {
+		return new Map();
+	}
+}
+
+/**
+ * Gets the appropriate handler for the action group
+ */
+function getHandler(groupName: ActionsGroupName, hasValidLicense: boolean): BaseHandler {
 	const allHandlers = new Map(FREE_HANDLERS);
 
-	let handler;
-	if (licenseValid) {
-		let PREMIUM_HANDLERS: any;
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-require-imports
-			PREMIUM_HANDLERS = require('src/premium/handlersList').PREMIUM_HANDLERS;
-		} catch {
-			PREMIUM_HANDLERS = [];
-		}
-		(PREMIUM_HANDLERS as Map<ActionsGroupName, BaseHandler>).forEach((handler, group) => {
+	if (hasValidLicense) {
+		const premiumHandlers = loadPremiumHandlers();
+		premiumHandlers.forEach((handler, group) => {
 			allHandlers.set(group, handler);
 		});
+	}
 
-		handler = allHandlers.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
-	} else handler = FREE_HANDLERS.get(LAUNCH_PARAMS.ACTION_PARAMS.group);
-	if (!handler)
+	const handler = allHandlers.get(groupName);
+
+	if (!handler) {
 		throw new Error(
-			`No handler for ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}! Try to decrypt folder. p.4 here https://resident.gitbook.io/resident-soft/launch/for-developers`,
+			`No handler for group "${groupName}"! Try to decrypt folder. See: https://resident.gitbook.io/resident-soft/launch/for-developers`,
 		);
+	}
 
-	const chainIdFields = Object.keys(FUNCTION_PARAMS)
-		.filter((k) => k.toUpperCase().includes('CHAINID'))
-		.map((k) => FUNCTION_PARAMS[k]);
+	return handler;
+}
 
-	for (const id of chainIdFields) Network.checkChainId(id);
+/**
+ * Validates all chain IDs in function parameters
+ */
+function validateChainIds(functionParams: any): void {
+	if (!functionParams || typeof functionParams !== 'object') {
+		return;
+	}
 
-	for (let i = 0; i < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; i++) {
-		const ACCOUNTS_TO_DO = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
+	const chainIdFields = Object.keys(functionParams)
+		.filter((key) => key.toUpperCase().includes('CHAINID'))
+		.map((key) => functionParams[key]);
+
+	for (const chainId of chainIdFields) {
+		Network.checkChainId(chainId);
+	}
+}
+
+/**
+ * Generates state name if not provided
+ */
+function generateStateName(launchParams: LaunchParams, group: ActionsGroup, action: Action): string {
+	if (launchParams.TAKE_STATE && launchParams.STATE_NAME) {
+		return launchParams.STATE_NAME;
+	}
+
+	const timestamp = formatTimestampRussian(new Date());
+	return `${group.name}_${action.name}_${timestamp}`;
+}
+
+/**
+ * Formats timestamp in Russian format: DD.MM.YYYY_HH-MM-SS
+ */
+function formatTimestampRussian(date: Date): string {
+	const day = String(date.getDate()).padStart(2, '0');
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const year = date.getFullYear();
+	const hours = String(date.getHours()).padStart(2, '0');
+	const minutes = String(date.getMinutes()).padStart(2, '0');
+	const seconds = String(date.getSeconds()).padStart(2, '0');
+
+	return `${day}.${month}.${year}_${hours}-${minutes}-${seconds}`;
+}
+
+export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
+	const { secretStorage: SECRET_STORAGE, accounts: ACCOUNTS, logger } = await loadData(LAUNCH_PARAMS, AES_KEY);
+
+	const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
+	const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+
+	const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
+
+	await logger.log(buildLogMessage(LAUNCH_PARAMS, actionFunctionParams), MessageType.Info);
+
+	const handler = getHandler(LAUNCH_PARAMS.ACTION_PARAMS.group, licenseValid);
+
+	validateChainIds(actionFunctionParams);
+
+	for (let iterationIndex = 0; iterationIndex < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; iterationIndex++) {
+		const accountsToProcess = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
+
+		const stateName = generateStateName(LAUNCH_PARAMS, group, action);
 
 		const params: ActionModeParams = {
-			ACCOUNTS_TO_DO,
-			LAUNCH_PARAMS,
-			FUNCTION_PARAMS,
+			ACCOUNTS_TO_DO: accountsToProcess,
+			LAUNCH_PARAMS: {
+				...LAUNCH_PARAMS,
+				STATE_NAME: stateName,
+			},
+			FUNCTION_PARAMS: actionFunctionParams,
 			SECRET_STORAGE,
-			ITERATION: i + 1,
+			ITERATION: iterationIndex + 1,
 			AES_KEY,
 		};
 
-		await handler.handleAction(params);
+		if (action.isolated) {
+			await handler.actionIsolated(params);
+		} else {
+			await handler.executeJoint(params);
+		}
 	}
 }

@@ -315,6 +315,7 @@ export interface FunctionParams {
 		};
 		ClaimUi?: {
 			browser: string;
+			badgesIds?: number[];
 		};
 		CollectRedBullNft?: {
 			browser: string;

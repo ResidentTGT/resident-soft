@@ -26,6 +26,16 @@ export interface Handler {
 	executeJoint(params: ActionModeParams): Promise<void>;
 }
 
+interface AccountExecutionResult {
+	status: 'fulfilled' | 'rejected';
+	error?: Error;
+}
+
+interface ExecutionState {
+	successes: string[];
+	fails: string[];
+}
+
 export abstract class BaseHandler implements Handler {
 	public group: ActionsGroupName;
 
@@ -37,175 +47,286 @@ export abstract class BaseHandler implements Handler {
 
 	abstract executeJoint(params: ActionModeParams): Promise<void>;
 
-	async handleAction(params: ActionModeParams) {
-		const group = ACTIONS.find((g) => g.group === this.group);
-		if (!group) throw new Error(`Group doesn't exist: ${this.group}`);
-
-		const action = group.actions.find((a) => a.action === params.LAUNCH_PARAMS.ACTION_PARAMS.action);
-		if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(params.LAUNCH_PARAMS.ACTION_PARAMS)}`);
-
-		if (action.isolated) await this.actionIsolated(params);
-		else await this.executeJoint(params);
-	}
-
 	unsupportedAction(action: ActionName) {
 		throw new Error(`Unsupported ${this.group} action: ${action}`);
 	}
 
-	async actionIsolated(actionModeParams: ActionModeParams): Promise<void> {
-		const { LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE, ITERATION, AES_KEY } = actionModeParams;
+	/**
+	 * Validates that the action exists in the actions registry
+	 */
+	private validateAction(actionParams: ActionParams): Action {
+		const group = ACTIONS.find((g) => g.group === actionParams.group);
+		const action = group?.actions.find((a) => a.action === actionParams.action);
 
-		const logger = Logger.getInstance();
-
-		const group = ACTIONS.find((g) => g.group === LAUNCH_PARAMS.ACTION_PARAMS.group);
-		const action = group?.actions.find((a) => a.action === LAUNCH_PARAMS.ACTION_PARAMS.action);
-		if (!action) throw new Error(`Action doesn't exist: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}`);
-
-		if (!LAUNCH_PARAMS.TAKE_STATE || !LAUNCH_PARAMS.STATE_NAME) {
-			const timestamp = this.formatTimestampRussian(new Date());
-			LAUNCH_PARAMS.STATE_NAME = `${group?.name}_${action.name}_${timestamp}`;
+		if (!action) {
+			throw new Error(`Action doesn't exist: ${JSON.stringify(actionParams)}`);
 		}
 
-		let ACCOUNTS_TO_DO = actionModeParams.ACCOUNTS_TO_DO.slice();
+		return action;
+	}
 
-		let fails: string[] = [];
-		const successes: string[] = [];
-		let finish;
-		let attemptsUntilSuccess = 0;
-		while (!finish && attemptsUntilSuccess < LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS) {
-			attemptsUntilSuccess++;
-			await logger.log(
-				`Iteration ${ITERATION}. Attempt ${attemptsUntilSuccess}. Accounts (${ACCOUNTS_TO_DO.length}): ${ACCOUNTS_TO_DO.map((a) => a.name).join(',')}\n`,
-				MessageType.Info,
+	/**
+	 * Sets up proxy for account if configured
+	 */
+	private async setupProxy(account: Account, launchParams: ActionModeParams['LAUNCH_PARAMS']): Promise<void> {
+		if (!launchParams.PROXY || !account.proxy) {
+			return;
+		}
+
+		if (launchParams.ROTATE_PROXY && account.proxy.rotateUrl) {
+			await rotateProxy(account.proxy.rotateUrl);
+		} else if (!launchParams.ROTATE_PROXY) {
+			await setProxy(account.proxy);
+		}
+	}
+
+	/**
+	 * Handles successful account execution
+	 */
+	private handleAccountSuccess(accountName: string, state: ExecutionState, stateName: string): void {
+		state.successes.push(accountName);
+		state.fails = state.fails.filter((f) => f !== accountName);
+
+		const STATE = getStandardState(stateName);
+		STATE.successes.push(accountName);
+		STATE.fails = STATE.fails.filter((f: string) => f !== accountName);
+		STATE.save();
+	}
+
+	/**
+	 * Handles failed account execution
+	 */
+	private handleAccountError(accountName: string, state: ExecutionState, stateName: string): void {
+		if (!state.fails.includes(accountName)) {
+			state.fails.push(accountName);
+		}
+
+		const STATE = getStandardState(stateName);
+		if (!STATE.fails.includes(accountName)) {
+			STATE.fails.push(accountName);
+			STATE.save();
+		}
+	}
+
+	/**
+	 * Logs account status message
+	 */
+	private async logAccountStatus(
+		logger: Logger,
+		index: number,
+		totalAccounts: number,
+		account: Account,
+		status: string,
+		action: Action,
+		actionModeParams: ActionModeParams,
+		messageType: MessageType = MessageType.Info,
+	): Promise<void> {
+		const message = this.generateAccountMessage(
+			index,
+			totalAccounts,
+			account,
+			status,
+			this.getChainIdForLog(action, actionModeParams),
+		);
+		await logger.log(message, messageType);
+	}
+
+	/**
+	 * Handles delay between account executions
+	 */
+	private async handleAccountDelay(
+		logger: Logger,
+		delayRange: number[],
+		index: number,
+		totalAccounts: number,
+		skipDelay?: boolean,
+	): Promise<void> {
+		if (!delayRange[1] || index === totalAccounts - 1 || skipDelay) {
+			return;
+		}
+
+		const waitingTime = Random.int(delayRange[0], delayRange[1]);
+		await logger.log(`Waiting ${waitingTime} s. ...`);
+		await delay(waitingTime);
+	}
+
+	/**
+	 * Handles delay after error
+	 */
+	private async handleErrorDelay(logger: Logger, delayInSeconds: number): Promise<void> {
+		if (delayInSeconds > 0) {
+			await logger.log(`Waiting ${delayInSeconds} s. ...`);
+			await delay(delayInSeconds);
+		}
+	}
+
+	/**
+	 * Executes action for a single account
+	 */
+	private async executeAccountAction(
+		account: Account,
+		index: number,
+		totalAccounts: number,
+		action: Action,
+		actionModeParams: ActionModeParams,
+		state: ExecutionState,
+		logger: Logger,
+	): Promise<void> {
+		const { LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE, AES_KEY } = actionModeParams;
+		const accountName = account.name ?? '';
+
+		try {
+			await this.logAccountStatus(logger, index, totalAccounts, account, 'started', action, actionModeParams);
+
+			await this.setupProxy(account, LAUNCH_PARAMS);
+
+			const result = await this.executeIsolated({
+				account,
+				secretStorage: SECRET_STORAGE,
+				aesKey: AES_KEY,
+				actionParams: LAUNCH_PARAMS.ACTION_PARAMS,
+				functionParams: FUNCTION_PARAMS,
+			});
+
+			this.handleAccountSuccess(accountName, state, LAUNCH_PARAMS.STATE_NAME);
+
+			await this.logAccountStatus(logger, index, totalAccounts, account, 'finished', action, actionModeParams);
+
+			await this.handleAccountDelay(logger, LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S, index, totalAccounts, result?.skipDelay);
+		} catch (err: unknown) {
+			this.handleAccountError(accountName, state, LAUNCH_PARAMS.STATE_NAME);
+
+			const error = err as Error;
+			const errorMessage = `\nAction: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}\n${error.stack ?? error.message}`;
+
+			await this.logAccountStatus(
+				logger,
+				index,
+				totalAccounts,
+				account,
+				errorMessage,
+				action,
+				actionModeParams,
+				MessageType.Error,
 			);
-			const createPromise = async (account: Account, index: number) => {
-				const accountName = account.name ?? '';
-				try {
-					await logger.log(
-						this.generateAccountMessage(
-							index,
-							ACCOUNTS_TO_DO.length,
-							account,
-							`started`,
-							this.getChainIdForLog(action, actionModeParams),
-						),
-						MessageType.Info,
-					);
 
-					if (LAUNCH_PARAMS.PROXY && account.proxy) {
-						if (LAUNCH_PARAMS.ROTATE_PROXY) await rotateProxy(account.proxy?.rotateUrl as any);
-						if (!LAUNCH_PARAMS.ROTATE_PROXY) await setProxy(account.proxy);
-					}
+			await this.handleErrorDelay(logger, LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S);
+		}
+	}
 
-					const result = await this.executeIsolated({
-						account: account,
-						secretStorage: SECRET_STORAGE,
-						aesKey: AES_KEY,
-						actionParams: LAUNCH_PARAMS.ACTION_PARAMS,
-						functionParams: FUNCTION_PARAMS,
-					});
+	/**
+	 * Wraps account execution in a promise that never rejects
+	 */
+	private wrapAccountExecution(
+		account: Account,
+		index: number,
+		totalAccounts: number,
+		action: Action,
+		actionModeParams: ActionModeParams,
+		state: ExecutionState,
+		logger: Logger,
+	): Promise<AccountExecutionResult> {
+		return this.executeAccountAction(account, index, totalAccounts, action, actionModeParams, state, logger).then(
+			() => ({ status: 'fulfilled' as const }),
+			(error) => ({ status: 'rejected' as const, error }),
+		);
+	}
 
-					successes.push(accountName);
-					fails = fails.filter((f) => f !== accountName);
-
-					const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
-					STATE.successes.push(accountName);
-					STATE.fails = STATE.fails.filter((f: string) => f !== accountName);
-					STATE.save();
-
-					await logger.log(
-						this.generateAccountMessage(
-							index,
-							ACCOUNTS_TO_DO.length,
-							account,
-							`finished`,
-							this.getChainIdForLog(action, actionModeParams),
-						),
-						MessageType.Info,
-					);
-					if (LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S[1] && index !== ACCOUNTS_TO_DO.length - 1) {
-						const waiting = Random.int(
-							LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S[0],
-							LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S[1],
-						);
-						if (!(result && (result as any).skipDelay)) {
-							await logger.log(`Waiting ${waiting} s. ...`);
-							await delay(waiting);
-						}
-					}
-				} catch (err: any) {
-					if (!fails.includes(accountName)) {
-						fails.push(accountName);
-					}
-
-					const STATE = getStandardState(LAUNCH_PARAMS.STATE_NAME);
-					if (!STATE.fails.includes(accountName)) {
-						STATE.fails.push(accountName);
-						STATE.save();
-					}
-
-					await logger.log(
-						this.generateAccountMessage(
-							index,
-							ACCOUNTS_TO_DO.length,
-							account,
-							`\nAction: ${JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)}\n${err.stack}`,
-							this.getChainIdForLog(action, actionModeParams),
-						),
-						MessageType.Error,
-					);
-					if (LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S > 0) {
-						await logger.log(`Waiting ${LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S} s. ...`);
-						await delay(LAUNCH_PARAMS.DELAY_AFTER_ERROR_IN_S);
-					}
-				}
-			};
-
-			const wrapPromise = (account: Account, index: number) =>
-				createPromise(account, index).then(
-					() => ({ status: 'fulfilled' as const }),
-					(err) => ({ status: 'rejected' as const, error: err }),
-				);
-
-			const initialPromises = ACCOUNTS_TO_DO.slice(0, LAUNCH_PARAMS.NUMBER_OF_THREADS).map((a, index) =>
-				wrapPromise(a, index),
+	/**
+	 * Processes accounts with thread pool management
+	 */
+	private async processAccountsWithThreadPool(
+		accounts: Account[],
+		maxThreads: number,
+		action: Action,
+		actionModeParams: ActionModeParams,
+		state: ExecutionState,
+		logger: Logger,
+	): Promise<void> {
+		const accountPromises = accounts
+			.slice(0, maxThreads)
+			.map((account, index) =>
+				this.wrapAccountExecution(account, index, accounts.length, action, actionModeParams, state, logger),
 			);
-			const newAccounts = ACCOUNTS_TO_DO.slice(LAUNCH_PARAMS.NUMBER_OF_THREADS);
-			let currentIndex = initialPromises.length - 1;
 
-			while (newAccounts.length > 0 || initialPromises.length > 0) {
-				if (initialPromises.length < LAUNCH_PARAMS.NUMBER_OF_THREADS && newAccounts.length > 0) {
-					const nextAccount = newAccounts.shift();
-					if (nextAccount !== undefined) {
-						currentIndex++;
-						initialPromises.push(wrapPromise(nextAccount, currentIndex));
-					}
-				}
+		const remainingAccounts = accounts.slice(maxThreads);
+		let currentIndex = accountPromises.length - 1;
 
-				if (initialPromises.length > 0) {
-					const finishedPromiseIndex = await Promise.race(initialPromises.map((p, index) => p.then(() => index)));
-					initialPromises.splice(finishedPromiseIndex, 1);
+		while (remainingAccounts.length > 0 || accountPromises.length > 0) {
+			// Add new accounts to the pool if there's space
+			if (accountPromises.length < maxThreads && remainingAccounts.length > 0) {
+				const nextAccount = remainingAccounts.shift();
+				if (nextAccount) {
+					currentIndex++;
+					accountPromises.push(
+						this.wrapAccountExecution(
+							nextAccount,
+							currentIndex,
+							accounts.length,
+							action,
+							actionModeParams,
+							state,
+							logger,
+						),
+					);
 				}
 			}
 
-			const allSuccess = ACCOUNTS_TO_DO.every((a) => successes.includes(a.name ?? ''));
+			// Wait for any promise to complete and remove it
+			if (accountPromises.length > 0) {
+				const finishedIndex = await Promise.race(accountPromises.map((p, idx) => p.then(() => idx)));
+				accountPromises.splice(finishedIndex, 1);
+			}
+		}
+	}
 
-			if (attemptsUntilSuccess >= LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS && !allSuccess) {
+	async actionIsolated(actionModeParams: ActionModeParams): Promise<void> {
+		const { LAUNCH_PARAMS, ITERATION } = actionModeParams;
+		const logger = Logger.getInstance();
+		const action = this.validateAction(LAUNCH_PARAMS.ACTION_PARAMS);
+
+		let accountsToProcess = actionModeParams.ACCOUNTS_TO_DO.slice();
+		const state: ExecutionState = { successes: [], fails: [] };
+
+		let attemptNumber = 0;
+		let shouldContinue = true;
+
+		while (shouldContinue && attemptNumber < LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS) {
+			attemptNumber++;
+
+			await logger.log(
+				`Iteration ${ITERATION}. Attempt ${attemptNumber}. Accounts (${accountsToProcess.length}): ${accountsToProcess.map((a) => a.name).join(',')}\n`,
+				MessageType.Info,
+			);
+
+			await this.processAccountsWithThreadPool(
+				accountsToProcess,
+				LAUNCH_PARAMS.NUMBER_OF_THREADS,
+				action,
+				actionModeParams,
+				state,
+				logger,
+			);
+
+			const allAccountsSucceeded = accountsToProcess.every((a) => state.successes.includes(a.name ?? ''));
+
+			if (attemptNumber >= LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS && !allAccountsSucceeded) {
 				await logger.log(
 					`Attempts are over. LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS: ${LAUNCH_PARAMS.ATTEMPTS_UNTIL_SUCCESS}`,
 					MessageType.Warn,
 				);
-				finish = true;
-			} else if (allSuccess) {
-				await logger.log(`All accounts finished in ${attemptsUntilSuccess} attempts.`, MessageType.Info);
-				finish = true;
+				shouldContinue = false;
+			} else if (allAccountsSucceeded) {
+				await logger.log(`All accounts finished in ${attemptNumber} attempts.`, MessageType.Info);
+				shouldContinue = false;
 			} else {
-				ACCOUNTS_TO_DO = ACCOUNTS_TO_DO.filter((a) => !successes.includes(a.name ?? ''));
+				accountsToProcess = accountsToProcess.filter((a) => !state.successes.includes(a.name ?? ''));
 				await delay(1);
 			}
 		}
+
 		await logger.log(
-			this.generateFinalMessage(ITERATION, successes, fails, JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)),
+			this.generateFinalMessage(ITERATION, state.successes, state.fails, JSON.stringify(LAUNCH_PARAMS.ACTION_PARAMS)),
 			MessageType.Notice,
 		);
 	}
@@ -238,19 +359,5 @@ export abstract class BaseHandler implements Handler {
 		}
 
 		return chainId as ChainId;
-	}
-
-	/**
-	 *  30.11.2025_09-08-39
-	 */
-	private formatTimestampRussian(date: Date): string {
-		const day = String(date.getDate()).padStart(2, '0');
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const year = date.getFullYear();
-		const hours = String(date.getHours()).padStart(2, '0');
-		const minutes = String(date.getMinutes()).padStart(2, '0');
-		const seconds = String(date.getSeconds()).padStart(2, '0');
-
-		return `${day}.${month}.${year}_${hours}-${minutes}-${seconds}`;
 	}
 }

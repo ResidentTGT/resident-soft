@@ -762,6 +762,20 @@ function Form_Abstract_Swap({ params, set, tokens }: FormCtx) {
 	);
 }
 
+function Form_Abstract_ClaimBadges({ params, set }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<BrowserField value={params.browser} onChange={(v) => set('browser', v)}></BrowserField>
+			<div>
+				Ниже можно ввести Id бейджей на проверку на наличие. Если указанных бейджей на кошельке нет, то будет выкинута
+				ошибка. Все доступные Id можно посомтреть{' '}
+				<a href="https://abscan.org/token/0xbc176ac2373614f9858a118917d83b139bcb3f8c#inventory">тут</a>.
+			</div>
+			<CsvField placeholder="1, 2, 3" label="Id бейджей" value={params.badgesIds} onChange={(v) => set('badgesIds', v)} />
+		</Grid>
+	);
+}
+
 function Form_Abstract_CollectRedBullNft({ params, set }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
@@ -876,7 +890,7 @@ export const FORMS = {
 		[ActionName.Vote]: Form_Browser,
 		[ActionName.ConnectTwitter]: Form_Browser,
 		[ActionName.Swap]: Form_Abstract_Swap,
-		[ActionName.ClaimUi]: Form_Browser,
+		[ActionName.ClaimUi]: Form_Abstract_ClaimBadges,
 		[ActionName.CollectRedBullNft]: Form_Abstract_CollectRedBullNft,
 	},
 	[ActionsGroupName.Afina]: {
