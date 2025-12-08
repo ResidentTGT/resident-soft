@@ -38,6 +38,7 @@ const OUTBOUND_CHAIN_IDS = new Map<ChainId, number>([
 	[ChainId.Ink, 392],
 	[ChainId.World, 269],
 	[ChainId.Soneium, 414],
+	[ChainId.Celo, 21],
 ]);
 
 export class GasZip {

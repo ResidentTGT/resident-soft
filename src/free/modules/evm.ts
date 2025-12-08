@@ -4,6 +4,12 @@ import { ERC20_ABI, ERC721_ABI, WRAP_ABI } from '@utils/abi';
 import { delay } from '@utils/delay';
 import { getExplorerUrl } from '@utils/getExplorerUrl';
 import { ChainId, Network, Token } from '@utils/network';
+import { detectNetworkError, NetworkError } from '@utils/errors';
+
+// Maximum retry attempts for waitForTransaction on network errors
+const WAIT_FOR_TX_MAX_RETRIES = 3;
+// Delay in seconds between retries
+const WAIT_FOR_TX_RETRY_DELAY_S = 3;
 
 export class Evm {
 	static Type0Networks = [ChainId.Bsc, ChainId.Scroll, ChainId.ArbitrumNova, ChainId.Harmony, ChainId.Fuse, ChainId.Core];
@@ -403,8 +409,46 @@ export class Evm {
 		);
 
 		const transactionResponse = await wallet.sendTransaction(transaction);
-		const transactionReceipt = await provider.waitForTransaction(transactionResponse.hash, 1, 300_000);
-		//const transactionReceipt = await transactionResponse.wait();
+
+		// Retry logic for waitForTransaction with network error handling
+		let transactionReceipt = null;
+		let attempt = 0;
+		let lastError: any = null;
+
+		while (attempt < WAIT_FOR_TX_MAX_RETRIES && !transactionReceipt) {
+			attempt++;
+
+			try {
+				transactionReceipt = await provider.waitForTransaction(transactionResponse.hash, 1, 300_000);
+				break;
+			} catch (e: any) {
+				lastError = e;
+				const networkError = detectNetworkError(e);
+
+				if (networkError.isTransient) {
+					await Logger.getInstance().log(
+						`Network error while waiting for transaction (attempt ${attempt}/${WAIT_FOR_TX_MAX_RETRIES}): ${e.message || e}`,
+						MessageType.Warn,
+					);
+
+					if (attempt < WAIT_FOR_TX_MAX_RETRIES) {
+						await Logger.getInstance().log(`Retrying in ${WAIT_FOR_TX_RETRY_DELAY_S} seconds...`, MessageType.Trace);
+						await delay(WAIT_FOR_TX_RETRY_DELAY_S);
+					}
+				} else {
+					throw e;
+				}
+			}
+		}
+
+		if (!transactionReceipt && lastError) {
+			throw new NetworkError(
+				`Failed to get transaction receipt after ${WAIT_FOR_TX_MAX_RETRIES} attempts: ${lastError.message || lastError}`,
+				detectNetworkError(lastError).isProxyError,
+				detectNetworkError(lastError).isRpcError,
+				lastError.code,
+			);
+		}
 
 		if (transactionReceipt) {
 			const fee = ethers.formatEther(transactionReceipt.fee);
