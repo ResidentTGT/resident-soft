@@ -54,34 +54,68 @@ router.get('/', async (_req, res) => {
 
 router.post('/delete', async (req, res) => {
 	try {
-		const { fileName } = req.body as { fileName: string };
+		const { fileNames } = req.body as { fileNames: string[] };
 
 		// Validation
-		if (!fileName || !fileName.trim()) {
-			return res.status(400).json({ error: 'fileName is required' });
+		if (!Array.isArray(fileNames) || fileNames.length === 0) {
+			return res.status(400).json({ error: 'fileNames must be a non-empty array' });
 		}
-
-		// Security: prevent path traversal
-		const safeName = path.basename(fileName);
-		if (safeName !== fileName || !safeName.endsWith('.json')) {
-			return res.status(400).json({ error: 'Invalid fileName format' });
-		}
-
-		// Extract name without extension and encode it (node-localstorage uses URL encoding)
-		const nameWithoutExt = path.basename(safeName, '.json');
-		const encodedName = encodeURIComponent(nameWithoutExt) + '.json';
 
 		const PROCESS_DIR = path.resolve(process.cwd(), 'states');
-		const filePath = path.join(PROCESS_DIR, encodedName);
+		const results: { fileName: string; success: boolean; error?: string }[] = [];
+		let allSucceeded = true;
 
-		if (!fs.existsSync(filePath)) {
-			return res.status(404).json({ error: 'State file not found' });
+		// Get all files in directory
+		const allFiles = fs.existsSync(PROCESS_DIR) ? fs.readdirSync(PROCESS_DIR).filter((f) => f.endsWith('.json')) : [];
+
+		for (const fileName of fileNames) {
+			try {
+				// Validation
+				if (!fileName || !fileName.trim()) {
+					results.push({ fileName, success: false, error: 'fileName is empty' });
+					allSucceeded = false;
+					continue;
+				}
+
+				// Security: prevent path traversal
+				const safeName = path.basename(fileName);
+				if (safeName !== fileName || !safeName.endsWith('.json')) {
+					results.push({ fileName, success: false, error: 'Invalid fileName format' });
+					allSucceeded = false;
+					continue;
+				}
+
+				// Extract name without extension
+				const nameWithoutExt = path.basename(safeName, '.json');
+
+				// Find the actual file on disk by decoding all file names
+				let actualFileName: string | null = null;
+				for (const diskFile of allFiles) {
+					const decodedName = decodeURIComponent(path.basename(diskFile, '.json'));
+					if (decodedName === nameWithoutExt) {
+						actualFileName = diskFile;
+						break;
+					}
+				}
+
+				if (!actualFileName) {
+					results.push({ fileName, success: false, error: 'State file not found' });
+					allSucceeded = false;
+					continue;
+				}
+
+				const filePath = path.join(PROCESS_DIR, actualFileName);
+				fs.unlinkSync(filePath);
+				results.push({ fileName, success: true });
+			} catch (e: any) {
+				results.push({ fileName, success: false, error: e?.message || 'Unknown error' });
+				allSucceeded = false;
+			}
 		}
 
-		fs.unlinkSync(filePath);
-		res.json({ ok: true });
+		res.json({ ok: allSucceeded, results });
 	} catch (e: any) {
-		res.status(500).json({ error: 'Failed to delete state', details: e?.message });
+		res.status(500).json({ error: 'Failed to delete states', details: e?.message });
 	}
 });
 

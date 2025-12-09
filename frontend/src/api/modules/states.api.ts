@@ -13,15 +13,28 @@ export async function getStates(signal?: AbortSignal): Promise<StatesIndexResp> 
 	return r.json();
 }
 
-export async function deleteState(fileName: string): Promise<{ ok: boolean }> {
+export interface DeleteStatesResult {
+	ok: boolean;
+	results: {
+		fileName: string;
+		success: boolean;
+		error?: string;
+	}[];
+}
+
+export async function deleteStates(fileNames: string[]): Promise<DeleteStatesResult> {
 	const r = await fetch('/api/process/states/delete', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ fileName }),
+		body: JSON.stringify({ fileNames }),
 	});
 	if (!r.ok) {
 		const errorData = await r.json().catch(() => ({}));
-		throw new Error(errorData.error || `Delete state failed: ${r.status}`);
+		throw new Error(errorData.error || `Delete states failed: ${r.status}`);
 	}
 	return r.json();
+}
+
+export async function deleteState(fileName: string): Promise<DeleteStatesResult> {
+	return deleteStates([fileName]);
 }
