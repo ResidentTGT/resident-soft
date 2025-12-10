@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { SelectChangeEvent } from '@mui/material';
 import {
 	Alert,
 	Box,
@@ -38,12 +39,25 @@ import {
 	decryptAccounts,
 } from '../../api';
 
+// Constants
+const DEFAULT_NEW_FILENAME = 'accs_new.xlsx';
+const FILE_SELECT_MIN_WIDTH = 260;
+const TOAST_AUTO_HIDE_DURATION = 5000;
+
 type Variant = 'encrypted' | 'decrypted';
+
 interface Toast {
 	open: boolean;
 	severity: 'success' | 'error' | 'info' | 'warning';
 	message: string;
 }
+
+// Type guard for error messages
+const getErrorMessage = (error: unknown): string => {
+	if (error instanceof Error) return error.message;
+	if (typeof error === 'string') return error;
+	return String(error);
+};
 
 export default function AccountsPage() {
 	const [loading, setLoading] = useState(true);
@@ -69,10 +83,14 @@ export default function AccountsPage() {
 	const [deletingAll, setDeletingAll] = useState(false);
 	const [openCreate, setOpenCreate] = useState(false);
 	const [creating, setCreating] = useState(false);
-	const [newFileName, setNewFileName] = useState('accs_new.xlsx');
+	const [newFileName, setNewFileName] = useState(DEFAULT_NEW_FILENAME);
 
-	const files = variant === 'encrypted' ? encrypted : decrypted;
-	const selectedFileName = variant === 'encrypted' ? encSelectedFile : decSelectedFile;
+	// Derived state based on current variant
+	const files = useMemo(() => (variant === 'encrypted' ? encrypted : decrypted), [variant, encrypted, decrypted]);
+	const selectedFileName = useMemo(
+		() => (variant === 'encrypted' ? encSelectedFile : decSelectedFile),
+		[variant, encSelectedFile, decSelectedFile],
+	);
 	const setSelectedFileName = variant === 'encrypted' ? setEncSelectedFile : setDecSelectedFile;
 
 	const selectedFile = useMemo(() => {
@@ -95,59 +113,76 @@ export default function AccountsPage() {
 		}
 	}, [variant, encrypted, decrypted, encSelectedFile, decSelectedFile]);
 
-	const fetchAccounts = async () => {
+	const fetchAccounts = useCallback(async () => {
 		setLoading(true);
 		try {
-			const accs = await getAccounts();
-			setEncrypted(accs.encrypted ?? []);
-			setDecrypted(accs.decrypted ?? []);
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Ошибка загрузки аккаунтов: ${e?.message ?? e}` });
+			const accounts = await getAccounts();
+			setEncrypted(accounts.encrypted ?? []);
+			setDecrypted(accounts.decrypted ?? []);
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Ошибка загрузки аккаунтов: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		void fetchAccounts();
-	}, []);
+	}, [fetchAccounts]);
 
-	const updateAccountsInSelectedFile = (nextAccounts: Account[]) => {
-		if (!selectedFile) return;
-		const fileName = selectedFile.fileName;
-		const setCurrentFiles = variant === 'encrypted' ? setEncrypted : setDecrypted;
-		setCurrentFiles((prev) => (prev ?? []).map((f) => (f.fileName === fileName ? { ...f, accounts: nextAccounts } : f)));
-	};
+	const updateAccountsInSelectedFile = useCallback(
+		(nextAccounts: Account[]) => {
+			if (!selectedFile) return;
+			const fileName = selectedFile.fileName;
+			const setCurrentFiles = variant === 'encrypted' ? setEncrypted : setDecrypted;
+			setCurrentFiles((prev) => prev.map((file) => (file.fileName === fileName ? { ...file, accounts: nextAccounts } : file)));
+		},
+		[selectedFile, variant],
+	);
 
-	const handleSave = async () => {
-		const file = files.find((f) => f.fileName === selectedFile?.fileName);
+	const handleSave = useCallback(async () => {
+		const file = files.find((file) => file.fileName === selectedFile?.fileName);
 		if (!file) return;
+
 		setSaving(true);
 		try {
 			await postAccounts(
 				variant === 'encrypted' ? { encrypted: [file], decrypted: [] } : { encrypted: [], decrypted: [file] },
 			);
 			setToast({ open: true, severity: 'success', message: 'Аккаунты сохранены ✅' });
-			await fetchAccounts();
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Ошибка сохранения: ${e?.message ?? e}` });
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Ошибка сохранения: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setSaving(false);
 		}
-	};
+	}, [files, selectedFile, variant]);
 
-	const openEncrypt = (enc: boolean) => {
-		setIsEncryption(enc);
+	const openEncrypt = useCallback((isEncryption: boolean) => {
+		setIsEncryption(isEncryption);
 		setPassword('');
 		setConfirm('');
 		setOpenCryptDialog(true);
-	};
-	const confirmCrypt = async () => {
+	}, []);
+
+	const confirmCrypt = useCallback(async () => {
 		if (!password || (isEncryption && password !== confirm)) return;
+
 		setCryptLoading(true);
 		try {
-			if (isEncryption) await encryptAccounts(password);
-			else await decryptAccounts(password);
+			if (isEncryption) {
+				await encryptAccounts(password);
+			} else {
+				await decryptAccounts(password);
+			}
+
 			setOpenCryptDialog(false);
 			setToast({
 				open: true,
@@ -155,12 +190,16 @@ export default function AccountsPage() {
 				message: `Аккаунты ${isEncryption ? 'зашифрованы' : 'расшифрованы'} ✅`,
 			});
 			await fetchAccounts();
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Не удалось выполнить операцию: ${e?.message ?? e}` });
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Не удалось выполнить операцию: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setCryptLoading(false);
 		}
-	};
+	}, [password, isEncryption, confirm, fetchAccounts]);
 
 	const normalizedNewName = useMemo(() => {
 		const name = (newFileName ?? '').trim();
@@ -172,8 +211,9 @@ export default function AccountsPage() {
 		[files, normalizedNewName],
 	);
 
-	const confirmCreate = async () => {
+	const confirmCreate = useCallback(async () => {
 		if (!normalizedNewName || nameExists) return;
+
 		setCreating(true);
 		try {
 			await createAccountsFile({ variant, fileName: normalizedNewName });
@@ -181,15 +221,20 @@ export default function AccountsPage() {
 			setOpenCreate(false);
 			setToast({ open: true, severity: 'success', message: `Файл ${normalizedNewName} создан ✅` });
 			await fetchAccounts();
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Не удалось создать файл: ${e?.message ?? e}` });
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Не удалось создать файл: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setCreating(false);
 		}
-	};
+	}, [normalizedNewName, nameExists, variant, setSelectedFileName, fetchAccounts]);
 
-	const confirmDelete = async () => {
+	const confirmDelete = useCallback(async () => {
 		if (!selectedFile) return;
+
 		setDeleting(true);
 		try {
 			await deleteAccountsFile({ variant, fileName: selectedFile.fileName });
@@ -197,14 +242,18 @@ export default function AccountsPage() {
 			setOpenDelete(false);
 			setToast({ open: true, severity: 'success', message: `Файл ${selectedFile.fileName} удалён 🗑️` });
 			await fetchAccounts();
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Не удалось удалить файл: ${e?.message ?? e}` });
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Не удалось удалить файл: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setDeleting(false);
 		}
-	};
+	}, [selectedFile, variant, setSelectedFileName, fetchAccounts]);
 
-	const confirmDeleteAll = async () => {
+	const confirmDeleteAll = useCallback(async () => {
 		setDeletingAll(true);
 		try {
 			const result = await deleteAllAccountsFiles({ variant });
@@ -216,22 +265,96 @@ export default function AccountsPage() {
 				message: `Удалено ${result.deleted} файлов 🗑️`,
 			});
 			await fetchAccounts();
-		} catch (e: any) {
-			setToast({ open: true, severity: 'error', message: `Не удалось удалить файлы: ${e?.message ?? e}` });
+		} catch (error: unknown) {
+			setToast({
+				open: true,
+				severity: 'error',
+				message: `Не удалось удалить файлы: ${getErrorMessage(error)}`,
+			});
 		} finally {
 			setDeletingAll(false);
 		}
-	};
+	}, [variant, setSelectedFileName, fetchAccounts]);
 
-	const closeToast = (_e?: any, reason?: string) => {
+	const closeToast = useCallback((_event?: React.SyntheticEvent | Event, reason?: string) => {
 		if (reason === 'clickaway') return;
-		setToast((p) => ({ ...p, open: false }));
-	};
+		setToast((prev) => ({ ...prev, open: false }));
+	}, []);
+
+	const handleTabChange = useCallback((_event: React.SyntheticEvent, value: Variant) => {
+		setVariant(value);
+	}, []);
+
+	const handleFileChange = useCallback(
+		(event: SelectChangeEvent<string>) => {
+			setSelectedFileName(event.target.value);
+		},
+		[setSelectedFileName],
+	);
+
+	const handleOpenCreateDialog = useCallback(() => {
+		setNewFileName(DEFAULT_NEW_FILENAME);
+		setOpenCreate(true);
+	}, []);
+
+	const handleCloseCreateDialog = useCallback(() => {
+		setOpenCreate(false);
+	}, []);
+
+	const handleCloseDeleteDialog = useCallback(() => {
+		setOpenDelete(false);
+	}, []);
+
+	const handleOpenDeleteDialog = useCallback(() => {
+		setOpenDelete(true);
+	}, []);
+
+	const handleCloseDeleteAllDialog = useCallback(() => {
+		setOpenDeleteAll(false);
+	}, []);
+
+	const handleOpenDeleteAllDialog = useCallback(() => {
+		setOpenDeleteAll(true);
+	}, []);
+
+	const handleCloseCryptDialog = useCallback(() => {
+		setOpenCryptDialog(false);
+	}, []);
+
+	const handleNewFileNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+		setNewFileName(event.target.value);
+	}, []);
+
+	const handlePasswordChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+		setPassword(event.target.value);
+	}, []);
+
+	const handleConfirmChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+		setConfirm(event.target.value);
+	}, []);
+
+	const handleCryptKeyDown = useCallback(
+		(event: React.KeyboardEvent) => {
+			if (event.key === 'Enter' && password && (!isEncryption || password === confirm)) {
+				void confirmCrypt();
+			}
+		},
+		[password, isEncryption, confirm, confirmCrypt],
+	);
+
+	const handleCreateKeyDown = useCallback(
+		(event: React.KeyboardEvent) => {
+			if (event.key === 'Enter' && normalizedNewName && !nameExists) {
+				void confirmCreate();
+			}
+		},
+		[normalizedNewName, nameExists, confirmCreate],
+	);
 
 	return (
 		<Paper variant="outlined" sx={{ p: 2, boxSizing: 'border-box', height: '100%' }}>
 			<Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-				<Tabs value={variant} onChange={(_, v) => setVariant(v)} textColor="inherit" indicatorColor="primary">
+				<Tabs value={variant} onChange={handleTabChange} textColor="inherit" indicatorColor="primary">
 					<Tab value="decrypted" label="Расшифрованные" />
 					<Tab value="encrypted" label="Зашифрованные" />
 				</Tabs>
@@ -245,19 +368,18 @@ export default function AccountsPage() {
 			</Box>
 
 			<Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-				<FormControl size="small" sx={{ minWidth: 260 }}>
+				<FormControl size="small" sx={{ minWidth: FILE_SELECT_MIN_WIDTH }}>
 					<InputLabel id="accounts-filename-label">Файл</InputLabel>
 					<Select
-						key={`sel-${variant}-${files.length}`}
 						labelId="accounts-filename-label"
 						label="Файл"
 						value={selectedFileName ?? files[0]?.fileName ?? ''}
-						onChange={(e) => setSelectedFileName(String(e.target.value))}
+						onChange={handleFileChange}
 						disabled={loading || !files.length}
 					>
-						{files.map((f) => (
-							<MenuItem key={f.fileName} value={f.fileName}>
-								{f.fileName}
+						{files.map((file) => (
+							<MenuItem key={file.fileName} value={file.fileName}>
+								{file.fileName}
 							</MenuItem>
 						))}
 					</Select>
@@ -265,33 +387,40 @@ export default function AccountsPage() {
 
 				{variant === 'decrypted' && (
 					<>
-						<Button variant="contained" onClick={handleSave} disabled={!!loading || !!saving || !selectedFile}>
+						<Button variant="contained" onClick={handleSave} disabled={loading || saving || !selectedFile}>
 							Сохранить изменения в файле
 						</Button>
 						<Tooltip title="Создать новый файл">
-							<IconButton
-								color="success"
-								onClick={() => {
-									setNewFileName('accs_new.xlsx');
-									setOpenCreate(true);
-								}}
-								disabled={loading || saving}
-							>
-								<AddIcon />
-							</IconButton>
+							<span>
+								<IconButton
+									color="success"
+									onClick={handleOpenCreateDialog}
+									disabled={loading || saving}
+									aria-label="Создать новый файл"
+								>
+									<AddIcon />
+								</IconButton>
+							</span>
 						</Tooltip>
 					</>
 				)}
 
 				<Tooltip title="Удалить выбранный файл">
-					<IconButton color="error" onClick={() => setOpenDelete(true)} disabled={loading || saving || !selectedFile}>
-						<DeleteIcon />
-					</IconButton>
+					<span>
+						<IconButton
+							color="error"
+							onClick={handleOpenDeleteDialog}
+							disabled={loading || saving || !selectedFile}
+							aria-label="Удалить выбранный файл"
+						>
+							<DeleteIcon />
+						</IconButton>
+					</span>
 				</Tooltip>
 				<Button
 					color="error"
 					variant="outlined"
-					onClick={() => setOpenDeleteAll(true)}
+					onClick={handleOpenDeleteAllDialog}
 					disabled={loading || saving || !files.length}
 				>
 					Удалить все файлы
@@ -299,7 +428,7 @@ export default function AccountsPage() {
 			</Box>
 
 			{loading ? (
-				<Backdrop open>
+				<Backdrop open aria-label="Загрузка аккаунтов">
 					<CircularProgress />
 				</Backdrop>
 			) : !files.length ? (
@@ -312,12 +441,12 @@ export default function AccountsPage() {
 				<AccountsHotTable
 					key={`${variant}-${selectedFile.fileName}`}
 					value={selectedFile.accounts}
-					readOnly={variant === 'encrypted' || !!loading}
+					readOnly={variant === 'encrypted' || loading}
 					onChange={updateAccountsInSelectedFile}
 				/>
 			)}
 
-			<Dialog open={openDelete} onClose={() => setOpenDelete(false)}>
+			<Dialog open={openDelete} onClose={deleting ? undefined : handleCloseDeleteDialog} disableEscapeKeyDown={deleting}>
 				<DialogTitle>Удалить файл</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
@@ -328,7 +457,7 @@ export default function AccountsPage() {
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setOpenDelete(false)} disabled={deleting}>
+					<Button onClick={handleCloseDeleteDialog} disabled={deleting}>
 						Отмена
 					</Button>
 					<Button color="error" variant="contained" onClick={confirmDelete} disabled={!selectedFile || deleting}>
@@ -337,7 +466,11 @@ export default function AccountsPage() {
 				</DialogActions>
 			</Dialog>
 
-			<Dialog open={openDeleteAll} onClose={() => setOpenDeleteAll(false)}>
+			<Dialog
+				open={openDeleteAll}
+				onClose={deletingAll ? undefined : handleCloseDeleteAllDialog}
+				disableEscapeKeyDown={deletingAll}
+			>
 				<DialogTitle>Удалить все файлы</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
@@ -352,7 +485,7 @@ export default function AccountsPage() {
 					</DialogContentText>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setOpenDeleteAll(false)} disabled={deletingAll}>
+					<Button onClick={handleCloseDeleteAllDialog} disabled={deletingAll}>
 						Отмена
 					</Button>
 					<Button color="error" variant="contained" onClick={confirmDeleteAll} disabled={deletingAll}>
@@ -361,7 +494,7 @@ export default function AccountsPage() {
 				</DialogActions>
 			</Dialog>
 
-			<Dialog open={openCreate} onClose={() => setOpenCreate(false)}>
+			<Dialog open={openCreate} onClose={creating ? undefined : handleCloseCreateDialog} disableEscapeKeyDown={creating}>
 				<DialogTitle>Создать новый файл</DialogTitle>
 				<DialogContent>
 					<DialogContentText sx={{ mb: 2 }}>
@@ -371,23 +504,28 @@ export default function AccountsPage() {
 						label="Название файла"
 						fullWidth
 						value={newFileName}
-						onChange={(e) => setNewFileName(e.target.value)}
+						onChange={handleNewFileNameChange}
+						onKeyDown={handleCreateKeyDown}
 						autoFocus
-						error={!!normalizedNewName && !!nameExists}
+						error={Boolean(normalizedNewName && nameExists)}
 						helperText={nameExists ? 'Файл уже существует' : ' '}
 					/>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={() => setOpenCreate(false)} disabled={creating}>
+					<Button onClick={handleCloseCreateDialog} disabled={creating}>
 						Отмена
 					</Button>
-					<Button variant="contained" onClick={confirmCreate} disabled={!normalizedNewName || !!nameExists || creating}>
+					<Button variant="contained" onClick={confirmCreate} disabled={!normalizedNewName || nameExists || creating}>
 						Создать
 					</Button>
 				</DialogActions>
 			</Dialog>
 
-			<Dialog open={openCryptDialog} onClose={() => setOpenCryptDialog(false)}>
+			<Dialog
+				open={openCryptDialog}
+				onClose={cryptLoading ? undefined : handleCloseCryptDialog}
+				disableEscapeKeyDown={cryptLoading}
+			>
 				<DialogTitle>{isEncryption ? 'Зашифровать аккаунты' : 'Расшифровать аккаунты'}</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
@@ -412,7 +550,9 @@ export default function AccountsPage() {
 						margin="normal"
 						disabled={cryptLoading}
 						value={password}
-						onChange={(e) => setPassword(e.target.value)}
+						onChange={handlePasswordChange}
+						onKeyDown={handleCryptKeyDown}
+						autoFocus
 					/>
 					{isEncryption && (
 						<TextField
@@ -422,14 +562,15 @@ export default function AccountsPage() {
 							margin="normal"
 							disabled={cryptLoading}
 							value={confirm}
-							onChange={(e) => setConfirm(e.target.value)}
-							error={!!confirm && password !== confirm}
-							helperText={!!confirm && password !== confirm ? 'Пароли не совпадают' : ''}
+							onChange={handleConfirmChange}
+							onKeyDown={handleCryptKeyDown}
+							error={Boolean(confirm && password !== confirm)}
+							helperText={confirm && password !== confirm ? 'Пароли не совпадают' : ''}
 						/>
 					)}
 				</DialogContent>
 				<DialogActions>
-					<Button disabled={cryptLoading} onClick={() => setOpenCryptDialog(false)}>
+					<Button disabled={cryptLoading} onClick={handleCloseCryptDialog}>
 						Отмена
 					</Button>
 					<Button
@@ -444,7 +585,7 @@ export default function AccountsPage() {
 
 			<Snackbar
 				open={toast.open}
-				autoHideDuration={5000}
+				autoHideDuration={TOAST_AUTO_HIDE_DURATION}
 				onClose={closeToast}
 				anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
 			>

@@ -6,7 +6,7 @@ import AccountsPage from './AccountsPage';
 type DataType = 'accounts' | 'storage';
 
 export default function VaultPage() {
-	const [dataType, setDataType] = useState<DataType>('storage');
+	const [dataType, setDataType] = useState<DataType>('accounts');
 
 	return (
 		<Container maxWidth="xl" sx={{ py: 2 }}>
@@ -18,8 +18,8 @@ export default function VaultPage() {
 					indicatorColor="primary"
 					sx={{ mb: 2 }}
 				>
-					<Tab value="storage" label="Ключи" />
 					<Tab value="accounts" label="Аккаунты" />
+					<Tab value="storage" label="Ключи" />
 				</Tabs>
 			</Box>
 			{dataType === 'storage' ? <StoragePage /> : <AccountsPage />}

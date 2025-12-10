@@ -14,6 +14,7 @@ export const SHEETS: Sheet[] = [
 		name: 'Account',
 		columns: [
 			{ header: 'Account', key: 'name', width: 17 },
+			{ header: 'Notes', key: 'notes' },
 			{ header: 'Adspower Browser Id', key: 'adsPower.profileId' },
 			{ header: 'Vision Token', key: 'vision.token' },
 			{ header: 'Vision Folder Id', key: 'vision.folderId' },
