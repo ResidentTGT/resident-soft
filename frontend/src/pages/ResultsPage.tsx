@@ -8,7 +8,7 @@ import { TOAST_AUTO_HIDE_DURATION_MS, BULK_DELETE_TARGET, RELATIVE_TIME_UPDATE_I
 
 export default function ResultsPage() {
 	// State management hooks
-	const { statesMap, loading, error, lastUpdated, refreshManually, pauseAutoRefresh, resumeAutoRefresh } = useStates();
+	const { statesMap, loading, error, lastUpdated, refreshManually } = useStates();
 	const { selectedStates, selectAll, deselectAll, toggleSelection } = useStateSelection();
 	const { toast, showToast, closeToast } = useToast();
 
@@ -37,15 +37,6 @@ export default function ResultsPage() {
 
 		return () => clearInterval(tickInterval);
 	}, []);
-
-	// Pause auto-refresh during deletion
-	useEffect(() => {
-		if (deleting) {
-			pauseAutoRefresh();
-		} else {
-			resumeAutoRefresh();
-		}
-	}, [deleting, pauseAutoRefresh, resumeAutoRefresh]);
 
 	// Computed values
 	const stateNames = useMemo(() => Object.keys(statesMap).sort(), [statesMap]);

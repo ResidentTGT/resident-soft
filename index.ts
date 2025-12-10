@@ -20,6 +20,7 @@ import {
 	tasks,
 } from '@src/utils/taskManager';
 import { validateAndFixAccountFiles } from '@src/utils/workWithSecrets';
+import { setupUnhandledRejectionHandler } from '@src/utils/errors';
 
 // Server configuration
 const SERVER_URL = `http://localhost:3000`;
@@ -39,11 +40,8 @@ const TASK_ERROR_TYPE = {
 // Regular expression to detect decryption errors
 const DECRYPT_ERROR_PATTERN = /invalid key|couldn'?t decrypt|decrypt(ion)? failed|UI run requires decryption key/i;
 
-process.on('unhandledRejection', (error) => {
-	const message = error instanceof Error ? error.message : String(error);
-	console.error(`\u001b[1;31mUnhandled exception occurred: ${message}\u001b[0m`);
-	process.exit(1);
-});
+// Setup global unhandled rejection handler
+setupUnhandledRejectionHandler();
 
 /**
  * Gracefully shuts down the application

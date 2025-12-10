@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { getStates } from '../../../api';
 import type { StateItem } from '../constants';
-import { AUTO_REFRESH_INTERVAL_MS } from '../constants';
 
 export const useStates = () => {
 	const [statesMap, setStatesMap] = useState<Record<string, StateItem>>({});
@@ -9,8 +8,6 @@ export const useStates = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 	const abortRef = useRef<AbortController | null>(null);
-	const intervalRef = useRef<NodeJS.Timeout | null>(null);
-	const skipAutoRefreshRef = useRef(false);
 
 	const fetchStates = useCallback(async () => {
 		abortRef.current?.abort();
@@ -44,42 +41,18 @@ export const useStates = () => {
 		}
 	}, []);
 
-	const startAutoRefresh = useCallback(() => {
-		if (intervalRef.current) {
-			clearInterval(intervalRef.current);
-		}
-
-		intervalRef.current = setInterval(() => {
-			if (!skipAutoRefreshRef.current) {
-				fetchStates();
-			}
-		}, AUTO_REFRESH_INTERVAL_MS);
-	}, [fetchStates]);
-
 	const refreshManually = useCallback(() => {
 		fetchStates();
-		startAutoRefresh();
-	}, [fetchStates, startAutoRefresh]);
+	}, [fetchStates]);
 
-	const pauseAutoRefresh = useCallback(() => {
-		skipAutoRefreshRef.current = true;
-	}, []);
-
-	const resumeAutoRefresh = useCallback(() => {
-		skipAutoRefreshRef.current = false;
-	}, []);
-
+	// Initial load only
 	useEffect(() => {
 		fetchStates();
-		startAutoRefresh();
 
 		return () => {
-			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
-			}
 			abortRef.current?.abort();
 		};
-	}, [fetchStates, startAutoRefresh]);
+	}, [fetchStates]);
 
 	return {
 		statesMap,
@@ -87,7 +60,5 @@ export const useStates = () => {
 		error,
 		lastUpdated,
 		refreshManually,
-		pauseAutoRefresh,
-		resumeAutoRefresh,
 	};
 };

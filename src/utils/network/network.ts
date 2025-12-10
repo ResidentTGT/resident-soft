@@ -122,6 +122,10 @@ export class Network {
 	public setRpc(rpc: string) {
 		this.rpc = rpc;
 		if (Network.isEvm(this.chainId)) {
+			// Clean up old provider if it exists
+			if (this.provider) {
+				this.provider.removeAllListeners();
+			}
 			this.provider = new ethers.JsonRpcProvider(rpc);
 		}
 	}

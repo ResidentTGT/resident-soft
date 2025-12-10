@@ -1,9 +1,9 @@
-import { Grid, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import React from 'react';
 
 const parseCsv = (s: string) =>
 	s
-		.split(/[,\s]+/)
+		.split(/[,\n\r\s]+/)
 		.map((t) => t.trim())
 		.filter(Boolean);
 
@@ -32,22 +32,24 @@ export function CsvField({
 	};
 
 	return (
-		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
-			<TextField
-				label={label}
-				size="small"
-				placeholder={placeholder ?? 'a, b, c  |  1, 2, 3'}
-				value={text}
-				onChange={(e) => setText(e.target.value)}
-				onBlur={commit}
-				onKeyDown={(e) => {
-					if (e.key === 'Enter') {
-						e.preventDefault();
-						commit();
-						(e.currentTarget as HTMLInputElement).blur();
-					}
-				}}
-			/>
-		</Grid>
+		<TextField
+			fullWidth
+			label={label}
+			size="small"
+			placeholder={placeholder ?? 'a, b, c\n1, 2, 3'}
+			value={text}
+			onChange={(e) => setText(e.target.value)}
+			onBlur={commit}
+			multiline
+			minRows={1}
+			maxRows={25}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+					e.preventDefault();
+					commit();
+					e.currentTarget.querySelector('textarea')?.blur();
+				}
+			}}
+		/>
 	);
 }
