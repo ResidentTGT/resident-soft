@@ -20,6 +20,15 @@ import { readFileSync } from 'fs';
 import { getEncryptedOrDecryptedSecretStorage, getEncryptedOrDecryptedAccounts } from './decryption';
 import { filterAccounts } from './filterAccounts';
 import { getAllAccounts } from './getAllAccounts';
+import { getStandardState } from './state';
+import { StandardStateStatus } from './state/standardState.interface';
+
+/**
+ * Error messages used throughout action execution
+ */
+const ERROR_MESSAGES = {
+	ACTION_EXECUTION_FAILED: 'Возникла ошибка при выполнении действия',
+} as const;
 
 export interface ActionModeParams {
 	ACCOUNTS_TO_DO: Account[];
@@ -39,6 +48,34 @@ interface LoadedData {
 interface ValidatedAction {
 	group: ActionsGroup;
 	action: Action;
+}
+
+/**
+ * Initializes state with Process status
+ */
+function initializeState(stateName: string): void {
+	const STATE = getStandardState(stateName);
+	STATE.status = StandardStateStatus.Process;
+	STATE.save();
+}
+
+/**
+ * Finalizes state with Finish status
+ */
+function finalizeStateSuccess(stateName: string): void {
+	const STATE = getStandardState(stateName);
+	STATE.status = StandardStateStatus.Finish;
+	STATE.save();
+}
+
+/**
+ * Finalizes state with Fail status and error message
+ */
+function finalizeStateFailure(stateName: string, error: unknown): void {
+	const STATE = getStandardState(stateName);
+	STATE.status = StandardStateStatus.Fail;
+	STATE.info = `${ERROR_MESSAGES.ACTION_EXECUTION_FAILED}. ${error}`;
+	STATE.save();
 }
 
 /**
@@ -83,12 +120,6 @@ async function validateActionAndGroup(launchParams: LaunchParams): Promise<Valid
 
 	if (!group) {
 		throw new Error(`Group doesn't exist: ${launchParams.ACTION_PARAMS.group}`);
-	}
-
-	const licenseValid = (await verifyLicense(launchParams.LICENSE)).ok;
-
-	if (group.premium && !licenseValid) {
-		throw new Error(`Group is only for PREMIUM users: ${launchParams.ACTION_PARAMS.group}`);
 	}
 
 	const action = group.actions.find((a) => a.action === launchParams.ACTION_PARAMS.action);
@@ -181,6 +212,15 @@ function validateChainIds(functionParams: any): void {
 }
 
 /**
+ * Validates launch parameters
+ */
+function validateLaunchParams(launchParams: LaunchParams): void {
+	if (launchParams.NUMBER_OF_EXECUTIONS <= 0) {
+		throw new Error(`NUMBER_OF_EXECUTIONS must be positive, got: ${launchParams.NUMBER_OF_EXECUTIONS}`);
+	}
+}
+
+/**
  * Generates state name if not provided
  */
 function generateStateName(launchParams: LaunchParams, group: ActionsGroup, action: Action): string {
@@ -207,40 +247,54 @@ function formatTimestampRussian(date: Date): string {
 }
 
 export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
-	const { secretStorage: SECRET_STORAGE, accounts: ACCOUNTS, logger } = await loadData(LAUNCH_PARAMS, AES_KEY);
-
 	const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
-	const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
 
-	const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
+	const stateName = generateStateName(LAUNCH_PARAMS, group, action);
+	initializeState(stateName);
 
-	await logger.log(buildLogMessage(LAUNCH_PARAMS, actionFunctionParams), MessageType.Info);
-
-	const handler = getHandler(LAUNCH_PARAMS.ACTION_PARAMS.group, licenseValid);
-
-	validateChainIds(actionFunctionParams);
-
-	for (let iterationIndex = 0; iterationIndex < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; iterationIndex++) {
-		const accountsToProcess = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
-
-		const stateName = generateStateName(LAUNCH_PARAMS, group, action);
-
-		const params: ActionModeParams = {
-			ACCOUNTS_TO_DO: accountsToProcess,
-			LAUNCH_PARAMS: {
-				...LAUNCH_PARAMS,
-				STATE_NAME: stateName,
-			},
-			FUNCTION_PARAMS: actionFunctionParams,
-			SECRET_STORAGE,
-			ITERATION: iterationIndex + 1,
-			AES_KEY,
-		};
-
-		if (action.isolated) {
-			await handler.actionIsolated(params);
-		} else {
-			await handler.executeJoint(params);
+	try {
+		const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+		if (group.premium && !licenseValid) {
+			throw new Error(`Group is only for PREMIUM users: ${group.name}`);
 		}
+
+		const { secretStorage: SECRET_STORAGE, accounts: ACCOUNTS, logger } = await loadData(LAUNCH_PARAMS, AES_KEY);
+		const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
+
+		await logger.log(buildLogMessage(LAUNCH_PARAMS, actionFunctionParams), MessageType.Info);
+
+		const handler = getHandler(LAUNCH_PARAMS.ACTION_PARAMS.group, licenseValid);
+		validateLaunchParams(LAUNCH_PARAMS);
+		validateChainIds(actionFunctionParams);
+
+		for (let iterationIndex = 0; iterationIndex < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; iterationIndex++) {
+			const accountsToProcess = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
+
+			const params: ActionModeParams = {
+				ACCOUNTS_TO_DO: accountsToProcess,
+				LAUNCH_PARAMS: {
+					...LAUNCH_PARAMS,
+					STATE_NAME: stateName,
+				},
+				FUNCTION_PARAMS: actionFunctionParams,
+				SECRET_STORAGE,
+				ITERATION: iterationIndex + 1,
+				AES_KEY,
+			};
+
+			if (action.isolated) {
+				await handler.actionIsolated(params);
+			} else {
+				await handler.executeJoint(params);
+			}
+		}
+
+		const finalMessage = `Completed ${LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS} iteration(s) for action: ${group.name} | ${action.name}`;
+		await logger.log(finalMessage, MessageType.Notice);
+
+		finalizeStateSuccess(stateName);
+	} catch (e) {
+		finalizeStateFailure(stateName, e);
+		throw e;
 	}
 }

@@ -99,9 +99,10 @@ export function detectNetworkError(error: any): {
  *
  * For critical errors:
  * - Logs and exits the process to prevent corrupted state
+ * - Calls onCriticalError callback before exiting (for cleanup like failing process states)
  */
-export function setupUnhandledRejectionHandler(): void {
-	process.on('unhandledRejection', (error) => {
+export function setupUnhandledRejectionHandler(onCriticalError?: () => Promise<void> | void): void {
+	process.on('unhandledRejection', async (error) => {
 		const message = error instanceof Error ? error.message : String(error);
 		const stack = error instanceof Error ? error.stack : undefined;
 
@@ -120,8 +121,18 @@ export function setupUnhandledRejectionHandler(): void {
 		} else {
 			// Critical error - crash the app
 			console.error(`${RED_BOLD_TEXT}Unhandled exception occurred: ${message}${RESET}`);
-			console.error(`${RED_BOLD_TEXT}This indicates a bug in the code. Stack trace:${RESET}`);
+			console.error(`${RED_BOLD_TEXT}Stack trace:${RESET}`);
 			if (stack) console.error(stack);
+
+			// Call cleanup callback before exiting
+			if (onCriticalError) {
+				try {
+					await onCriticalError();
+				} catch (cleanupError) {
+					console.error(`${RED_BOLD_TEXT}Error during cleanup: ${cleanupError}${RESET}`);
+				}
+			}
+
 			process.exit(1);
 		}
 	});

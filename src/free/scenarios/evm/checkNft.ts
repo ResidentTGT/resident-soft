@@ -5,6 +5,7 @@ import { ERC721_ABI } from '@utils/abi/erc721abi';
 import Excel from 'exceljs';
 import { ChainId, Network } from '@src/utils/network';
 import { delay } from '@src/utils/delay';
+import { MissingFieldError } from '@src/utils/errors';
 
 export async function checkNft(accounts: Account[], chainId: ChainId, nftContract: string) {
 	const objBals: { count: number; name: string; address: string }[] = [];
@@ -14,14 +15,18 @@ export async function checkNft(accounts: Account[], chainId: ChainId, nftContrac
 			try {
 				const provider = (await Network.getNetworkByChainId(chainId)).getProvider();
 				const contract = new ethers.Contract(nftContract, ERC721_ABI, provider);
-				if (!account.wallets?.evm?.address) throw new Error('There is no account.wallets.evm.address!');
+				if (!account.wallets?.evm?.address) throw new MissingFieldError('wallets.evm.address');
 				const balance = await contract.balanceOf(account.wallets?.evm?.address);
 				objBals.push({ count: +balance.toString(), name: account.name ?? '', address: account.wallets.evm.address });
 				await logger.log(`${account.name} Amount: ${balance}`);
 				break;
-			} catch (e) {
-				await Logger.getInstance().log(`Error: ${e}. Trying again...`, MessageType.Warn);
-				await delay(5);
+			} catch (e: any) {
+				if (e.toString().includes('MissingFieldError') || e.toString().includes('could not decode result')) {
+					throw e;
+				} else {
+					await Logger.getInstance().log(`Error: ${e}. Trying again...`, MessageType.Warn);
+					await delay(5);
+				}
 			}
 		}
 	}

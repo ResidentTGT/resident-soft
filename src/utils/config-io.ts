@@ -219,7 +219,7 @@ function readFunctionParamsConfig(): unknown | null {
 function writeFunctionParamsConfig(config: unknown): void {
 	const serialized = JSON.stringify(config, null, JSON_INDENT);
 	fs.writeFileSync(FUNCTION_PARAMS_PATH, serialized, FILE_ENCODING);
-	console.log('Updated functionParams.jsonc: synchronized with current template');
+	// console.log('Updated functionParams.jsonc: synchronized with current template');
 }
 
 /**

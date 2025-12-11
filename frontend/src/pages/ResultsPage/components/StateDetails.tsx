@@ -1,5 +1,5 @@
 import { Box, Alert, Stack, Typography, Paper } from '@mui/material';
-import type { StandardState } from '../../../../../src/utils/state/standardState.interface';
+import { StandardStateStatus, type StandardState } from '../../../../../src/utils/state/standardState.interface';
 import { parseAccounts, formatAccountNumbers } from '../utils';
 
 interface StateDetailsProps {
@@ -11,10 +11,22 @@ export const StateDetails = ({ data }: StateDetailsProps) => {
 	const successCount = successes.length;
 	const failCount = failures.length;
 
+	const getAlertSeverity = (): 'error' | 'success' | 'info' => {
+		switch (data.status) {
+			case StandardStateStatus.Fail:
+				return 'error';
+			case StandardStateStatus.Finish:
+				return 'success';
+			case StandardStateStatus.Process:
+			default:
+				return 'info';
+		}
+	};
+
 	return (
 		<Box sx={{ px: 2, pb: 2 }}>
 			{data.info && (
-				<Alert severity="info" variant="outlined" sx={{ mb: 2 }}>
+				<Alert severity={getAlertSeverity()} variant="outlined" sx={{ mb: 2 }}>
 					{data.info}
 				</Alert>
 			)}
@@ -42,11 +54,6 @@ export const StateDetails = ({ data }: StateDetailsProps) => {
 							</Typography>
 						</Paper>
 					</Box>
-				)}
-				{successCount === 0 && failCount === 0 && (
-					<Typography variant="body2" sx={{ opacity: 0.7 }}>
-						Нет данных
-					</Typography>
 				)}
 			</Stack>
 		</Box>

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'node:fs';
-import { StandardState } from '@utils/state/standardState.interface';
+import { StandardState, StandardStateStatus } from '@utils/state/standardState.interface';
 
 const router = Router();
 
@@ -33,10 +33,17 @@ router.get('/', async (_req, res) => {
 				}
 
 				const uniq = (arr: string[]) => Array.from(new Set(arr)).sort();
+
+				let status = StandardStateStatus.Idle;
+				if (typeof o.status === 'number' && Object.values(StandardStateStatus).includes(o.status)) {
+					status = o.status as StandardStateStatus;
+				}
+
 				const data: StandardState = {
 					successes: uniq(o.successes),
 					fails: uniq(o.fails),
 					info: typeof o.info === 'string' ? o.info : '',
+					status,
 				};
 
 				const stat = await fs.statSync(filePath);

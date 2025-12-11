@@ -21,6 +21,10 @@ import {
 } from '@src/utils/taskManager';
 import { validateAndFixAccountFiles } from '@src/utils/workWithSecrets';
 import { setupUnhandledRejectionHandler } from '@src/utils/errors';
+import { StateStorage } from '@src/utils/state/state';
+import { StandardStateStatus, type StandardState } from '@src/utils/state/standardState.interface';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Server configuration
 const SERVER_URL = `http://localhost:3000`;
@@ -40,8 +44,50 @@ const TASK_ERROR_TYPE = {
 // Regular expression to detect decryption errors
 const DECRYPT_ERROR_PATTERN = /invalid key|couldn'?t decrypt|decrypt(ion)? failed|UI run requires decryption key/i;
 
-// Setup global unhandled rejection handler
-setupUnhandledRejectionHandler();
+/**
+ * Marks all states with "Process" status as "Fail" on shutdown
+ * This ensures that interrupted tasks are properly marked as failed
+ */
+async function failAllProcessStates(): Promise<void> {
+	try {
+		const statesDir = path.resolve(process.cwd(), 'states');
+		if (!fs.existsSync(statesDir)) {
+			return;
+		}
+
+		const files = fs.readdirSync(statesDir).filter((f) => f.endsWith('.json'));
+
+		for (const file of files) {
+			try {
+				const name = decodeURIComponent(path.basename(file, '.json'));
+				const state = StateStorage.load<StandardState>(name, {
+					defaultState: {
+						fails: [],
+						successes: [],
+						info: '',
+						status: StandardStateStatus.Idle,
+					},
+					readable: true,
+					fileExt: '.json',
+				});
+
+				// If state is in Process, mark it as Failed
+				if (state.status === StandardStateStatus.Process) {
+					state.status = StandardStateStatus.Fail;
+					state.save();
+				}
+			} catch (error) {
+				// Skip files that can't be processed
+				console.error(`${RED_BOLD_TEXT}Failed to process state file ${file}: ${error}${RESET}`);
+			}
+		}
+	} catch (error) {
+		console.error(`${RED_BOLD_TEXT}Error failing process states: ${error}${RESET}`);
+	}
+}
+
+// Setup global unhandled rejection handler with cleanup callback
+setupUnhandledRejectionHandler(failAllProcessStates);
 
 /**
  * Gracefully shuts down the application
@@ -61,6 +107,9 @@ const shutdown = (() => {
 		if (currentTaskId && tasks.has(currentTaskId)) {
 			failTask(currentTaskId, 'Application shutdown', TASK_ERROR_TYPE.RUN_FAILED);
 		}
+
+		// Mark all states with Process status as Failed
+		await failAllProcessStates();
 
 		// Stop HTTP server
 		try {
@@ -193,8 +242,12 @@ async function main() {
 	}
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
 	const message = error instanceof Error ? error.message : String(error);
 	console.error(`${RED_BOLD_TEXT}Fatal error: ${message}${RESET}`);
+
+	// Mark all states with Process status as Failed before exiting
+	await failAllProcessStates();
+
 	process.exit(1);
 });

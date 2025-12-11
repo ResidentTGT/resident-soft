@@ -30,7 +30,7 @@ export class CommonHandler extends BaseHandler {
 				await generateWallets(FUNCTION_PARAMS.amount, ChainId.Ethereum);
 				break;
 			case ActionName.CheckBalances:
-				await checkBalances(ACCOUNTS_TO_DO, FUNCTION_PARAMS, SECRET_STORAGE.cmcApiKey);
+				await checkBalances(LAUNCH_PARAMS, ACCOUNTS_TO_DO, FUNCTION_PARAMS, SECRET_STORAGE.cmcApiKey);
 				break;
 			default:
 				this.unsupportedAction(params.LAUNCH_PARAMS.ACTION_PARAMS.action);

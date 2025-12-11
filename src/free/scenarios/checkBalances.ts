@@ -13,6 +13,8 @@ import { Workbook } from 'exceljs';
 import { MissingFieldError } from '@src/utils/errors';
 import fs from 'fs';
 import path from 'path';
+import { StandardState } from '@src/utils/state/standardState.interface';
+import { LaunchParams } from '@src/utils/types/launchParams.type';
 
 interface NetworkToken extends Token {
 	decimals: number;
@@ -26,6 +28,7 @@ interface BalanceState {
 }
 
 export async function checkBalances(
+	launchParams: LaunchParams,
 	accounts: Account[],
 	params: {
 		networks: {
@@ -206,9 +209,13 @@ export async function checkBalances(
 					);
 					state.save();
 					break;
-				} catch (e) {
-					await Logger.getInstance().log(`Error: ${e}. Trying again...`, MessageType.Warn);
-					await delay(5);
+				} catch (e: any) {
+					if (e.toString().includes('MissingFieldError')) {
+						throw e;
+					} else {
+						await Logger.getInstance().log(`Error: ${e}. Trying again...`, MessageType.Warn);
+						await delay(5);
+					}
 				}
 			}
 		}
@@ -226,10 +233,13 @@ export async function checkBalances(
 		);
 	}
 
-	await Logger.getInstance().log(
-		`Balances for all networks (${allNetworks.map((a) => a.name).join(', ')}) checked and saved toand ${excelFileName}.xlsx\n`,
-		MessageType.Notice,
-	);
+	const message = `Balances for all networks (${allNetworks.map((a) => a.name).join(', ')}) checked and saved to ${excelFileName}.xlsx\n`;
+
+	await Logger.getInstance().log(message, MessageType.Notice);
+
+	const state = await StateStorage.load<StandardState>(launchParams.STATE_NAME);
+	state.info = message;
+	state.save();
 }
 
 async function saveToExcel(state: State<BalanceState>, networkName: string, stateName: string) {

@@ -9,12 +9,17 @@ import {
 	Stack,
 	Typography,
 	Collapse,
+	Box,
+	CircularProgress,
 } from '@mui/material';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import type { StateItem } from '../constants';
 import { formatRussianDate } from '../utils';
 import { StateDetails } from './StateDetails';
+import { StandardStateStatus } from '../../../../../src/utils/state/standardState.interface';
 
 interface StateListItemProps {
 	name: string;
@@ -31,6 +36,19 @@ export const StateListItem = ({ name, item, isSelected, onToggleSelect }: StateL
 
 	const toggleExpand = () => {
 		setIsExpanded((prev) => !prev);
+	};
+
+	const renderStatusIcon = () => {
+		switch (item.data.status) {
+			case StandardStateStatus.Finish:
+				return <CheckCircleIcon sx={{ color: 'success.main', fontSize: 24 }} />;
+			case StandardStateStatus.Fail:
+				return <CancelIcon sx={{ color: 'error.main', fontSize: 24 }} />;
+			case StandardStateStatus.Process:
+				return <CircularProgress size={22} sx={{ color: 'info.main' }} />;
+			default:
+				return null;
+		}
 	};
 
 	return (
@@ -50,8 +68,9 @@ export const StateListItem = ({ name, item, isSelected, onToggleSelect }: StateL
 					onChange={() => onToggleSelect(name)}
 					onClick={(e) => e.stopPropagation()}
 					size="medium"
-					sx={{ mx: 1, my: 1 }}
+					sx={{ ml: 1, my: 1, mr: 0.5 }}
 				/>
+				<Box sx={{ display: 'flex', alignItems: 'center', mr: 1.5 }}>{renderStatusIcon()}</Box>
 				<ListItemButton
 					onClick={toggleExpand}
 					disableRipple
@@ -70,12 +89,29 @@ export const StateListItem = ({ name, item, isSelected, onToggleSelect }: StateL
 				>
 					<ListItemText
 						primary={
-							<Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-								<Typography variant="subtitle1" fontWeight="medium">
-									{name}
-								</Typography>
-								<Chip label={`Успешно: ${successCount}`} size="small" color="success" variant="outlined" />
-								<Chip label={`Неудачно: ${failCount}`} size="small" color="error" variant="outlined" />
+							<Stack direction="row" alignItems="center" flexWrap="wrap">
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										flex: 1,
+									}}
+								>
+									<Typography variant="subtitle1" fontWeight="medium">
+										{name}
+									</Typography>
+								</Box>
+								{(successCount > 0 || failCount > 0) && (
+									<Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
+										<Chip
+											label={`Успешно: ${successCount}`}
+											size="small"
+											color="success"
+											variant="outlined"
+										/>
+										<Chip label={`Неудачно: ${failCount}`} size="small" color="error" variant="outlined" />
+									</Box>
+								)}
 								{item.updatedAt && (
 									<Typography variant="caption" sx={{ opacity: 0.7 }}>
 										{formatRussianDate(item.updatedAt)}
