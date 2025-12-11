@@ -324,4 +324,17 @@
 			"apiKey": "",
 		},
 	},
+	"Stargate": {
+		"Bridge": {
+			"fromChainId": "97477",
+			"fromToken": "ETH",
+			"amount": [null, null],
+			"minBalanceToKeep": [0.0001, 0.0001],
+			"minAmountToBridge": 0,
+			"toChainId": "8453",
+			"toToken": "ETH",
+			"slippagePercent": 0.5,
+			"minAmountToSend": 0,
+		},
+	},
 }

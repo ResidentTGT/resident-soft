@@ -43,6 +43,7 @@ import { testPremiumActions } from './groups/premium/TEST_PREMIUM.actions';
 import { afinaActions } from './groups/premium/afina.actions';
 
 import type { ActionsGroup } from './types/action.types';
+import { stargateActions } from './groups/free/stargate.actions';
 
 /**
  * Master list of all available actions grouped by category
@@ -104,4 +105,7 @@ export const ACTIONS: ActionsGroup[] = [
 	// Test actions (disabled by default)
 	testActions,
 	testPremiumActions,
+
+	//Stargate
+	stargateActions,
 ];

@@ -459,4 +459,12 @@
 			{ "symbol": "UNI", "address": "0x8f187aA05619a017077f5308904739877ce9eA21" },
 		],
 	},
+	{
+		"chainId": "97477",
+		"tokens": [
+			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
+			{ "symbol": "USDC.e", "address": "0x31EEf89D5215C305304a2fA5376a1f1b6C5dc477" },
+			{ "symbol": "SOFTWARE.ai", "address": "0xa100000000000d6E18bc155F425685E4BadfE11c" },
+		],
+	},
 ]

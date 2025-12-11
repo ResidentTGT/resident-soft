@@ -332,4 +332,16 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			apiKey: '',
 		},
 	},
+	Stargate: {
+		Bridge: {
+			fromChainId: ChainId.Base,
+			fromToken: 'ETH',
+			amount: [0, 1],
+			minBalanceToKeep: [0, 0],
+			minAmountToBridge: 0,
+			toChainId: ChainId.Arbitrum,
+			toToken: 'ETH',
+			slippagePercent: 0.5,
+		},
+	},
 };

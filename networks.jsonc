@@ -304,4 +304,10 @@
 		"nativeCoin": "ETH",
 		"rpc": ["https://unichain-rpc.publicnode.com", "https://unichain.drpc.org"],
 	},
+	{
+		"chainId": "97477",
+		"name": "Doma",
+		"nativeCoin": "ETH",
+		"rpc": ["https://rpc.doma.xyz"],
+	},
 ]

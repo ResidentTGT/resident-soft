@@ -1,4 +1,4 @@
-import { Grid, TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import { toNum } from './NumField';
 
 export function RangeField({
@@ -14,29 +14,27 @@ export function RangeField({
 }) {
 	const [a, b] = value ?? [];
 	return (
-		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
-			<Grid container spacing={2}>
-				<Grid sx={{ xs: 12, md: 6 }}>
-					<TextField
-						label={labelFrom}
-						type="number"
-						size="small"
-						fullWidth
-						value={a ?? ''}
-						onChange={(e) => onChange([toNum(e.target.value), b])}
-					/>
-				</Grid>
-				<Grid sx={{ xs: 12, md: 6 }}>
-					<TextField
-						label={labelTo}
-						type="number"
-						size="small"
-						fullWidth
-						value={b ?? ''}
-						onChange={(e) => onChange([a, toNum(e.target.value)])}
-					/>
-				</Grid>
-			</Grid>
-		</Grid>
+		<Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+			<Box sx={{ flex: 1 }}>
+				<TextField
+					label={labelFrom}
+					type="number"
+					size="small"
+					fullWidth
+					value={a ?? ''}
+					onChange={(e) => onChange([toNum(e.target.value), b])}
+				/>
+			</Box>
+			<Box sx={{ flex: 1 }}>
+				<TextField
+					label={labelTo}
+					type="number"
+					size="small"
+					fullWidth
+					value={b ?? ''}
+					onChange={(e) => onChange([a, toNum(e.target.value)])}
+				/>
+			</Box>
+		</Box>
 	);
 }

@@ -54,6 +54,7 @@ export enum ActionsGroupName {
 	Superchain = 'Superchain',
 	Abstract = 'Abstract',
 	Afina = 'Afina',
+	Stargate = 'Stargate',
 }
 
 export enum ActionName {
@@ -147,4 +148,5 @@ export enum ActionName {
 	Quote = 'Quote',
 	Bubbles = 'Bubbles',
 	CollectRedBullNft = 'CollectRedBullNft',
+	Bridge = 'Bridge',
 }

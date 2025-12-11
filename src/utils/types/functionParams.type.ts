@@ -327,4 +327,16 @@ export interface FunctionParams {
 			apiKey: string;
 		};
 	};
+	Stargate: {
+		Bridge: {
+			fromChainId: ChainId;
+			fromToken: string;
+			amount: [number, number];
+			minBalanceToKeep: [number, number];
+			minAmountToBridge: number;
+			toChainId: ChainId;
+			toToken: string;
+			slippagePercent: number;
+		};
+	};
 }

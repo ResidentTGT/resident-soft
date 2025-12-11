@@ -458,28 +458,39 @@ function Form_Exchanges_Withdraw({ params, set, tokens, networks }: FormCtx) {
 					<MenuItem value="Binance">Binance</MenuItem>
 				</Select>
 			</FormControl>
+			<Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+				<Box sx={{ flex: 1 }}>
+					<ChainIdSelect
+						label="В сеть"
+						value={params.toChainId}
+						onChange={(v) => set('toChainId', v)}
+						networks={networks}
+					/>
+				</Box>
+				<Box sx={{ flex: 1 }}>
+					<FormControl size="small">
+						<InputLabel>Токен</InputLabel>
+						<Select
+							label="Токен"
+							value={params.token ?? ''}
+							onChange={(e) => set('token', (e.target.value as string) || undefined)}
+						>
+							{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
+								<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+									{String(tok.symbol)}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+			</Box>
+			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
 			<RangeField
 				labelFrom="Количество от"
 				labelTo="Количество до"
 				value={params.amount}
 				onChange={(v) => set('amount', v)}
 			/>
-			<FormControl size="small">
-				<InputLabel>Токен</InputLabel>
-				<Select
-					label="Токен"
-					value={params.token ?? ''}
-					onChange={(e) => set('token', (e.target.value as string) || undefined)}
-				>
-					{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
-						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
-							{String(tok.symbol)}
-						</MenuItem>
-					))}
-				</Select>
-			</FormControl>
-			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
-			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
 		</Grid>
 	);
 }
@@ -798,6 +809,88 @@ function Form_Abstract_CollectRedBullNft({ params, set }: FormCtx) {
 	);
 }
 
+/* -------- / Stargate -------- */
+
+function Form_Stargate_Bridge({ params, set, networks, tokens }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+				<Box sx={{ flex: 1 }}>
+					<ChainIdSelect
+						label="Из сети"
+						value={params.fromChainId}
+						onChange={(v) => set('fromChainId', v)}
+						networks={networks}
+					/>
+				</Box>
+				<Box sx={{ flex: 1 }}>
+					<FormControl size="small" fullWidth>
+						<InputLabel>Из токена</InputLabel>
+						<Select
+							label="Из токена"
+							value={params.fromToken ?? ''}
+							onChange={(e) => set('fromToken', (e.target.value as string) || undefined)}
+						>
+							{(tokens.find((g) => String(g.chainId) === String(params.fromChainId))?.tokens ?? []).map((tok) => (
+								<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+									{String(tok.symbol)}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+			</Box>
+
+			<Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+				<Box sx={{ flex: 1 }}>
+					<ChainIdSelect
+						label="в сеть"
+						value={params.toChainId}
+						onChange={(v) => set('toChainId', v)}
+						networks={networks}
+					/>
+				</Box>
+				<Box sx={{ flex: 1 }}>
+					<FormControl size="small" fullWidth>
+						<InputLabel>В токен</InputLabel>
+						<Select
+							label="В токен"
+							value={params.toToken ?? ''}
+							onChange={(e) => set('toToken', (e.target.value as string) || undefined)}
+						>
+							{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
+								<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+									{String(tok.symbol)}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Box>
+			</Box>
+
+			<RangeField
+				labelFrom="Количество от"
+				labelTo="Количество до"
+				value={params.amount}
+				onChange={(v) => set('amount', v)}
+			/>
+			<Box>Если поля "Количество" пустые, то учитываются только "Оставлять на балансе"</Box>
+			<RangeField
+				labelFrom="Оставлять на балансе от"
+				labelTo="Оставлять на балансе до"
+				value={params.minBalanceToKeep}
+				onChange={(v) => set('minBalanceToKeep', v)}
+			/>
+			<NumField
+				label="Минимальная сумма бриджа"
+				value={params.minAmountToBridge}
+				onChange={(v) => set('minAmountToBridge', v ?? 0)}
+			/>
+			<NumField label="Slippage, %" value={params.slippagePercent} onChange={(v) => set('slippagePercent', v ?? 0)} />
+		</Grid>
+	);
+}
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -895,5 +988,8 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Afina]: {
 		[ActionName.GetProfiles]: Form_Afina_GetProfiles,
+	},
+	[ActionsGroupName.Stargate]: {
+		[ActionName.Bridge]: Form_Stargate_Bridge,
 	},
 };
