@@ -2,7 +2,7 @@
 import { delay } from './delay';
 import fs from 'fs/promises';
 import { broadcast } from './server/sse';
-import { getCurrentTaskId } from './taskManager';
+import { getCurrentStateName } from './stateManager';
 
 export const RED_TEXT = '\u001b[0;31m';
 export const RED_BOLD_TEXT = '\u001b[1;31m';
@@ -24,6 +24,12 @@ export enum MessageType {
 }
 
 type LogMessage = string | number | boolean | Record<string, unknown> | Error;
+
+interface StateLogEntry {
+	timestamp: string;
+	type: MessageType;
+	message: string;
+}
 
 interface TelegramParams {
 	apiKey?: string;
@@ -118,7 +124,7 @@ export class Logger {
 		}
 	}
 
-	public async log(message: LogMessage, type: MessageType = MessageType.Trace, logToFile = false): Promise<void> {
+	public async log(message: LogMessage, type: MessageType = MessageType.Trace): Promise<void> {
 		const color = this._getColor(type);
 		const now = new Date();
 		const fulltime = new Intl.DateTimeFormat(this.locale, {
@@ -130,52 +136,51 @@ export class Logger {
 		const messageStr = this._formatMessage(message);
 		console.log(`${color}[${fulltime}] ${messageStr} ${RESET}`);
 
-		const currentId = getCurrentTaskId();
-		if (currentId !== undefined) {
+		const currentStateName = getCurrentStateName();
+		if (currentStateName !== undefined) {
+			// Broadcast to SSE
 			broadcast({
-				taskId: currentId,
+				stateName: currentStateName,
 				eventName: 'log',
 				type: type,
 				payload: { message: messageStr },
 			});
+			// Write to state log file
+			await this._writeStateLog(now, messageStr, type);
 		}
 
 		if (type === MessageType.Error || type === MessageType.Notice) {
 			await this._sendToTelegram(messageStr);
 		}
-
-		if (logToFile) {
-			await this._writeLogToFile(now, messageStr);
-		}
 	}
 
 	// Static convenience methods for easier usage
-	public static async fatal(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Fatal, logToFile);
+	public static async fatal(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Fatal);
 	}
 
-	public static async error(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Error, logToFile);
+	public static async error(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Error);
 	}
 
-	public static async warn(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Warn, logToFile);
+	public static async warn(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Warn);
 	}
 
-	public static async info(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Info, logToFile);
+	public static async info(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Info);
 	}
 
-	public static async notice(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Notice, logToFile);
+	public static async notice(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Notice);
 	}
 
-	public static async debug(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Debug, logToFile);
+	public static async debug(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Debug);
 	}
 
-	public static async trace(message: LogMessage, logToFile = false): Promise<void> {
-		await Logger.getInstance().log(message, MessageType.Trace, logToFile);
+	public static async trace(message: LogMessage): Promise<void> {
+		await Logger.getInstance().log(message, MessageType.Trace);
 	}
 
 	private async _sendToTelegram(message: string): Promise<void> {
@@ -222,19 +227,29 @@ export class Logger {
 		}
 	}
 
-	private async _writeLogToFile(date: Date, message: string): Promise<void> {
+	/**
+	 * Writes log entry to state-specific JSONL file
+	 * Uses queued writes to ensure thread-safety
+	 */
+	private async _writeStateLog(date: Date, message: string, type: MessageType): Promise<void> {
 		this.fileWriteQueue = this.fileWriteQueue.then(async () => {
 			try {
-				const isoDate = date.toISOString();
-				const time = isoDate.split('T')[1].replace('Z', '');
-				const dateStr = isoDate.split('T')[0];
+				const stateName = getCurrentStateName();
+				if (!stateName) return;
 
-				await fs.mkdir('logs', { recursive: true });
+				const stateLogDir = `states/logs`;
+				await fs.mkdir(stateLogDir, { recursive: true });
 
-				const logEntry = `[${time}] ${JSON.stringify(message)}\n`;
-				await fs.appendFile(`logs/${dateStr}.txt`, logEntry, 'utf-8');
+				const logEntry: StateLogEntry = {
+					timestamp: date.toISOString(),
+					type: type,
+					message: message,
+				};
+
+				// Append as single line (JSONL format)
+				await fs.appendFile(`${stateLogDir}/${stateName}.jsonl`, JSON.stringify(logEntry) + '\n', 'utf-8');
 			} catch (error) {
-				console.error(`${RED_TEXT}Failed to write log to file: ${error}${RESET}`);
+				console.error(`${RED_TEXT}Failed to write state log: ${error}${RESET}`);
 			}
 		});
 

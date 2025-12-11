@@ -7,18 +7,10 @@ import { readConfigs, validateAndFixFunctionParams } from '@src/utils/config-io'
 import { startHttpServer, stopHttpServer } from '@src/utils/server/server';
 import { selectionGate, type Selector } from '@src/utils/selection';
 import { Network } from '@src/utils/network';
-import { actionMode } from '@src/utils/actionMode';
+import { actionMode, generateStateName, validateActionAndGroup } from '@src/utils/actionMode';
 import type { LaunchParams } from '@src/utils/types/launchParams.type';
 import type { FunctionParams } from '@src/utils/types/functionParams.type';
-import {
-	startTask,
-	withTaskContext,
-	finishTask,
-	allocateTaskId,
-	failTask,
-	getCurrentTaskId,
-	tasks,
-} from '@src/utils/taskManager';
+import { withStateContext, broadcastFailState } from '@src/utils/stateManager';
 import { validateAndFixAccountFiles } from '@src/utils/workWithSecrets';
 import { setupUnhandledRejectionHandler } from '@src/utils/errors';
 import { StateStorage } from '@src/utils/state/state';
@@ -102,10 +94,10 @@ const shutdown = (() => {
 
 		console.log(`\n${PURPLE_TEXT}Received ${signal}, shutting down gracefully...${RESET}`);
 
-		// Fail current task if exists
-		const currentTaskId = getCurrentTaskId();
-		if (currentTaskId && tasks.has(currentTaskId)) {
-			failTask(currentTaskId, 'Application shutdown', TASK_ERROR_TYPE.RUN_FAILED);
+		try {
+			broadcastFailState('Application shutdown');
+		} catch {
+			// No state context active
 		}
 
 		// Mark all states with Process status as Failed
@@ -164,29 +156,10 @@ async function getEncryptionKey(chosenBy: Selector, launchParams: LaunchParams):
 }
 
 /**
- * Handles task execution errors and reports them appropriately
- * Decryption errors are tagged separately for better diagnostics
- */
-function handleTaskError(error: unknown, taskId: number | undefined): void {
-	const message = error instanceof Error ? error.message : String(error);
-	console.error(`${RED_BOLD_TEXT}${message}${RESET}`);
-
-	// Use existing taskId if it was created, otherwise allocate new one
-	const errorTaskId = taskId ?? allocateTaskId();
-
-	const isDecryptError = DECRYPT_ERROR_PATTERN.test(message);
-	const errorType = isDecryptError ? TASK_ERROR_TYPE.DECRYPT_ERROR : undefined;
-
-	failTask(errorTaskId, message, errorType);
-}
-
-/**
  * Executes a single task iteration
  * Continues the execution loop regardless of success or failure
  */
 async function executeTaskIteration(): Promise<void> {
-	let taskId: number | undefined;
-
 	try {
 		const chosenBy = await waitForUserChoice();
 		const snapshot = selectionGate.getSnapshot() ?? readConfigs();
@@ -202,24 +175,29 @@ async function executeTaskIteration(): Promise<void> {
 			throw new Error('Invalid configuration: missing ACTION_PARAMS');
 		}
 
-		const { group, action } = launchParams.ACTION_PARAMS;
-
 		const licenseResult = await getVerifyLicenseMessage(launchParams);
 		await sendTelemetry(licenseResult);
 
-		console.log(`${PURPLE_TEXT}🚀 ${group} -> ${action}\n${RESET}`);
+		const { group, action } = await validateActionAndGroup(launchParams);
+
+		console.log(`${PURPLE_TEXT}🚀 ${group.name} -> ${action.name}\n${RESET}`);
 
 		const key = await getEncryptionKey(chosenBy, launchParams);
 
-		taskId = startTask(group, action);
+		const stateName = generateStateName(launchParams, group, action);
+		launchParams.STATE_NAME = stateName;
 
-		await withTaskContext(taskId, async () => {
+		await withStateContext(stateName, async () => {
 			await actionMode(launchParams, functionParams, key);
 		});
-
-		finishTask(taskId, group, action);
 	} catch (error) {
-		handleTaskError(error, taskId);
+		const message = error instanceof Error ? error.message : String(error);
+		console.error(`${RED_BOLD_TEXT}${message}${RESET}`);
+
+		const isDecryptError = DECRYPT_ERROR_PATTERN.test(message);
+		const errorType = isDecryptError ? TASK_ERROR_TYPE.DECRYPT_ERROR : undefined;
+
+		broadcastFailState(message, errorType);
 	} finally {
 		selectionGate.reset();
 	}

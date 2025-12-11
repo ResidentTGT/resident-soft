@@ -22,6 +22,7 @@ import { filterAccounts } from './filterAccounts';
 import { getAllAccounts } from './getAllAccounts';
 import { getStandardState } from './state';
 import { StandardStateStatus } from './state/standardState.interface';
+import { broadcastFailState, broadcastFinishState, getCurrentStateName, broadcastStartState } from './stateManager';
 
 /**
  * Error messages used throughout action execution
@@ -53,7 +54,7 @@ interface ValidatedAction {
 /**
  * Initializes state with Process status
  */
-function initializeState(stateName: string): void {
+export function initializeState(stateName: string): void {
 	const STATE = getStandardState(stateName);
 	STATE.status = StandardStateStatus.Process;
 	STATE.save();
@@ -115,7 +116,7 @@ async function loadData(launchParams: LaunchParams, aesKey?: string): Promise<Lo
 /**
  * Validates that the requested action and group exist and are accessible
  */
-async function validateActionAndGroup(launchParams: LaunchParams): Promise<ValidatedAction> {
+export async function validateActionAndGroup(launchParams: LaunchParams): Promise<ValidatedAction> {
 	const group = ACTIONS.find((g) => g.group === launchParams.ACTION_PARAMS.group);
 
 	if (!group) {
@@ -223,7 +224,7 @@ function validateLaunchParams(launchParams: LaunchParams): void {
 /**
  * Generates state name if not provided
  */
-function generateStateName(launchParams: LaunchParams, group: ActionsGroup, action: Action): string {
+export function generateStateName(launchParams: LaunchParams, group: ActionsGroup, action: Action): string {
 	if (launchParams.TAKE_STATE && launchParams.STATE_NAME) {
 		return launchParams.STATE_NAME;
 	}
@@ -235,7 +236,7 @@ function generateStateName(launchParams: LaunchParams, group: ActionsGroup, acti
 /**
  * Formats timestamp in Russian format: DD.MM.YYYY_HH-MM-SS
  */
-function formatTimestampRussian(date: Date): string {
+export function formatTimestampRussian(date: Date): string {
 	const day = String(date.getDate()).padStart(2, '0');
 	const month = String(date.getMonth() + 1).padStart(2, '0');
 	const year = date.getFullYear();
@@ -247,13 +248,17 @@ function formatTimestampRussian(date: Date): string {
 }
 
 export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
-	const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
-
-	const stateName = generateStateName(LAUNCH_PARAMS, group, action);
-	initializeState(stateName);
+	const stateName = getCurrentStateName();
+	if (!stateName) throw new Error('State name is not defined');
 
 	try {
+		initializeState(stateName);
+		broadcastStartState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
+
 		const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+
+		const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
+
 		if (group.premium && !licenseValid) {
 			throw new Error(`Group is only for PREMIUM users: ${group.name}`);
 		}
@@ -289,12 +294,11 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 			}
 		}
 
-		const finalMessage = `Completed ${LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS} iteration(s) for action: ${group.name} | ${action.name}`;
-		await logger.log(finalMessage, MessageType.Notice);
-
 		finalizeStateSuccess(stateName);
-	} catch (e) {
+		broadcastFinishState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
+	} catch (e: any) {
 		finalizeStateFailure(stateName, e);
+		broadcastFailState(e);
 		throw e;
 	}
 }

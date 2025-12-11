@@ -1,11 +1,10 @@
 import type { Request, Response } from 'express';
 import { MessageType } from '../logger';
-import { nextSeq, tasks } from '../taskManager';
 import { type EventName } from './eventName.type';
 
 export interface SSEMessage<T = unknown> {
 	eventName: EventName;
-	taskId?: number;
+	stateName?: string;
 	type?: MessageType;
 	timestamp: string;
 	payload?: T;
@@ -39,7 +38,7 @@ function nowIso() {
 export function broadcast<T = unknown>(msg: Omit<SSEMessage<T>, 'timestamp' | 'sequence'> & { sequence?: number }) {
 	const finalMsg: SSEMessage<T> = {
 		timestamp: nowIso(),
-		sequence: msg.sequence ?? nextSeq(msg.taskId),
+		sequence: msg.sequence,
 		...msg,
 	};
 	sseHub.sendJSON(finalMsg);
@@ -50,16 +49,6 @@ export function eventsHandler(req: Request, res: Response) {
 	res.setHeader('Cache-Control', 'no-cache, no-transform');
 	res.setHeader('Connection', 'keep-alive');
 	res.flushHeaders?.();
-
-	for (const t of tasks.values()) {
-		sseHub.sendJSON({
-			eventName: 'run_started',
-			timestamp: nowIso(),
-			taskId: t.id,
-			type: MessageType.Notice,
-			payload: { group: t.group, action: t.action },
-		});
-	}
 
 	sseHub.add(res);
 	req.on('close', () => sseHub.remove(res));

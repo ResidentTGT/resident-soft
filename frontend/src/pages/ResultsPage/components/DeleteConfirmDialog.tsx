@@ -27,7 +27,7 @@ export const DeleteConfirmDialog = ({
 		<Dialog open={deleteTarget !== null} onClose={onCancel}>
 			<DialogTitle>Удалить стейты</DialogTitle>
 			<DialogContent>
-				<DialogContentText>
+				<DialogContentText component="div">
 					{isBulkDelete ? (
 						<>
 							Вы точно хотите удалить <b>{selectedStates.size}</b> стейтов?

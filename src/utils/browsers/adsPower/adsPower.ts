@@ -213,7 +213,7 @@ export abstract class AdsPower {
 		const { list } = await this.get<{ list: Profile[] }>('user/list', { page: 1, page_size: 1000 });
 		list.sort((a, b) => +a.name - +b.name);
 		const ids = list.map((p) => p.user_id);
-		await Logger.getInstance().log(ids.join('\n'), MessageType.Trace, true);
+		await Logger.getInstance().log(ids.join('\n'), MessageType.Trace);
 		return ids;
 	}
 
