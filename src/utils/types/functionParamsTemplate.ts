@@ -24,32 +24,6 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 		GenerateWallets: {
 			amount: 1,
 		},
-		RefuelGasZip: {
-			fromChainId: ChainId.Ethereum,
-			amount: [0, 0],
-			minBalanceToKeep: [0, 0],
-			minAmountToSend: 0,
-			toChainIds: [ChainId.Ethereum],
-		},
-		RefuelManyGasZip: {
-			fromChainId: ChainId.Ethereum,
-			amount: [0, 0],
-			toChainIds: [ChainId.Ethereum],
-			addresses: [],
-		},
-		RefuelRelayLink: {
-			amount: [0, 0],
-			minBalanceToKeep: [0, 0],
-			minAmountToSend: 0,
-			fromChainId: ChainId.Ethereum,
-			toChainId: ChainId.Ethereum,
-		},
-		RefuelManyRelayLink: {
-			amount: [0, 0],
-			fromChainId: ChainId.Ethereum,
-			toChainId: ChainId.Ethereum,
-			addresses: [],
-		},
 	},
 	Evm: {
 		SendToken: {
@@ -95,63 +69,21 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			to: '',
 		},
 	},
-	Odos: {
-		Swap: {
-			chainId: ChainId.Ethereum,
+	CexDex: {
+		Withdraw: {
+			exchanges: ['Bitget'],
+			amount: [0, 1],
+			token: 'ETH',
+			to: 'evm',
+			toChainId: ChainId.Base,
+		},
+		OdosSwap: {
+			chainId: ChainId.Base,
 			token1: 'ETH',
 			token2: 'USDC',
-			amount: [0, 0],
-			slippageInPercent: 0,
+			amount: [0, 1],
+			slippageInPercent: 0.5,
 			minAmountForSwap: 0,
-		},
-	},
-	Exchanges: {
-		Withdraw: {
-			exchanges: [],
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: '',
-		},
-	},
-	Okx: {
-		Withdraw: {
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: ChainId.Ethereum,
-		},
-	},
-	Bitget: {
-		Withdraw: {
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: ChainId.Ethereum,
-		},
-	},
-	Gate: {
-		Withdraw: {
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: ChainId.Ethereum,
-		},
-	},
-	Binance: {
-		Withdraw: {
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: ChainId.Ethereum,
-		},
-	},
-	Bybit: {
-		Withdraw: {
-			amount: [0, 0],
-			token: '',
-			to: '',
-			toChainId: ChainId.Ethereum,
 		},
 	},
 	CommonUi: {
@@ -332,8 +264,8 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			apiKey: '',
 		},
 	},
-	Stargate: {
-		Bridge: {
+	Bridges: {
+		Stargate: {
 			fromChainId: ChainId.Base,
 			fromToken: 'ETH',
 			amount: [0, 1],
@@ -342,6 +274,32 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			toChainId: ChainId.Arbitrum,
 			toToken: 'ETH',
 			slippagePercent: 0.5,
+		},
+		RefuelGasZip: {
+			fromChainId: ChainId.Ethereum,
+			amount: [0, 1],
+			minBalanceToKeep: [0, 0],
+			minAmountToSend: 0,
+			toChainIds: [ChainId.Base],
+		},
+		RefuelManyGasZip: {
+			fromChainId: ChainId.Ethereum,
+			amount: [0, 1],
+			toChainIds: [ChainId.Ethereum],
+			addresses: [],
+		},
+		RefuelRelayLink: {
+			amount: [0, 1],
+			minBalanceToKeep: [0, 0],
+			minAmountToSend: 0,
+			fromChainId: ChainId.Ethereum,
+			toChainId: ChainId.Base,
+		},
+		RefuelManyRelayLink: {
+			amount: [0, 1],
+			fromChainId: ChainId.Ethereum,
+			toChainId: ChainId.Base,
+			addresses: [],
 		},
 	},
 };

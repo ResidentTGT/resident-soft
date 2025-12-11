@@ -119,6 +119,80 @@ function deepMergeTemplate(target: unknown, template: unknown): MergeResult {
 }
 
 /**
+ * Removes keys from config that don't exist in template
+ * Recursively processes nested objects and removes empty parent objects
+ *
+ * @param config - User's config object to clean
+ * @param template - Template defining valid structure
+ * @returns Object with hasChanges flag and cleaned result
+ */
+function removeObsoleteKeys(config: unknown, template: unknown): MergeResult {
+	// If template is not a plain object, nothing to remove from
+	if (!isPlainObject(template)) {
+		return { merged: config, hasChanges: false };
+	}
+
+	// If config is not an object, nothing to remove
+	if (!isPlainObject(config)) {
+		return { merged: config, hasChanges: false };
+	}
+
+	let hasChanges = false;
+	const cleaned: Record<string, unknown> = {};
+
+	// Only keep keys that exist in template
+	for (const key in config) {
+		if (!(key in template)) {
+			// Key exists in config but not in template - remove it
+			hasChanges = true;
+			// Don't copy to cleaned object (effectively removes it)
+		} else {
+			const configValue = config[key];
+			const templateValue = template[key];
+
+			// Both are plain objects - recursively clean
+			if (isPlainObject(configValue) && isPlainObject(templateValue)) {
+				const result = removeObsoleteKeys(configValue, templateValue);
+
+				// Only keep the key if the cleaned object is not empty
+				if (Object.keys(result.merged as Record<string, unknown>).length > 0) {
+					cleaned[key] = result.merged;
+					hasChanges = hasChanges || result.hasChanges;
+				} else {
+					// Empty object after cleaning - remove it
+					hasChanges = true;
+				}
+			} else {
+				// Not both objects - keep config value as-is
+				cleaned[key] = configValue;
+			}
+		}
+	}
+
+	return { merged: cleaned, hasChanges };
+}
+
+/**
+ * Synchronizes config with template: adds missing keys and removes obsolete ones
+ *
+ * @param config - User's config object
+ * @param template - Template with all required fields
+ * @returns Object with hasChanges flag and synchronized result
+ */
+function syncWithTemplate(config: unknown, template: unknown): MergeResult {
+	// First add missing keys from template
+	const addResult = deepMergeTemplate(config, template);
+
+	// Then remove obsolete keys not in template
+	const removeResult = removeObsoleteKeys(addResult.merged, template);
+
+	return {
+		merged: removeResult.merged,
+		hasChanges: addResult.hasChanges || removeResult.hasChanges,
+	};
+}
+
+/**
  * Reads and parses the functionParams.jsonc file
  * @returns Parsed config or null if file doesn't exist or is invalid
  */
@@ -145,7 +219,7 @@ function readFunctionParamsConfig(): unknown | null {
 function writeFunctionParamsConfig(config: unknown): void {
 	const serialized = JSON.stringify(config, null, JSON_INDENT);
 	fs.writeFileSync(FUNCTION_PARAMS_PATH, serialized, FILE_ENCODING);
-	console.log('Updated functionParams.jsonc: added missing groups/actions/fields');
+	console.log('Updated functionParams.jsonc: synchronized with current template');
 }
 
 /**
@@ -153,7 +227,9 @@ function writeFunctionParamsConfig(config: unknown): void {
  *
  * Ensures the config has complete structure matching FunctionParams type:
  * - Adds missing groups, actions, and fields from template
- * - Preserves all existing user values
+ * - Removes obsolete keys that no longer exist in template
+ * - Removes empty groups after cleaning
+ * - Preserves all existing user values for valid keys
  * - Does not modify arrays or existing fields
  *
  * Should be called on application startup
@@ -166,7 +242,7 @@ export function validateAndFixFunctionParams(): void {
 			return;
 		}
 
-		const { merged, hasChanges } = deepMergeTemplate(config, FUNCTION_PARAMS_TEMPLATE);
+		const { merged, hasChanges } = syncWithTemplate(config, FUNCTION_PARAMS_TEMPLATE);
 
 		if (hasChanges) {
 			writeFunctionParamsConfig(merged);

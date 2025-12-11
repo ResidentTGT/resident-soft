@@ -11,13 +11,7 @@ export * from './types/action.types';
 import { commonActions } from './groups/free/common.actions';
 import { evmActions } from './groups/free/evm.actions';
 import { svmActions } from './groups/free/svm.actions';
-import { okxActions } from './groups/free/okx.actions';
-import { bitgetActions } from './groups/free/bitget.actions';
-import { binanceActions } from './groups/free/binance.actions';
-import { gateActions } from './groups/free/gate.actions';
-import { bybitActions } from './groups/free/bybit.actions';
-import { exchangesActions } from './groups/free/exchanges.actions';
-import { odosActions } from './groups/free/odos.actions';
+import { cexDexActions } from './groups/free/cexDex.actions';
 import { checkersActions } from './groups/free/checkers.actions';
 import { testActions } from './groups/free/TEST.actions';
 
@@ -43,7 +37,7 @@ import { testPremiumActions } from './groups/premium/TEST_PREMIUM.actions';
 import { afinaActions } from './groups/premium/afina.actions';
 
 import type { ActionsGroup } from './types/action.types';
-import { stargateActions } from './groups/free/stargate.actions';
+import { bridgesActions } from './groups/free/bridges.actions';
 
 /**
  * Master list of all available actions grouped by category
@@ -67,16 +61,8 @@ export const ACTIONS: ActionsGroup[] = [
 	// Social platforms
 	twitterActions,
 
-	// Centralized exchanges
-	okxActions,
-	bitgetActions,
-	binanceActions,
-	gateActions,
-	bybitActions,
-	exchangesActions,
-
-	// DeFi protocols
-	odosActions,
+	// Exchanges
+	cexDexActions,
 
 	// Blockchain projects
 	berachainActions,
@@ -106,6 +92,6 @@ export const ACTIONS: ActionsGroup[] = [
 	testActions,
 	testPremiumActions,
 
-	//Stargate
-	stargateActions,
+	//Bridges
+	bridgesActions,
 ];

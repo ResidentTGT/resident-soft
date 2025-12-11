@@ -495,37 +495,6 @@ function Form_Exchanges_Withdraw({ params, set, tokens, networks }: FormCtx) {
 	);
 }
 
-/* -------- централизованные Withdraw (ChainId) -------- */
-
-function Form_ExchangeWithdraw_ChainId({ params, set, networks, tokens }: FormCtx) {
-	return (
-		<Grid container spacing={2}>
-			<RangeField
-				labelFrom="Количество от"
-				labelTo="Количество до"
-				value={params.amount}
-				onChange={(v) => set('amount', v)}
-			/>
-			<FormControl size="small">
-				<InputLabel>Токен</InputLabel>
-				<Select
-					label="Токен"
-					value={params.token ?? ''}
-					onChange={(e) => set('token', (e.target.value as string) || undefined)}
-				>
-					{(tokens.find((g) => String(g.chainId) === String(params.toChainId))?.tokens ?? []).map((tok) => (
-						<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
-							{String(tok.symbol)}
-						</MenuItem>
-					))}
-				</Select>
-			</FormControl>
-			<StrField label="Куда" value={params.to} onChange={(v) => set('to', v)} />
-			<ChainIdSelect label="В сеть" value={params.toChainId} onChange={(v) => set('toChainId', v)} networks={networks} />
-		</Grid>
-	);
-}
-
 /* -------- CommonUi -------- */
 
 function Form_CommonUi_OpenPages({ params, set }: FormCtx) {
@@ -895,10 +864,6 @@ export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
 		[ActionName.GenerateWallets]: Form_Common_GenerateWallets,
-		[ActionName.RefuelGasZip]: Form_Common_RefuelGasZip,
-		[ActionName.RefuelManyGasZip]: Form_Common_RefuelManyGasZip,
-		[ActionName.RefuelRelayLink]: Form_Common_RefuelRelayLink,
-		[ActionName.RefuelManyRelayLink]: Form_Common_RefuelManyRelayLink,
 	},
 	[ActionsGroupName.CommonUi]: {
 		[ActionName.OpenPages]: Form_CommonUi_OpenPages,
@@ -922,11 +887,9 @@ export const FORMS = {
 	[ActionsGroupName.Svm]: {
 		[ActionName.SendToken]: Form_Svm_SendToken,
 	},
-	[ActionsGroupName.Odos]: {
-		[ActionName.Swap]: Form_Odos_Swap,
-	},
-	[ActionsGroupName.Exchanges]: {
+	[ActionsGroupName.CexDex]: {
 		[ActionName.Withdraw]: Form_Exchanges_Withdraw,
+		[ActionName.OdosSwap]: Form_Odos_Swap,
 	},
 	[ActionsGroupName.Vision]: {
 		[ActionName.GetProfiles]: Form_Vision_GetProfiles,
@@ -944,21 +907,6 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Meteora]: {
 		[ActionName.AddLiquidity]: Form_Browser,
-	},
-	[ActionsGroupName.Okx]: {
-		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
-	},
-	[ActionsGroupName.Bitget]: {
-		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
-	},
-	[ActionsGroupName.Gate]: {
-		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
-	},
-	[ActionsGroupName.Binance]: {
-		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
-	},
-	[ActionsGroupName.Bybit]: {
-		[ActionName.Withdraw]: Form_ExchangeWithdraw_ChainId,
 	},
 	[ActionsGroupName.Polymarket]: {
 		[ActionName.ClaimUi]: Form_Browser,
@@ -989,7 +937,11 @@ export const FORMS = {
 	[ActionsGroupName.Afina]: {
 		[ActionName.GetProfiles]: Form_Afina_GetProfiles,
 	},
-	[ActionsGroupName.Stargate]: {
-		[ActionName.Bridge]: Form_Stargate_Bridge,
+	[ActionsGroupName.Bridges]: {
+		[ActionName.Stargate]: Form_Stargate_Bridge,
+		[ActionName.RefuelGasZip]: Form_Common_RefuelGasZip,
+		[ActionName.RefuelManyGasZip]: Form_Common_RefuelManyGasZip,
+		[ActionName.RefuelRelayLink]: Form_Common_RefuelRelayLink,
+		[ActionName.RefuelManyRelayLink]: Form_Common_RefuelManyRelayLink,
 	},
 };

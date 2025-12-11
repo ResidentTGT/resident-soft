@@ -18,32 +18,6 @@ export interface FunctionParams {
 		GenerateWallets?: {
 			amount: number;
 		};
-		RefuelGasZip?: {
-			fromChainId: ChainId;
-			amount: [number, number];
-			minBalanceToKeep: [number, number];
-			minAmountToSend: number;
-			toChainIds: ChainId[];
-		};
-		RefuelManyGasZip?: {
-			fromChainId: ChainId;
-			amount: [number, number];
-			toChainIds: ChainId[];
-			addresses: string[];
-		};
-		RefuelRelayLink?: {
-			amount: [number, number];
-			minBalanceToKeep: [number, number];
-			minAmountToSend: number;
-			fromChainId: ChainId;
-			toChainId: ChainId;
-		};
-		RefuelManyRelayLink?: {
-			amount: [number, number];
-			fromChainId: ChainId;
-			toChainId: ChainId;
-			addresses: string[];
-		};
 	};
 	Evm?: {
 		SendToken?: {
@@ -89,17 +63,7 @@ export interface FunctionParams {
 			to: string;
 		};
 	};
-	Odos?: {
-		Swap?: {
-			chainId: ChainId;
-			token1: string;
-			token2: string;
-			amount: [number, number];
-			slippageInPercent: number;
-			minAmountForSwap: number;
-		};
-	};
-	Exchanges?: {
+	CexDex?: {
 		Withdraw?: {
 			exchanges: string[];
 			amount: [number, number];
@@ -107,45 +71,13 @@ export interface FunctionParams {
 			to: string;
 			toChainId: string;
 		};
-	};
-	Okx?: {
-		Withdraw?: {
+		OdosSwap?: {
+			chainId: ChainId;
+			token1: string;
+			token2: string;
 			amount: [number, number];
-			token: string;
-			to: string;
-			toChainId: ChainId;
-		};
-	};
-	Bitget?: {
-		Withdraw?: {
-			amount: [number, number];
-			token: string;
-			to: string;
-			toChainId: ChainId;
-		};
-	};
-	Gate?: {
-		Withdraw?: {
-			amount: [number, number];
-			token: string;
-			to: string;
-			toChainId: ChainId;
-		};
-	};
-	Binance?: {
-		Withdraw?: {
-			amount: [number, number];
-			token: string;
-			to: string;
-			toChainId: ChainId;
-		};
-	};
-	Bybit?: {
-		Withdraw?: {
-			amount: [number, number];
-			token: string;
-			to: string;
-			toChainId: ChainId;
+			slippageInPercent: number;
+			minAmountForSwap: number;
 		};
 	};
 	CommonUi?: {
@@ -327,8 +259,8 @@ export interface FunctionParams {
 			apiKey: string;
 		};
 	};
-	Stargate: {
-		Bridge: {
+	Bridges: {
+		Stargate: {
 			fromChainId: ChainId;
 			fromToken: string;
 			amount: [number, number];
@@ -337,6 +269,32 @@ export interface FunctionParams {
 			toChainId: ChainId;
 			toToken: string;
 			slippagePercent: number;
+		};
+		RefuelGasZip?: {
+			fromChainId: ChainId;
+			amount: [number, number];
+			minBalanceToKeep: [number, number];
+			minAmountToSend: number;
+			toChainIds: ChainId[];
+		};
+		RefuelManyGasZip?: {
+			fromChainId: ChainId;
+			amount: [number, number];
+			toChainIds: ChainId[];
+			addresses: string[];
+		};
+		RefuelRelayLink?: {
+			amount: [number, number];
+			minBalanceToKeep: [number, number];
+			minAmountToSend: number;
+			fromChainId: ChainId;
+			toChainId: ChainId;
+		};
+		RefuelManyRelayLink?: {
+			amount: [number, number];
+			fromChainId: ChainId;
+			toChainId: ChainId;
+			addresses: string[];
 		};
 	};
 }

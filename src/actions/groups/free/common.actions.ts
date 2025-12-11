@@ -14,24 +14,5 @@ export const commonActions: ActionsGroup = {
 			allowed: true,
 			name: 'Сгенерировать EVM кошельки',
 		},
-		{ action: ActionName.RefuelGasZip, isolated: true, allowed: true, name: 'Refuel через GasZip' },
-		{
-			action: ActionName.RefuelRelayLink,
-			isolated: true,
-			allowed: true,
-			name: 'Refuel через RelayLink',
-		},
-		{
-			action: ActionName.RefuelManyGasZip,
-			isolated: false,
-			allowed: true,
-			name: 'Refuel с одного кошелька на множество других через GasZip',
-		},
-		{
-			action: ActionName.RefuelManyRelayLink,
-			isolated: false,
-			allowed: true,
-			name: 'Refuel с одного кошелька на множество других через RelayLink',
-		},
 	],
 };

@@ -30,11 +30,6 @@ export enum ActionsGroupName {
 	Towns = 'Towns',
 	Twitter = 'Twitter',
 	Eclipse = 'Eclipse',
-	Okx = 'Okx',
-	Bitget = 'Bitget',
-	Binance = 'Binance',
-	Gate = 'Gate',
-	Odos = 'Odos',
 	Berachain = 'Berachain',
 	Opensea = 'Opensea',
 	TEST = 'TEST',
@@ -45,8 +40,7 @@ export enum ActionsGroupName {
 	ZksyncLite = 'ZksyncLite',
 	Sophon = 'Sophon',
 	Checkers = 'Checkers',
-	Bybit = 'Bybit',
-	Exchanges = 'Exchanges',
+	CexDex = 'CexDex',
 	AdsPower = 'AdsPower',
 	Vision = 'Vision',
 	Meteora = 'Meteora',
@@ -54,7 +48,7 @@ export enum ActionsGroupName {
 	Superchain = 'Superchain',
 	Abstract = 'Abstract',
 	Afina = 'Afina',
-	Stargate = 'Stargate',
+	Bridges = 'Bridges',
 }
 
 export enum ActionName {
@@ -148,5 +142,6 @@ export enum ActionName {
 	Quote = 'Quote',
 	Bubbles = 'Bubbles',
 	CollectRedBullNft = 'CollectRedBullNft',
-	Bridge = 'Bridge',
+	Stargate = 'Stargate',
+	OdosSwap = 'OdosSwap',
 }

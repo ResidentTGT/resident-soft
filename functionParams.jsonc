@@ -16,32 +16,6 @@
 		"GenerateWallets": {
 			"amount": 1,
 		},
-		"RefuelGasZip": {
-			"fromChainId": "10",
-			"amount": [0.0001, 0.0001],
-			"minBalanceToKeep": [0.0001, 0.0001],
-			"minAmountToSend": 0.00001,
-			"toChainIds": ["8453"],
-		},
-		"RefuelManyGasZip": {
-			"fromChainId": "8453",
-			"amount": [0.004, 0.0046],
-			"toChainIds": ["1"],
-			"addresses": [],
-		},
-		"RefuelRelayLink": {
-			"fromChainId": "8453",
-			"amount": [0.0001, 0.0001],
-			"minBalanceToKeep": [0.0001, 0.0001],
-			"minAmountToSend": 0.000001,
-			"toChainId": "1116",
-		},
-		"RefuelManyRelayLink": {
-			"fromChainId": "7777777",
-			"amount": [0.0001, 0.0001],
-			"toChainId": "8453",
-			"addresses": ["0x", "0x"],
-		},
 	},
 	"Evm": {
 		"SendToken": {
@@ -85,65 +59,6 @@
 			"minBalanceToKeep": [0.0001, 0.0001],
 			"minAmountToSend": 0.0001,
 			"to": "solana",
-		},
-	},
-	"Odos": {
-		"Swap": {
-			"chainId": "8453",
-			"token1": "ETH",
-			"token2": "USDT",
-			"amount": [0.000001, 0.000002],
-			"slippageInPercent": 3,
-			"minAmountForSwap": 0.000001,
-		},
-	},
-	"Exchanges": {
-		"Withdraw": {
-			"exchanges": ["Bitget"],
-			"amount": [0.000001, 0.000002],
-			"token": "ETH",
-			"to": "evm",
-			"toChainId": "8453",
-		},
-	},
-	"Okx": {
-		"Withdraw": {
-			"amount": [0.005, 0.006],
-			"token": "ETH",
-			"to": "evm",
-			"toChainId": "7777777",
-		},
-	},
-	"Bitget": {
-		"Withdraw": {
-			"amount": [0.0001, 0.0001],
-			"token": "SOL",
-			"to": "solana",
-			"toChainId": "Solana",
-		},
-	},
-	"Gate": {
-		"Withdraw": {
-			"amount": [0.005, 0.006],
-			"token": "ETH",
-			"to": "evm",
-			"toChainId": "1",
-		},
-	},
-	"Binance": {
-		"Withdraw": {
-			"amount": [0.005, 0.006],
-			"token": "ETH",
-			"to": "evm",
-			"toChainId": "1",
-		},
-	},
-	"Bybit": {
-		"Withdraw": {
-			"amount": [0.005, 0.006],
-			"token": "ETH",
-			"to": "evm",
-			"toChainId": "1",
 		},
 	},
 	"CommonUi": {
@@ -213,16 +128,12 @@
 			"browser": "Vision",
 		},
 	},
-	"Discord": {},
 	"Berachain": {
 		"FlyTradeSwap": {
 			"tokenSymbol1": "HONEY",
 			"tokenSymbol2": "BERA",
 			"amount": [1, 0],
 		},
-	},
-	"TEST": {
-		"TEST": {},
 	},
 	"Plasma": {
 		"Deposit": {
@@ -324,17 +235,59 @@
 			"apiKey": "",
 		},
 	},
-	"Stargate": {
-		"Bridge": {
-			"fromChainId": "97477",
+	"Bridges": {
+		"Stargate": {
+			"fromChainId": "8453",
 			"fromToken": "ETH",
-			"amount": [null, null],
-			"minBalanceToKeep": [0.0001, 0.0001],
+			"amount": [1, 1],
+			"minBalanceToKeep": [0, 0],
 			"minAmountToBridge": 0,
-			"toChainId": "8453",
+			"toChainId": "42161",
 			"toToken": "ETH",
 			"slippagePercent": 0.5,
+		},
+		"RefuelGasZip": {
+			"fromChainId": "8453",
+			"amount": [0.00001, 0.00001],
+			"minBalanceToKeep": [0, 0],
 			"minAmountToSend": 0,
+			"toChainIds": ["42161"],
+		},
+		"RefuelManyGasZip": {
+			"fromChainId": "1",
+			"amount": [0, 0],
+			"toChainIds": ["1"],
+			"addresses": [],
+		},
+		"RefuelRelayLink": {
+			"amount": [0, 0],
+			"minBalanceToKeep": [0, 0],
+			"minAmountToSend": 0,
+			"fromChainId": "1",
+			"toChainId": "1",
+		},
+		"RefuelManyRelayLink": {
+			"amount": [0, 0],
+			"fromChainId": "1",
+			"toChainId": "1",
+			"addresses": [],
+		},
+	},
+	"CexDex": {
+		"Withdraw": {
+			"exchanges": ["Bitget"],
+			"amount": [0.00001, 0.00001],
+			"token": "ETH",
+			"to": "evm",
+			"toChainId": "8453",
+		},
+		"OdosSwap": {
+			"chainId": "8453",
+			"token1": "ETH",
+			"token2": "USDT",
+			"amount": [0.0001, 0.0001],
+			"slippageInPercent": 0.3,
+			"minAmountForSwap": 0,
 		},
 	},
 }
