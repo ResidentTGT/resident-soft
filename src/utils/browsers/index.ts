@@ -5,6 +5,7 @@ import { AdsPower } from './adsPower';
 import { MissingFieldError } from '../errors';
 import { Vision } from './vision';
 import { Afina } from './afina/afina';
+import { delayMs } from '../delay';
 
 const ALLOWED_BROWSERS = ['AdsPower', 'Vision', 'Afina'];
 
@@ -60,22 +61,24 @@ export async function getElementProperty(element: ElementHandle<Element>, proper
 	return propertyValue;
 }
 
-export async function getPage(browser: Browser, url = '', mouseHelper = false) {
+export async function getPage(browser: Browser, url = '', mouseHelper = false, closeSame = true) {
 	if (!url) {
 		throw new Error('getPage: url is required');
 	}
 
 	try {
 		const page = await browser.newPage();
-
-		const pages = await browser.pages();
-		const existedPages = pages.filter((p) => p !== page && p.url().includes(url));
-
-		for (const p of existedPages) {
-			await safeClosePage(p);
+		await delayMs(50);
+		if (closeSame) {
+			const pages = await browser.pages();
+			const existedPages = pages.filter((p) => p !== page && (p.url().includes(url) || url.includes(p.url())));
+			for (const p of existedPages) {
+				await safeClosePage(p);
+			}
 		}
 
 		if (mouseHelper) await installMouseHelper(page);
+		await delayMs(50);
 		await page.goto(url, { timeout: 60_000 });
 
 		return page;
@@ -134,13 +137,6 @@ export async function clearLocalStorage(page: Page) {
 
 export async function safeClosePage(page: Page | null | undefined) {
 	if (!page) return;
-
-	let url = 'about:blank';
-	try {
-		url = page.url();
-	} catch {
-		/* ignore */
-	}
 
 	try {
 		if (typeof (page as any).isClosed === 'function' && page.isClosed()) {
