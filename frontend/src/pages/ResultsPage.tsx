@@ -1,16 +1,36 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Container, Paper, Alert, Stack, Typography, Button, CircularProgress, Tooltip, Snackbar, List } from '@mui/material';
+import {
+	Container,
+	Paper,
+	Alert,
+	Stack,
+	Typography,
+	Button,
+	CircularProgress,
+	Tooltip,
+	Snackbar,
+	List,
+	Checkbox,
+	FormControlLabel,
+} from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useStates, useStateSelection, useStateDeletion, useToast } from './ResultsPage/hooks';
 import { StateListItem, DeleteConfirmDialog, StatesToolbar } from './ResultsPage/components';
 import { formatRelativeTime } from './ResultsPage/utils';
-import { TOAST_AUTO_HIDE_DURATION_MS, BULK_DELETE_TARGET, RELATIVE_TIME_UPDATE_INTERVAL_MS } from './ResultsPage/constants';
+import {
+	TOAST_AUTO_HIDE_DURATION_MS,
+	BULK_DELETE_TARGET,
+	RELATIVE_TIME_UPDATE_INTERVAL_MS,
+	AUTO_REFRESH_INTERVAL_MS,
+} from './ResultsPage/constants';
 
 export default function ResultsPage() {
-	// State management hooks
 	const { statesMap, loading, error, lastUpdated, refreshManually } = useStates();
 	const { selectedStates, selectAll, deselectAll, toggleSelection } = useStateSelection();
 	const { toast, showToast, closeToast } = useToast();
+
+	const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+	const [autoRefreshKey, setAutoRefreshKey] = useState(0);
 
 	// Deletion management
 	const { deleteTarget, deleting, confirmDelete, cancelDelete, initiateDelete } = useStateDeletion({
@@ -28,7 +48,6 @@ export default function ResultsPage() {
 		onComplete: refreshManually,
 	});
 
-	// Relative time update trigger
 	const [, setTick] = useState(0);
 	useEffect(() => {
 		const tickInterval = setInterval(() => {
@@ -38,6 +57,16 @@ export default function ResultsPage() {
 		return () => clearInterval(tickInterval);
 	}, []);
 
+	useEffect(() => {
+		if (!autoRefreshEnabled) return;
+
+		const interval = setInterval(() => {
+			refreshManually();
+		}, AUTO_REFRESH_INTERVAL_MS);
+
+		return () => clearInterval(interval);
+	}, [autoRefreshEnabled, autoRefreshKey, refreshManually]);
+
 	// Computed values
 	const stateNames = useMemo(() => Object.keys(statesMap).sort(), [statesMap]);
 
@@ -46,6 +75,10 @@ export default function ResultsPage() {
 	const handleDeleteSelected = () => initiateDelete(BULK_DELETE_TARGET);
 	const handleConfirmDelete = async () => {
 		await confirmDelete(selectedStates);
+	};
+	const handleManualRefresh = () => {
+		refreshManually();
+		setAutoRefreshKey((prev) => prev + 1);
 	};
 
 	return (
@@ -60,13 +93,36 @@ export default function ResultsPage() {
 								Обновлено: {formatRelativeTime(lastUpdated)}
 							</Typography>
 						)}
+						<Tooltip title="Автоматическое обновление стейтов каждые 10 секунд">
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={autoRefreshEnabled}
+										onChange={(e) => {
+											const enabled = e.target.checked;
+											setAutoRefreshEnabled(enabled);
+											if (enabled) {
+												handleManualRefresh();
+											}
+										}}
+										color="primary"
+									/>
+								}
+								label={
+									<Typography variant="body2" sx={{ userSelect: 'none' }}>
+										Автообновление
+									</Typography>
+								}
+								sx={{ m: 0 }}
+							/>
+						</Tooltip>
 						<Tooltip title="Обновить все стейты">
 							<span>
 								<Button
 									variant="outlined"
-									startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
+									startIcon={<RefreshIcon />}
 									disabled={loading}
-									onClick={refreshManually}
+									onClick={handleManualRefresh}
 								>
 									Обновить
 								</Button>

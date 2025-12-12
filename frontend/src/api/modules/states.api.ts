@@ -1,3 +1,4 @@
+import type { MessageType } from '../../../../src/utils/logger';
 import type { StandardState } from '../../../../src/utils/state/standardState.interface';
 
 export interface StatesIndexResp {
@@ -37,4 +38,22 @@ export async function deleteStates(fileNames: string[]): Promise<DeleteStatesRes
 
 export async function deleteState(fileName: string): Promise<DeleteStatesResult> {
 	return deleteStates([fileName]);
+}
+
+export interface StateLogsResponse {
+	logs: { timestamp: string; type: MessageType; message: string }[];
+	totalCount: number;
+	returnedCount: number;
+	limited: boolean;
+}
+
+export async function getStateLogs(stateName: string, signal?: AbortSignal): Promise<StateLogsResponse> {
+	const encodedName = encodeURIComponent(stateName);
+	const r = await fetch(`/api/process/states/logs/${encodedName}`, { signal });
+
+	if (!r.ok) {
+		throw new Error(`Failed to fetch logs: ${r.status} ${r.statusText}`);
+	}
+
+	return r.json();
 }

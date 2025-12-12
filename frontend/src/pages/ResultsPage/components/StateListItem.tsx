@@ -124,7 +124,7 @@ export const StateListItem = ({ name, item, isSelected, onToggleSelect }: StateL
 				</ListItemButton>
 			</ListItem>
 			<Collapse in={isExpanded} timeout="auto" unmountOnExit>
-				<StateDetails data={item.data} />
+				<StateDetails data={item.data} stateName={name} />
 			</Collapse>
 		</Paper>
 	);

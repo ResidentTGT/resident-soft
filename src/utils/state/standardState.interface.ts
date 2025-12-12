@@ -1,3 +1,5 @@
+import type { LaunchParams } from '../types/launchParams.type';
+
 export enum StandardStateStatus {
 	Idle = 1,
 	Process = 2,
@@ -10,4 +12,6 @@ export interface StandardState {
 	fails: string[];
 	info: string;
 	status: StandardStateStatus;
+	launchParams?: LaunchParams;
+	actionFunctionParams?: any;
 }

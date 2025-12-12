@@ -44,6 +44,12 @@ router.get('/', async (_req, res) => {
 					fails: uniq(o.fails),
 					info: typeof o.info === 'string' ? o.info : '',
 					status,
+					launchParams:
+						typeof o.launchParams === 'object' && o.launchParams !== null ? (o.launchParams as any) : undefined,
+					actionFunctionParams:
+						typeof o.actionFunctionParams === 'object' && o.actionFunctionParams !== null
+							? (o.actionFunctionParams as any)
+							: undefined,
 				};
 
 				const stat = await fs.statSync(filePath);
@@ -113,6 +119,17 @@ router.post('/delete', async (req, res) => {
 
 				const filePath = path.join(PROCESS_DIR, actualFileName);
 				fs.unlinkSync(filePath);
+
+				const LOG_DIR = path.join(PROCESS_DIR, 'logs');
+				const logFilePath = path.join(LOG_DIR, `${nameWithoutExt}.jsonl`);
+				if (fs.existsSync(logFilePath)) {
+					try {
+						fs.unlinkSync(logFilePath);
+					} catch {
+						//
+					}
+				}
+
 				results.push({ fileName, success: true });
 			} catch (e: any) {
 				results.push({ fileName, success: false, error: e?.message || 'Unknown error' });
@@ -123,6 +140,69 @@ router.post('/delete', async (req, res) => {
 		res.json({ ok: allSucceeded, results });
 	} catch (e: any) {
 		res.status(500).json({ error: 'Failed to delete states', details: e?.message });
+	}
+});
+
+router.get('/logs/:stateName', async (req, res) => {
+	try {
+		const { stateName } = req.params;
+
+		if (!stateName || !stateName.trim()) {
+			return res.status(400).json({ error: 'stateName is required' });
+		}
+
+		// Security: prevent path traversal
+		const safeName = path.basename(stateName);
+		if (safeName !== stateName) {
+			return res.status(400).json({ error: 'Invalid stateName format' });
+		}
+
+		const LOG_DIR = path.resolve(process.cwd(), 'states', 'logs');
+		const logFilePath = path.join(LOG_DIR, `${safeName}.jsonl`);
+
+		if (!fs.existsSync(logFilePath)) {
+			return res.json({ logs: [] });
+		}
+
+		const fileContent = fs.readFileSync(logFilePath, 'utf-8');
+		const allLines = fileContent
+			.trim()
+			.split('\n')
+			.filter((line) => line.trim());
+
+		const lines = allLines.slice(-1000);
+
+		const logs: { timestamp: string; type: number; message: string }[] = [];
+		const failedLines: { lineNumber: number; error: string }[] = [];
+
+		for (let i = 0; i < lines.length; i++) {
+			try {
+				const parsed = JSON.parse(lines[i]);
+
+				if (
+					typeof parsed.timestamp !== 'string' ||
+					typeof parsed.type !== 'number' ||
+					typeof parsed.message !== 'string'
+				) {
+					failedLines.push({ lineNumber: i + 1, error: 'Invalid log entry structure' });
+					continue;
+				}
+
+				logs.push(parsed);
+			} catch (e: any) {
+				failedLines.push({ lineNumber: i + 1, error: e?.message || 'Parse error' });
+			}
+		}
+
+		res.json({
+			logs,
+			totalCount: allLines.length,
+			returnedCount: logs.length,
+			limited: allLines.length > 1000,
+			failed: failedLines.length > 0 ? failedLines : undefined,
+		});
+	} catch (e: any) {
+		res.status(500).json({ error: 'Failed to read logs', details: e?.message });
 	}
 });
 

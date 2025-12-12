@@ -21,3 +21,5 @@ export interface ToastState {
 	severity: ToastSeverity;
 	message: string;
 }
+
+export type StateDetailTab = 'settings' | 'results' | 'logs';

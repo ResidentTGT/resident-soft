@@ -52,11 +52,24 @@ interface ValidatedAction {
 }
 
 /**
- * Initializes state with Process status
+ * Sanitizes launch parameters by hiding sensitive data
  */
-export function initializeState(stateName: string): void {
+function sanitizeLaunchParams(params: LaunchParams): LaunchParams {
+	return {
+		...params,
+		LICENSE: params.LICENSE ? '***HIDDEN***' : '',
+	};
+}
+
+/**
+ * Initializes state with Process status and launch params
+ */
+export function initializeState(stateName: string, launchParams: LaunchParams, actionFunctionParams: any): void {
 	const STATE = getStandardState(stateName);
 	STATE.status = StandardStateStatus.Process;
+	STATE.launchParams = sanitizeLaunchParams(launchParams);
+	STATE.actionFunctionParams = actionFunctionParams;
+	STATE.info = '';
 	STATE.save();
 }
 
@@ -252,7 +265,8 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 	if (!stateName) throw new Error('State name is not defined');
 
 	try {
-		initializeState(stateName);
+		const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
+		initializeState(stateName, LAUNCH_PARAMS, actionFunctionParams);
 		broadcastStartState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
 
 		const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
@@ -264,7 +278,6 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 		}
 
 		const { secretStorage: SECRET_STORAGE, accounts: ACCOUNTS, logger } = await loadData(LAUNCH_PARAMS, AES_KEY);
-		const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
 
 		await logger.log(buildLogMessage(LAUNCH_PARAMS, actionFunctionParams), MessageType.Info);
 
