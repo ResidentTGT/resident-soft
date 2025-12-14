@@ -3,7 +3,6 @@ import express from 'express';
 import path from 'path';
 import fs from 'node:fs';
 import { readJsonc } from '@utils/config-io';
-import { selectionGate } from '@utils/selection';
 import {
 	ACCOUNTS_DECRYPTED_PATH,
 	ACCOUNTS_ENCRYPTED_PATH,
@@ -37,9 +36,6 @@ router.get('/storage', (_req, res) => {
 });
 
 router.post('/storage', (req, res) => {
-	if (selectionGate.getStatus().chosenBy) {
-		return res.status(423).json({ error: 'Configs are locked (already chosen)' });
-	}
 	try {
 		const { encrypted, decrypted } = req.body || {};
 
@@ -116,9 +112,6 @@ router.get('/accounts', async (_req, res) => {
 });
 
 router.post('/accounts', express.text({ type: 'application/jsonl', limit: '50mb' }), async (req, res) => {
-	if (selectionGate.getStatus().chosenBy) {
-		return res.status(423).json({ error: 'Configs are locked (already chosen)' });
-	}
 	try {
 		const { encrypted: encryptedFiles, decrypted: decryptedFiles } = JSON.parse(req.body) as {
 			encrypted: AccountsFile[];

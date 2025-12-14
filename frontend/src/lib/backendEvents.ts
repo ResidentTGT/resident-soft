@@ -1,9 +1,10 @@
 import { type EventName } from '../../../src/utils/server/eventName.type.ts';
+import type { MessageType } from '../pages/ResultsPage/components/StateLogsTab.tsx';
 
 export interface SSEMessage<T = unknown> {
 	eventName: EventName;
-	taskId?: number;
-	type?: number;
+	stateName?: string;
+	type?: MessageType;
 	timestamp: string;
 	payload?: T;
 	sequence?: number;

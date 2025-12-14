@@ -14,15 +14,16 @@ import {
 	FormControlLabel,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { useStates, useStateSelection, useStateDeletion, useToast } from './ResultsPage/hooks';
+import { useStates, useStateSelection, useStateDeletion } from './ResultsPage/hooks';
+import { useToast } from '../hooks/useToast';
 import { StateListItem, DeleteConfirmDialog, StatesToolbar } from './ResultsPage/components';
 import { formatRelativeTime } from './ResultsPage/utils';
 import {
-	TOAST_AUTO_HIDE_DURATION_MS,
 	BULK_DELETE_TARGET,
 	RELATIVE_TIME_UPDATE_INTERVAL_MS,
 	AUTO_REFRESH_INTERVAL_MS,
 } from './ResultsPage/constants';
+import { TOAST_AUTO_HIDE_DURATION_MS } from '../constants/toast';
 
 export default function ResultsPage() {
 	const { statesMap, loading, error, lastUpdated, refreshManually } = useStates();

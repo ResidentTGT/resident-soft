@@ -11,6 +11,8 @@ import { rotateProxy } from './rotateProxy';
 import { setProxy } from './setProxy';
 import { getStandardState } from './state';
 import { getExplorerUrl } from './getExplorerUrl';
+import { getCurrentStateName } from './stateManager';
+import { checkTaskCancellation } from './taskExecutor';
 
 export interface IsolatedHandlerParams {
 	account: Account;
@@ -253,7 +255,11 @@ export abstract class BaseHandler implements Handler {
 		let currentIndex = accountPromises.length - 1;
 
 		while (remainingAccounts.length > 0 || accountPromises.length > 0) {
-			// Add new accounts to the pool if there's space
+			const stateName = getCurrentStateName();
+			if (stateName) {
+				checkTaskCancellation(stateName);
+			}
+
 			if (accountPromises.length < maxThreads && remainingAccounts.length > 0) {
 				const nextAccount = remainingAccounts.shift();
 				if (nextAccount) {

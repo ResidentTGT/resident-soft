@@ -1,213 +1,72 @@
 // File: index.ts
 import { promptUserForKey, waitForKeyPress } from '@src/utils/prompts';
-import { getVerifyLicenseMessage, welcomeMessage } from '@src/utils/welcome';
-import { sendTelemetry } from '@src/utils/telemetry';
+import { welcomeMessage } from '@src/utils/welcome';
 import { GREEN_TEXT, PURPLE_TEXT, RED_BOLD_TEXT, RESET } from '@src/utils/logger';
 import { readConfigs, validateAndFixFunctionParams } from '@src/utils/config-io';
-import { startHttpServer, stopHttpServer } from '@src/utils/server/server';
-import { selectionGate, type Selector } from '@src/utils/selection';
+import { startHttpServer } from '@src/utils/server/server';
 import { Network } from '@src/utils/network';
-import { actionMode, generateStateName, validateActionAndGroup } from '@src/utils/actionMode';
 import type { LaunchParams } from '@src/utils/types/launchParams.type';
-import type { FunctionParams } from '@src/utils/types/functionParams.type';
-import { withStateContext, broadcastFailState } from '@src/utils/stateManager';
 import { validateAndFixAccountFiles } from '@src/utils/workWithSecrets';
 import { setupUnhandledRejectionHandler } from '@src/utils/errors';
-import { StateStorage } from '@src/utils/state/state';
-import { StandardStateStatus, type StandardState } from '@src/utils/state/standardState.interface';
-import fs from 'node:fs';
-import path from 'node:path';
 
-// Server configuration
+import { activeTasksTracker } from '@src/utils/activeTasks';
+import { executeTask, failAllProcessStates } from '@src/utils/taskExecutor';
+
 const SERVER_URL = `http://localhost:3000`;
 
-// Constants for selection source types
-const SELECTION_SOURCE = {
-	TERMINAL: 'terminal' as const,
-	UI: 'ui' as const,
-};
+setupUnhandledRejectionHandler();
 
-// Constants for task error types
-const TASK_ERROR_TYPE = {
-	DECRYPT_ERROR: 'decrypt_error' as const,
-	RUN_FAILED: 'run_failed' as const,
-};
-
-// Regular expression to detect decryption errors
-const DECRYPT_ERROR_PATTERN = /invalid key|couldn'?t decrypt|decrypt(ion)? failed|UI run requires decryption key/i;
-
-/**
- * Marks all states with "Process" status as "Fail" on shutdown
- * This ensures that interrupted tasks are properly marked as failed
- */
-async function failAllProcessStates(): Promise<void> {
+async function handleTerminalLaunch(): Promise<void> {
 	try {
-		const statesDir = path.resolve(process.cwd(), 'states');
-		if (!fs.existsSync(statesDir)) {
+		const configs = readConfigs();
+
+		if (!configs.launchParams || !configs.functionParams) {
+			console.log(`${RED_BOLD_TEXT}Invalid configuration: missing params${RESET}`);
 			return;
 		}
 
-		const files = fs.readdirSync(statesDir).filter((f) => f.endsWith('.json'));
-
-		for (const file of files) {
-			try {
-				const name = decodeURIComponent(path.basename(file, '.json'));
-				const state = StateStorage.load<StandardState>(name, {
-					defaultState: {
-						fails: [],
-						successes: [],
-						info: '',
-						status: StandardStateStatus.Idle,
-					},
-					readable: true,
-					fileExt: '.json',
-				});
-
-				// If state is in Process, mark it as Failed
-				if (state.status === StandardStateStatus.Process) {
-					state.status = StandardStateStatus.Fail;
-					state.save();
-				}
-			} catch (error) {
-				// Skip files that can't be processed
-				console.error(`${RED_BOLD_TEXT}Failed to process state file ${file}: ${error}${RESET}`);
-			}
-		}
-	} catch (error) {
-		console.error(`${RED_BOLD_TEXT}Error failing process states: ${error}${RESET}`);
-	}
-}
-
-// Setup global unhandled rejection handler with cleanup callback
-setupUnhandledRejectionHandler(failAllProcessStates);
-
-/**
- * Gracefully shuts down the application
- * Fails current task, stops HTTP server, and exits the process
- */
-const shutdown = (() => {
-	let isShuttingDown = false;
-
-	return async (signal: string): Promise<void> => {
-		if (isShuttingDown) return;
-		isShuttingDown = true;
-
-		console.log(`\n${PURPLE_TEXT}Received ${signal}, shutting down gracefully...${RESET}`);
-
-		try {
-			broadcastFailState('Application shutdown');
-		} catch {
-			// No state context active
-		}
-
-		// Mark all states with Process status as Failed
-		await failAllProcessStates();
-
-		// Stop HTTP server
-		try {
-			await stopHttpServer();
-		} catch (error: unknown) {
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			console.error(`${RED_BOLD_TEXT}Error stopping HTTP server: ${errorMessage}${RESET}`);
-		}
-
-		process.exit(0);
-	};
-})();
-
-process.on('SIGINT', () => void shutdown('SIGINT'));
-process.on('SIGTERM', () => void shutdown('SIGTERM'));
-
-/**
- * Waits for user to choose execution method (terminal or UI)
- * Starts parallel listeners for both terminal and UI selection
- */
-async function waitForUserChoice(): Promise<Selector> {
-	// Start waiting for terminal selection in parallel with UI
-	// waitForKeyPress runs asynchronously and will call selectionGate.choose('terminal') on Enter press
-	void waitForKeyPress(
-		`${GREEN_TEXT}Configs editor available at: ${SERVER_URL}/\n\n` +
-			`${GREEN_TEXT}⚠️  Press ENTER to continue with current config\n${RESET}`,
-	).then(() => selectionGate.choose(SELECTION_SOURCE.TERMINAL, readConfigs()));
-
-	// Wait for first choice - from UI (via /api/selection/choose) or from terminal
-	// selectionGate ensures that selection can only happen once
-	return await selectionGate.waitForChoice();
-}
-
-/**
- * Gets encryption key based on selection source
- * UI selections must provide the key upfront, terminal prompts for it
- */
-async function getEncryptionKey(chosenBy: Selector, launchParams: LaunchParams): Promise<string | undefined> {
-	if (!launchParams.USE_ENCRYPTION) {
-		return undefined;
-	}
-
-	if (chosenBy === SELECTION_SOURCE.UI) {
-		const key = selectionGate.getUiKey();
-		if (!key) {
-			throw new Error('UI run requires decryption key');
-		}
-		return key;
-	}
-
-	return await promptUserForKey(true);
-}
-
-/**
- * Executes a single task iteration
- * Continues the execution loop regardless of success or failure
- */
-async function executeTaskIteration(): Promise<void> {
-	try {
-		const chosenBy = await waitForUserChoice();
-		const snapshot = selectionGate.getSnapshot() ?? readConfigs();
-
-		if (!snapshot.launchParams || !snapshot.functionParams) {
-			throw new Error('Invalid configuration: missing launchParams or functionParams');
-		}
-
-		const launchParams: LaunchParams = snapshot.launchParams;
-		const functionParams: FunctionParams = snapshot.functionParams;
+		const launchParams: LaunchParams = configs.launchParams;
+		const functionParams = configs.functionParams;
 
 		if (!launchParams.ACTION_PARAMS?.group || !launchParams.ACTION_PARAMS?.action) {
-			throw new Error('Invalid configuration: missing ACTION_PARAMS');
+			console.log(`${RED_BOLD_TEXT}Invalid configuration: missing ACTION_PARAMS${RESET}`);
+			return;
 		}
 
-		const licenseResult = await getVerifyLicenseMessage(launchParams);
-		await sendTelemetry(licenseResult);
+		let encryptionKey: string | undefined;
+		if (launchParams.USE_ENCRYPTION) {
+			encryptionKey = await promptUserForKey(true);
+		}
 
-		const { group, action } = await validateActionAndGroup(launchParams);
-
-		console.log(`${PURPLE_TEXT}🚀 ${group.name} -> ${action.name}\n${RESET}`);
-
-		const key = await getEncryptionKey(chosenBy, launchParams);
-
-		const stateName = generateStateName(launchParams, group, action);
-		launchParams.STATE_NAME = stateName;
-
-		await withStateContext(stateName, async () => {
-			await actionMode(launchParams, functionParams, key);
-		});
+		const stateName = await executeTask(launchParams, functionParams, encryptionKey);
+		console.log(`${GREEN_TEXT}✓ Task started: ${stateName}${RESET}`);
+		console.log(`${GREEN_TEXT}  Running tasks: ${activeTasksTracker.getActiveCount()}${RESET}\n`);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		console.error(`${RED_BOLD_TEXT}${message}${RESET}`);
-
-		const isDecryptError = DECRYPT_ERROR_PATTERN.test(message);
-		const errorType = isDecryptError ? TASK_ERROR_TYPE.DECRYPT_ERROR : undefined;
-
-		broadcastFailState(message, errorType);
-	} finally {
-		selectionGate.reset();
+		console.error(`${RED_BOLD_TEXT}Failed to start task: ${message}${RESET}`);
 	}
 }
 
-/**
- * Application entry point
- * Initializes services and runs the main execution loop
- */
+async function terminalInterface(): Promise<void> {
+	while (true) {
+		console.log(`${GREEN_TEXT}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`);
+		console.log(`${GREEN_TEXT}Config editor: ${SERVER_URL}/${RESET}`);
+		console.log(`${GREEN_TEXT}Running tasks: ${activeTasksTracker.getActiveCount()}${RESET}`);
+		console.log(`${GREEN_TEXT}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}`);
+		console.log(`${GREEN_TEXT}Press ENTER to launch new task with current config${RESET}`);
+		console.log(`${GREEN_TEXT}Press Ctrl+C to exit${RESET}\n`);
+
+		await waitForKeyPress('');
+		await handleTerminalLaunch();
+	}
+}
+
 async function main() {
+	const interruptedCount = await failAllProcessStates();
+	if (interruptedCount > 0) {
+		console.log(`${PURPLE_TEXT}Marked ${interruptedCount} interrupted task(s) as failed from previous session${RESET}\n`);
+	}
+
 	await Network.loadNetworksAndTokensConfigs();
 	await startHttpServer();
 	await welcomeMessage();
@@ -215,17 +74,11 @@ async function main() {
 	validateAndFixFunctionParams();
 	await validateAndFixAccountFiles();
 
-	while (true) {
-		await executeTaskIteration();
-	}
+	await terminalInterface();
 }
 
-main().catch(async (error) => {
+main().catch((error) => {
 	const message = error instanceof Error ? error.message : String(error);
 	console.error(`${RED_BOLD_TEXT}Fatal error: ${message}${RESET}`);
-
-	// Mark all states with Process status as Failed before exiting
-	await failAllProcessStates();
-
 	process.exit(1);
 });

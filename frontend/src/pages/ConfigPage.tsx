@@ -5,12 +5,11 @@ import FunctionParamsForm from '../components/forms/FunctionParamsForm';
 import type { ActionsGroup } from '../../../src/actions';
 import type { LaunchParams } from '../../../src/utils/types/launchParams.type';
 
-import { chooseUI, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs, getStates } from '../api';
+import { startTask, getAccountsFiles, getActions, getConfigs, getNetworks, getTokens, postConfigs, getStates } from '../api';
 import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 import type { FunctionParams } from '../../../src/utils/types/functionParams.type';
 import DecryptionKeyDialog from './DecryptionKeyDialog';
-import { useBackendEvents } from '../hooks/useBackendEvents';
 
 export default function ConfigPage() {
 	const [launchParams, setLaunchParams] = useState<LaunchParams>();
@@ -33,21 +32,6 @@ export default function ConfigPage() {
 		severity: 'success' | 'error' | 'info';
 		message: string;
 	}>({ open: false, severity: 'success', message: '' });
-
-	useBackendEvents({
-		run_started: (_m) => {
-			setToast({ open: true, severity: 'success', message: 'Скрипт запущен' });
-		},
-		run_finished: (_m) => {
-			setToast({ open: true, severity: 'success', message: 'Выполнение завершено' });
-		},
-		run_failed: (m) => {
-			setToast({ open: true, severity: 'error', message: JSON.stringify(m.payload) });
-		},
-		decrypt_error: (_m) => {
-			setToast({ open: true, severity: 'error', message: 'Ошибка расшифровки (неверный пароль)' });
-		},
-	});
 
 	const [encDialogOpen, setEncDialogOpen] = useState(false);
 
@@ -199,11 +183,11 @@ export default function ConfigPage() {
 				}
 			}
 
-			await chooseUI(key);
+			await startTask(key);
+
 			setSaved('idle');
 		} catch (e: any) {
-			const msg = e.code === 409 ? 'Уже выполняется запуск' : `Ошибка: ${e.message}`;
-			setToast({ open: true, severity: 'error', message: msg });
+			setToast({ open: true, severity: 'error', message: `Ошибка: ${e.message}` });
 			setSaved('idle');
 		}
 	}

@@ -6,7 +6,6 @@ import { ACTIONS, ActionsGroupName, ActionsGroup, Action } from '@src/actions';
 
 import { FREE_HANDLERS } from '@src/free/handlersList';
 import { BaseHandler } from './handler';
-import { verifyLicense } from './licenses';
 import { Network } from './network';
 import { shuffleArray } from './shuffleArray';
 import { parse } from 'jsonc-parser';
@@ -23,6 +22,9 @@ import { getAllAccounts } from './getAllAccounts';
 import { getStandardState } from './state';
 import { StandardStateStatus } from './state/standardState.interface';
 import { broadcastFailState, broadcastFinishState, getCurrentStateName, broadcastStartState } from './stateManager';
+import { checkTaskCancellation } from './taskExecutor';
+import { getVerifyLicenseMessage } from './welcome';
+import { sendTelemetry } from './telemetry';
 
 /**
  * Error messages used throughout action execution
@@ -269,7 +271,9 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 		initializeState(stateName, LAUNCH_PARAMS, actionFunctionParams);
 		broadcastStartState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
 
-		const licenseValid = (await verifyLicense(LAUNCH_PARAMS.LICENSE)).ok;
+		const licenseResult = await getVerifyLicenseMessage(LAUNCH_PARAMS);
+		const licenseValid = licenseResult.ok;
+		await sendTelemetry(licenseResult);
 
 		const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
 
@@ -286,6 +290,8 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 		validateChainIds(actionFunctionParams);
 
 		for (let iterationIndex = 0; iterationIndex < LAUNCH_PARAMS.NUMBER_OF_EXECUTIONS; iterationIndex++) {
+			checkTaskCancellation(stateName);
+
 			const accountsToProcess = LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(ACCOUNTS.slice()) : ACCOUNTS.slice();
 
 			const params: ActionModeParams = {

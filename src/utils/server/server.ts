@@ -4,7 +4,7 @@ import * as sea from 'node:sea';
 import fs from 'node:fs';
 
 import configsRouter from './routes/configs.router';
-import selectionRouter from './routes/selection.router';
+import tasksRouter from './routes/tasks.router';
 import metadataRouter from './routes/metadata.router';
 import accountsRouter from './routes/accounts.router';
 import statesRouter from './routes/states.router';
@@ -20,7 +20,7 @@ export async function startHttpServer() {
 	// API Routes
 	app.use('/api/events', eventsRouter);
 	app.use('/api/configs', configsRouter);
-	app.use('/api/selection', selectionRouter);
+	app.use('/api/tasks', tasksRouter);
 	app.use('/api', metadataRouter);
 	app.use('/api/accsfiles', accountsRouter);
 	app.use('/api/process/states', statesRouter);

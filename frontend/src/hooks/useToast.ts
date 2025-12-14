@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { ToastState, ToastSeverity } from '../constants';
+import type { ToastState, ToastSeverity } from '../constants/toast';
 
 export const useToast = () => {
 	const [toast, setToast] = useState<ToastState>({
