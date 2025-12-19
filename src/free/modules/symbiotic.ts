@@ -21,7 +21,7 @@ export abstract class Symbiotic {
 
 		const contract = new ethers.Contract(vaultAddr, ABI, network.getProvider());
 
-		const balBn = await contract.balanceOf(account.wallets.evm.address);
+		const balBn = await contract.balanceOf(wallet.address);
 		const decimals = await contract.decimals();
 		const symbol = await contract.symbol();
 
