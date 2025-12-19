@@ -297,4 +297,10 @@ export interface FunctionParams {
 			addresses: string[];
 		};
 	};
+	Symbiotic?: {
+		Withdraw?: {
+			chainId: ChainId;
+			vaultAddr: string;
+		};
+	};
 }

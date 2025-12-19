@@ -49,6 +49,7 @@ export enum ActionsGroupName {
 	Abstract = 'Abstract',
 	Afina = 'Afina',
 	Bridges = 'Bridges',
+	Symbiotic = 'Symbiotic',
 }
 
 export enum ActionName {

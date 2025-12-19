@@ -39,7 +39,7 @@ export async function setProxy(proxy?: Proxy) {
 		}),
 	);
 
-	await Logger.getInstance().log(`Proxy: ${proxyUrl}`);
+	await Logger.getInstance().log(`Proxy: ${scheme}://XXX:XXX@${proxy.ip}:${proxy.port}`);
 }
 
 export async function resetProxy() {

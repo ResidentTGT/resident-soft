@@ -6,8 +6,9 @@
 			{ "symbol": "USDT", "address": "0xdac17f958d2ee523a2206206994597c13d831ec7" },
 			{ "symbol": "USDC", "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" },
 			{ "symbol": "WETH", "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" },
+			{ "symbol": "WBTC", "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599" },
 			{ "symbol": "BTC.b", "address": "0x2297aEbD383787A160DD0d9F71508148769342E3" },
-			{ "symbol": "rETH", "address": "0xae78736cd615f374d3085123a210448e74fc6393" },
+			{ "symbol": "rETH", "address": "0xae78736Cd615f374D3085123A210448E74Fc6393" },
 			{ "symbol": "DAI", "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F" },
 			{ "symbol": "BUSD", "address": "0x4fabb145d64652a948d72533023f6e7a623c7c53" },
 			{ "symbol": "MEME", "address": "0xb131f4A55907B10d1F0A50d8ab8FA09EC342cd74" },
@@ -19,6 +20,7 @@
 			{ "symbol": "cbETH", "address": "0xBe9895146f7AF43049ca1c1AE358B0541Ea49704" },
 			{ "symbol": "YT-corn-eBTC-27MAR2025", "address": "0x72D120B9C47dA21eD704e843B2C970ca743DB175" },
 			{ "symbol": "deUSD", "address": "0x15700B564Ca08D9439C58cA5053166E8317aa138" },
+			{ "symbol": "wstETH", "address": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0" },
 		],
 	},
 	{
@@ -69,7 +71,8 @@
 		"chainId": "137",
 		"tokens": [
 			{ "symbol": "MATIC", "address": "0x0000000000000000000000000000000000000000" },
-			{ "symbol": "USDC", "address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" },
+			{ "symbol": "USDC.e", "address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174" },
+			{ "symbol": "USDC", "address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359" },
 			{ "symbol": "USDT", "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f" },
 			{ "symbol": "DAI", "address": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063" },
 			{ "symbol": "agEUR", "address": "0xe0b52e49357fd4daf2c15e02058dce6bc0057db4" },

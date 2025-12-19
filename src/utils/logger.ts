@@ -246,8 +246,11 @@ export class Logger {
 					message: message,
 				};
 
+				// Encode state name to match encoded state file names
+				const encodedStateName = encodeURIComponent(stateName);
+
 				// Append as single line (JSONL format)
-				await fs.appendFile(`${stateLogDir}/${stateName}.jsonl`, JSON.stringify(logEntry) + '\n', 'utf-8');
+				await fs.appendFile(`${stateLogDir}/${encodedStateName}.jsonl`, JSON.stringify(logEntry) + '\n', 'utf-8');
 			} catch (error) {
 				console.error(`${RED_TEXT}Failed to write state log: ${error}${RESET}`);
 			}

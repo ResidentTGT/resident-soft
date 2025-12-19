@@ -31,7 +31,7 @@
 		"chainId": "137",
 		"name": "Polygon Mainnet",
 		"nativeCoin": "MATIC",
-		"rpc": ["https://polygon-mainnet.public.blastapi.io"],
+		"rpc": ["https://polygon-rpc.com"],
 	},
 	{
 		"chainId": "5",

@@ -860,6 +860,17 @@ function Form_Stargate_Bridge({ params, set, networks, tokens }: FormCtx) {
 	);
 }
 
+/* -------- / Symbiotic -------- */
+
+function Form_Symbiotic_Withdraw({ params, set, networks }: FormCtx) {
+	return (
+		<Grid container spacing={2}>
+			<ChainIdSelect label="В сети" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+			<StrField label="Адрес волта" value={params.vaultAddr} onChange={(v) => set('vaultAddr', v)} />
+		</Grid>
+	);
+}
+
 export const FORMS = {
 	[ActionsGroupName.Common]: {
 		[ActionName.CheckBalances]: Form_Common_CheckBalances,
@@ -943,5 +954,8 @@ export const FORMS = {
 		[ActionName.RefuelManyGasZip]: Form_Common_RefuelManyGasZip,
 		[ActionName.RefuelRelayLink]: Form_Common_RefuelRelayLink,
 		[ActionName.RefuelManyRelayLink]: Form_Common_RefuelManyRelayLink,
+	},
+	[ActionsGroupName.Symbiotic]: {
+		[ActionName.Withdraw]: Form_Symbiotic_Withdraw,
 	},
 };

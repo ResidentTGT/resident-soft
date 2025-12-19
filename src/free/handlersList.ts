@@ -9,6 +9,7 @@ import { CheckersHandler } from './handlers/checkers';
 
 import { CexDexHandler } from './handlers/cexDex';
 import { BridgesHandler } from './handlers/bridges';
+import { SymbioticHandler } from './handlers/symbiotic';
 
 export const FREE_HANDLERS = new Map<ActionsGroupName, BaseHandler>([
 	[ActionsGroupName.TEST, new TestHandler(ActionsGroupName.TEST)],
@@ -18,4 +19,5 @@ export const FREE_HANDLERS = new Map<ActionsGroupName, BaseHandler>([
 	[ActionsGroupName.Checkers, new CheckersHandler(ActionsGroupName.Checkers)],
 	[ActionsGroupName.CexDex, new CexDexHandler(ActionsGroupName.CexDex)],
 	[ActionsGroupName.Bridges, new BridgesHandler(ActionsGroupName.Bridges)],
+	[ActionsGroupName.Symbiotic, new SymbioticHandler(ActionsGroupName.Symbiotic)],
 ]);

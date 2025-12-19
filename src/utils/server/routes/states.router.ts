@@ -157,8 +157,11 @@ router.get('/logs/:stateName', async (req, res) => {
 			return res.status(400).json({ error: 'Invalid stateName format' });
 		}
 
+		// Encode state name to match encoded log file names
+		const encodedSafeName = encodeURIComponent(safeName);
+
 		const LOG_DIR = path.resolve(process.cwd(), 'states', 'logs');
-		const logFilePath = path.join(LOG_DIR, `${safeName}.jsonl`);
+		const logFilePath = path.join(LOG_DIR, `${encodedSafeName}.jsonl`);
 
 		if (!fs.existsSync(logFilePath)) {
 			return res.json({ logs: [] });

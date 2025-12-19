@@ -14,6 +14,7 @@ export function StrField({
 	return (
 		<Grid sx={{ xs: 12, md: 6, width: '100%' }}>
 			<TextField
+				fullWidth
 				label={label}
 				size="small"
 				placeholder={placeholder}

@@ -14,6 +14,7 @@ import { svmActions } from './groups/free/svm.actions';
 import { cexDexActions } from './groups/free/cexDex.actions';
 import { checkersActions } from './groups/free/checkers.actions';
 import { testActions } from './groups/free/TEST.actions';
+import { symbioticActions } from './groups/free/symbiotic.actions';
 
 // Premium actions
 import { twitterActions } from './groups/premium/twitter.actions';
@@ -53,18 +54,11 @@ import { bridgesActions } from './groups/free/bridges.actions';
  * - Test: Development and testing actions
  */
 export const ACTIONS: ActionsGroup[] = [
-	// Core blockchain operations
 	commonActions,
 	evmActions,
 	svmActions,
-
-	// Social platforms
 	twitterActions,
-
-	// Exchanges
 	cexDexActions,
-
-	// Blockchain projects
 	berachainActions,
 	openseaActions,
 	shapeActions,
@@ -78,20 +72,13 @@ export const ACTIONS: ActionsGroup[] = [
 	plasmaActions,
 	townsActions,
 	eclipseActions,
-
-	// UI operations
+	symbioticActions,
 	commonUiActions,
-
-	// Tools and utilities
 	checkersActions,
 	adsPowerActions,
 	visionActions,
 	afinaActions,
-
-	// Test actions (disabled by default)
 	testActions,
 	testPremiumActions,
-
-	//Bridges
 	bridgesActions,
 ];

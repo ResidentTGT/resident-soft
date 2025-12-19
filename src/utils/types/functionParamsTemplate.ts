@@ -302,4 +302,10 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			addresses: [],
 		},
 	},
+	Symbiotic: {
+		Withdraw: {
+			chainId: ChainId.Ethereum,
+			vaultAddr: '0xB26ff591F44b04E78de18f43B46f8b70C6676984',
+		},
+	},
 };
