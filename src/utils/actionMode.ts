@@ -72,6 +72,9 @@ export function initializeState(stateName: string, launchParams: LaunchParams, a
 	STATE.launchParams = sanitizeLaunchParams(launchParams);
 	STATE.actionFunctionParams = actionFunctionParams;
 	STATE.info = '';
+	if (!STATE.createdAt) {
+		STATE.createdAt = new Date().toISOString();
+	}
 	STATE.save();
 }
 
@@ -107,7 +110,7 @@ function loadSecretStorage(aesKey?: string): SecretStorage {
 /**
  * Loads, filters and decrypts accounts
  */
-async function loadAccounts(launchParams: LaunchParams, aesKey?: string): Promise<Account[]> {
+export async function loadAccounts(launchParams: LaunchParams, aesKey?: string): Promise<Account[]> {
 	const accountsPath = aesKey ? ACCOUNTS_ENCRYPTED_PATH : ACCOUNTS_DECRYPTED_PATH;
 	const accountFiles = launchParams.JOB_ACCOUNTS.map((a) => a.file);
 

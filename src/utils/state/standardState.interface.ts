@@ -12,6 +12,7 @@ export interface StandardState {
 	fails: string[];
 	info: string;
 	status: StandardStateStatus;
+	createdAt?: string;
 	launchParams?: LaunchParams;
 	actionFunctionParams?: any;
 }

@@ -40,19 +40,6 @@ import { afinaActions } from './groups/premium/afina.actions';
 import type { ActionsGroup } from './types/action.types';
 import { bridgesActions } from './groups/free/bridges.actions';
 
-/**
- * Master list of all available actions grouped by category
- *
- * Groups are organized as follows:
- * - Core: Common, EVM, SVM
- * - Exchanges: OKX, Bitget, Binance, Gate, Bybit, Generic Exchanges
- * - DeFi: Odos
- * - Social: Twitter
- * - UI: Common UI operations
- * - Projects: Various blockchain projects (Berachain, Opensea, Shape, etc.)
- * - Tools: AdsPower, Vision, Checkers
- * - Test: Development and testing actions
- */
 export const ACTIONS: ActionsGroup[] = [
 	commonActions,
 	evmActions,

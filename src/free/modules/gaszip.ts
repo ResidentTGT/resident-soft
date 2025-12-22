@@ -6,6 +6,8 @@ import Random from '@utils/random';
 import { delay } from '@utils/delay';
 import bs58 from 'bs58';
 import { getStandardState } from '@utils/state';
+import { getCurrentStateName } from '@src/utils/stateManager';
+import { checkTaskCancellation } from '@src/utils/taskExecutor';
 
 const CONTRACT_ADDRESS = '0x391E7C679d29bD940d63be94AD22A25d25b5A604';
 
@@ -89,6 +91,8 @@ export class GasZip {
 	): Promise<any> {
 		const stateName = `refuelManyWalletsFromOneWallet/${new Date().toISOString().split('.')[0].replaceAll(':', '-')}`;
 		for (let i = 0; i < toAddrs.length; i++) {
+			const stateName1 = getCurrentStateName();
+			if (stateName1) checkTaskCancellation(stateName1);
 			try {
 				await Logger.getInstance().log(`Starting ${i + 1} of ${toAddrs.length} ...`);
 				await GasZip.refuel(

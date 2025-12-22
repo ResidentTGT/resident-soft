@@ -19,13 +19,13 @@ export const bridgesActions: ActionsGroup = {
 			action: ActionName.RefuelManyGasZip,
 			isolated: false,
 			allowed: true,
-			name: 'Refuel с одного кошелька на множество других через GasZip',
+			name: 'Refuel через GasZip с 1 мейна',
 		},
 		{
 			action: ActionName.RefuelManyRelayLink,
 			isolated: false,
 			allowed: true,
-			name: 'Refuel с одного кошелька на множество других через RelayLink',
+			name: 'Refuel через RelayLink с 1 мейна',
 		},
 	],
 };

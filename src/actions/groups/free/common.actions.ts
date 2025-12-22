@@ -14,5 +14,11 @@ export const commonActions: ActionsGroup = {
 			allowed: true,
 			name: 'Сгенерировать EVM кошельки',
 		},
+		{
+			action: ActionName.GetAccounts,
+			isolated: false,
+			allowed: true,
+			name: 'Получить аккаунты',
+		},
 	],
 };

@@ -6,6 +6,8 @@ import axios from 'axios';
 import { delay } from '@utils/delay';
 import Random from '@utils/random';
 import { getStandardState } from '@utils/state';
+import { getCurrentStateName } from '@src/utils/stateManager';
+import { checkTaskCancellation } from '@src/utils/taskExecutor';
 
 //https://docs.relay.link/resources/supported-chains
 
@@ -63,6 +65,8 @@ export abstract class RelayLink {
 	): Promise<any> {
 		const stateName = `refuelManyWalletsFromOneWallet/${new Date().toISOString().split('.')[0].replaceAll(':', '-')}`;
 		for (let i = 0; i < toAddrs.length; i++) {
+			const stateName1 = getCurrentStateName();
+			if (stateName1) checkTaskCancellation(stateName1);
 			try {
 				await Logger.getInstance().log(`Starting ${i + 1} of ${toAddrs.length} ...`);
 				await RelayLink.refuel(

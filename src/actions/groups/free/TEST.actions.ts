@@ -6,5 +6,5 @@ export const testActions: ActionsGroup = {
 	premium: false,
 	name: 'TEST',
 	allowed: false,
-	actions: [{ action: ActionName.TEST, isolated: true, allowed: true, name: '' }],
+	actions: [{ action: ActionName.TEST, isolated: true, allowed: true, name: 'TEST' }],
 };

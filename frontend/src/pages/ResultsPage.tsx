@@ -18,12 +18,10 @@ import { useStates, useStateSelection, useStateDeletion } from './ResultsPage/ho
 import { useToast } from '../hooks/useToast';
 import { StateListItem, DeleteConfirmDialog, StatesToolbar } from './ResultsPage/components';
 import { formatRelativeTime } from './ResultsPage/utils';
-import {
-	BULK_DELETE_TARGET,
-	RELATIVE_TIME_UPDATE_INTERVAL_MS,
-	AUTO_REFRESH_INTERVAL_MS,
-} from './ResultsPage/constants';
+import { BULK_DELETE_TARGET, RELATIVE_TIME_UPDATE_INTERVAL_MS, AUTO_REFRESH_INTERVAL_MS } from './ResultsPage/constants';
 import { TOAST_AUTO_HIDE_DURATION_MS } from '../constants/toast';
+import { cancelTask } from '../api/modules/tasks.api';
+import { StandardStateStatus } from '../../../src/utils/state/standardState.interface';
 
 export default function ResultsPage() {
 	const { statesMap, loading, error, lastUpdated, refreshManually } = useStates();
@@ -69,10 +67,24 @@ export default function ResultsPage() {
 	}, [autoRefreshEnabled, autoRefreshKey, refreshManually]);
 
 	// Computed values
-	const stateNames = useMemo(() => Object.keys(statesMap).sort(), [statesMap]);
+	const stateNames = useMemo(() => {
+		return Object.keys(statesMap).sort((a, b) => {
+			const timeA = statesMap[a]?.data.createdAt;
+			const timeB = statesMap[b]?.data.createdAt;
+
+			if (!timeA && !timeB) return 0;
+			if (!timeA) return 1;
+			if (!timeB) return -1;
+
+			return new Date(timeB).getTime() - new Date(timeA).getTime();
+		});
+	}, [statesMap]);
 
 	// Handlers
-	const handleSelectAll = () => selectAll(stateNames);
+	const handleSelectAll = () => {
+		const selectableStates = stateNames.filter((name) => statesMap[name]?.data.status !== StandardStateStatus.Process);
+		selectAll(selectableStates);
+	};
 	const handleDeleteSelected = () => initiateDelete(BULK_DELETE_TARGET);
 	const handleConfirmDelete = async () => {
 		await confirmDelete(selectedStates);
@@ -80,6 +92,17 @@ export default function ResultsPage() {
 	const handleManualRefresh = () => {
 		refreshManually();
 		setAutoRefreshKey((prev) => prev + 1);
+	};
+	const handleCancelTask = async (stateName: string) => {
+		try {
+			await cancelTask(stateName);
+			showToast(
+				'success',
+				`Остановка задачи "${stateName}" запущена. Как только текущий аккаунт завершится, задача будет остановлена.`,
+			);
+		} catch (error: any) {
+			showToast('error', `Ошибка отмены задачи: ${error.message}`);
+		}
 	};
 
 	return (
@@ -171,6 +194,7 @@ export default function ResultsPage() {
 								item={statesMap[name]}
 								isSelected={selectedStates.has(name)}
 								onToggleSelect={toggleSelection}
+								onCancelTask={handleCancelTask}
 							/>
 						))}
 					</List>

@@ -91,9 +91,6 @@ export class BridgesHandler extends BaseHandler {
 
 				if (!amount) amount = (bal - 0.00001).toFixed(6);
 
-				if (bal <= +amount || +amount <= 0)
-					throw new Error(`Not enough balance (${bal} ${network.nativeCoin}) to refuel!`);
-
 				if (amount < functionParams.minAmountToSend) {
 					await Logger.getInstance().log(
 						`Balance (${bal} ${network.nativeCoin}) is less than minAmountToSend (${functionParams.minAmountToSend} ${network.nativeCoin})!`,
@@ -101,6 +98,9 @@ export class BridgesHandler extends BaseHandler {
 					);
 					return { skipDelay: true };
 				}
+
+				if (bal <= +amount || +amount <= 0)
+					throw new Error(`Not enough balance (${bal} ${network.nativeCoin}) to refuel!`);
 
 				let destAddr;
 				if (Network.isEvm(functionParams.toChainId)) {

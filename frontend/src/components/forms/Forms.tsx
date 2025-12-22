@@ -387,9 +387,9 @@ const Form_Svm_SendToken = ({ params, set, networks, tokens }: FormCtx) => (
 	</Grid>
 );
 
-/* -------- Odos -------- */
+/* -------- Dex -------- */
 
-function Form_Odos_Swap({ params, set, networks, tokens }: FormCtx) {
+function Form_Dex_Swap({ params, set, networks, tokens }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
@@ -900,7 +900,7 @@ export const FORMS = {
 	},
 	[ActionsGroupName.CexDex]: {
 		[ActionName.Withdraw]: Form_Exchanges_Withdraw,
-		[ActionName.OdosSwap]: Form_Odos_Swap,
+		[ActionName.OdosSwap]: Form_Dex_Swap,
 	},
 	[ActionsGroupName.Vision]: {
 		[ActionName.GetProfiles]: Form_Vision_GetProfiles,

@@ -15,6 +15,8 @@ import fs from 'fs';
 import path from 'path';
 import { StandardState } from '@src/utils/state/standardState.interface';
 import { LaunchParams } from '@src/utils/types/launchParams.type';
+import { checkTaskCancellation } from '@src/utils/taskExecutor';
+import { getCurrentStateName } from '@src/utils/stateManager';
 
 interface NetworkToken extends Token {
 	decimals: number;
@@ -103,6 +105,8 @@ export async function checkBalances(
 		}
 
 		for (const account of accounts) {
+			const stateName = getCurrentStateName();
+			if (stateName) checkTaskCancellation(stateName);
 			if (!account.name) throw new Error(`There is no account.name!`);
 			while (true) {
 				try {

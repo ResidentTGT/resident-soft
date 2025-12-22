@@ -65,6 +65,7 @@
 			{ "symbol": "OX", "address": "0xba0Dda8762C24dA9487f5FA026a9B64b695A07Ea" },
 			{ "symbol": "PYTH", "address": "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724" },
 			{ "symbol": "HMX", "address": "0x83d6c8C06ac276465e4C92E7aC8C23740F435140" },
+			{ "symbol": "veSTG", "address": "0xfBd849E6007f9BC3CC2D6Eb159c045B8dc660268" },
 		],
 	},
 	{
@@ -91,7 +92,7 @@
 		"tokens": [
 			{ "symbol": "ETH", "address": "0x0000000000000000000000000000000000000000" },
 			{ "symbol": "WETH", "address": "0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91" },
-			{ "symbol": "USDC", "address": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4" },
+			{ "symbol": "USDC.e", "address": "0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4" },
 			{ "symbol": "USDT", "address": "0x493257fd37edb34451f62edf8d2a0c418852ba4c" },
 			{ "symbol": "DAI", "address": "0x4B9eb6c0b6ea15176BBF62841C6B2A8a398cb656" },
 			{ "symbol": "BUSD", "address": "0x9a455D1a2b4630FfDb9A2307f2E875400d28B3c5" },
@@ -102,6 +103,7 @@
 			{ "symbol": "rfWBTC", "address": "0x0a976E1E7D3052bEb46085AcBE1e0DAccF4A19CF" },
 			{ "symbol": "zkPEPE", "address": "0x7D54a311D56957fa3c9a3e397CA9dC6061113ab3" },
 			{ "symbol": "z0WETH", "address": "0x9002ecb8a06060e3b56669c6B8F18E1c3b119914" },
+			{ "symbol": "USDCWETHcSLP", "address": "0x80115c708E12eDd42E504c1cD52Aea96C547c05c" },
 		],
 	},
 	{

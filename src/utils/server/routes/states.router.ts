@@ -44,6 +44,7 @@ router.get('/', async (_req, res) => {
 					fails: uniq(o.fails),
 					info: typeof o.info === 'string' ? o.info : '',
 					status,
+					createdAt: typeof o.createdAt === 'string' ? o.createdAt : undefined,
 					launchParams:
 						typeof o.launchParams === 'object' && o.launchParams !== null ? (o.launchParams as any) : undefined,
 					actionFunctionParams:
@@ -53,7 +54,12 @@ router.get('/', async (_req, res) => {
 				};
 
 				const stat = await fs.statSync(filePath);
-				ok.push({ name, updatedAt: stat.mtime.toISOString(), data });
+
+				ok.push({
+					name,
+					updatedAt: stat.mtime.toISOString(),
+					data,
+				});
 			} catch (e: any) {
 				failed.push({ name, error: e?.message });
 			}
