@@ -280,12 +280,12 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			amount: [0, 1],
 			minBalanceToKeep: [0, 0],
 			minAmountToSend: 0,
-			toChainIds: [ChainId.Base],
+			toChainId: ChainId.Base,
 		},
 		RefuelManyGasZip: {
 			fromChainId: ChainId.Ethereum,
 			amount: [0, 1],
-			toChainIds: [ChainId.Ethereum],
+			toChainId: ChainId.Base,
 			addresses: [],
 		},
 		RefuelRelayLink: {

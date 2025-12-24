@@ -11,6 +11,7 @@ import { GasZip } from '../modules/gaszip';
 import { RelayLink } from '../modules/relayLink';
 import { Network } from '@src/utils/network';
 import { shuffleArray } from '@src/utils/shuffleArray';
+import { refuelFromOneToMany, RefuelService } from '../scenarios/refuelFromOneToMany';
 
 export class BridgesHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
@@ -65,7 +66,7 @@ export class BridgesHandler extends BaseHandler {
 					return { skipDelay: true };
 				}
 
-				await GasZip.refuel(account.wallets.evm.private, network, functionParams.toChainIds, wal.address, amount);
+				await GasZip.refuel(account.wallets.evm.private, network, [functionParams.toChainId], wal.address, amount);
 
 				break;
 			}
@@ -131,26 +132,29 @@ export class BridgesHandler extends BaseHandler {
 			case ActionName.RefuelManyGasZip: {
 				const network = await Network.getNetworkByChainId(FUNCTION_PARAMS.fromChainId);
 				if (!SECRET_STORAGE.mainEvmWallet?.private) throw new Error('SECRET_STORAGE.mainEvmWallet.private is required!');
-				await GasZip.refuelManyWalletsFromOneWallet(
-					SECRET_STORAGE.mainEvmWallet.private,
-					network,
-					FUNCTION_PARAMS.toChainIds,
-					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.addresses) : FUNCTION_PARAMS.addresses,
-					FUNCTION_PARAMS.amount,
-					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
-				);
-				break;
-			}
-			case ActionName.RefuelManyRelayLink: {
-				const network = await Network.getNetworkByChainId(FUNCTION_PARAMS.fromChainId);
-				if (!SECRET_STORAGE.mainEvmWallet?.private) throw new Error('SECRET_STORAGE.mainEvmWallet.private is required!');
-				await RelayLink.refuelManyWalletsFromOneWallet(
+
+				await refuelFromOneToMany(
 					SECRET_STORAGE.mainEvmWallet.private,
 					network,
 					FUNCTION_PARAMS.toChainId,
 					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.addresses) : FUNCTION_PARAMS.addresses,
 					FUNCTION_PARAMS.amount,
 					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
+					RefuelService.GasZip,
+				);
+				break;
+			}
+			case ActionName.RefuelManyRelayLink: {
+				const network = await Network.getNetworkByChainId(FUNCTION_PARAMS.fromChainId);
+				if (!SECRET_STORAGE.mainEvmWallet?.private) throw new Error('SECRET_STORAGE.mainEvmWallet.private is required!');
+				await refuelFromOneToMany(
+					SECRET_STORAGE.mainEvmWallet.private,
+					network,
+					FUNCTION_PARAMS.toChainId,
+					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.addresses) : FUNCTION_PARAMS.addresses,
+					FUNCTION_PARAMS.amount,
+					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
+					RefuelService.RelayLink,
 				);
 				break;
 			}

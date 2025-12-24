@@ -26,7 +26,7 @@ export const StateResultsTab = ({ data }: StateResultsTabProps) => {
 	return (
 		<Box sx={{ px: 2, pb: 2 }}>
 			{data.info && (
-				<Alert severity={getAlertSeverity()} variant="outlined" sx={{ mb: 2 }}>
+				<Alert severity={getAlertSeverity()} variant="outlined" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
 					{data.info}
 				</Alert>
 			)}

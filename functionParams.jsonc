@@ -251,13 +251,13 @@
 			"amount": [0.00001, 0.00001],
 			"minBalanceToKeep": [0, 0],
 			"minAmountToSend": 0,
-			"toChainIds": ["42161"],
+			"toChainId": "8453",
 		},
 		"RefuelManyGasZip": {
 			"fromChainId": "1",
 			"amount": [0, 0],
-			"toChainIds": ["1"],
 			"addresses": [],
+			"toChainId": "8453",
 		},
 		"RefuelRelayLink": {
 			"amount": [0, 0],

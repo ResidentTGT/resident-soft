@@ -125,73 +125,7 @@ function Form_Common_GenerateWallets({ params, set }: FormCtx) {
 	);
 }
 
-function Form_Common_RefuelGasZip({ params, set, networks }: FormCtx) {
-	return (
-		<Grid container spacing={2}>
-			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
-				<ChainIdSelect
-					label="Из сети"
-					value={params.fromChainId}
-					onChange={(v) => set('fromChainId', v)}
-					networks={networks}
-				/>
-			</Grid>
-			<RangeField
-				labelFrom="Количество от"
-				labelTo="Количество до"
-				value={params.amount}
-				onChange={(v) => set('amount', v)}
-			/>
-			<RangeField
-				labelFrom="Оставлять на балансе от"
-				labelTo="Оставлять на балансе до"
-				value={params.minBalanceToKeep}
-				onChange={(v) => set('minBalanceToKeep', v)}
-			/>
-			<NumField label="Минимальная сумма" value={params.minAmountToSend} onChange={(v) => set('minAmountToSend', v ?? 0)} />
-			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
-				<ChainIdMultiSelect
-					label="В сети"
-					value={params.toChainIds}
-					onChange={(v) => set('toChainIds', v)}
-					networks={networks}
-				/>
-			</Grid>
-		</Grid>
-	);
-}
-
-function Form_Common_RefuelManyGasZip({ params, set, networks }: FormCtx) {
-	return (
-		<Grid container spacing={2}>
-			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
-				<ChainIdSelect
-					label="Из сети"
-					value={params.fromChainId}
-					onChange={(v) => set('fromChainId', v)}
-					networks={networks}
-				/>
-			</Grid>
-			<RangeField
-				labelFrom="Количество от"
-				labelTo="Количество до"
-				value={params.amount}
-				onChange={(v) => set('amount', v)}
-			/>
-			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
-				<ChainIdMultiSelect
-					label="В сети"
-					value={params.toChainIds}
-					onChange={(v) => set('toChainIds', v)}
-					networks={networks}
-				/>
-			</Grid>
-			<CsvField label="Адреса" value={params.addresses} onChange={(v) => set('addresses', v)} />
-		</Grid>
-	);
-}
-
-function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
+function Form_Common_Refuel({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
@@ -227,7 +161,7 @@ function Form_Common_RefuelRelayLink({ params, set, networks }: FormCtx) {
 	);
 }
 
-function Form_Common_RefuelManyRelayLink({ params, set, networks }: FormCtx) {
+function Form_Common_RefuelMany({ params, set, networks }: FormCtx) {
 	return (
 		<Grid container spacing={2}>
 			<Grid sx={{ xs: 12, md: 6, width: 'auto' }}>
@@ -950,10 +884,10 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Bridges]: {
 		[ActionName.Stargate]: Form_Stargate_Bridge,
-		[ActionName.RefuelGasZip]: Form_Common_RefuelGasZip,
-		[ActionName.RefuelManyGasZip]: Form_Common_RefuelManyGasZip,
-		[ActionName.RefuelRelayLink]: Form_Common_RefuelRelayLink,
-		[ActionName.RefuelManyRelayLink]: Form_Common_RefuelManyRelayLink,
+		[ActionName.RefuelGasZip]: Form_Common_Refuel,
+		[ActionName.RefuelManyGasZip]: Form_Common_RefuelMany,
+		[ActionName.RefuelRelayLink]: Form_Common_Refuel,
+		[ActionName.RefuelManyRelayLink]: Form_Common_RefuelMany,
 	},
 	[ActionsGroupName.Symbiotic]: {
 		[ActionName.Withdraw]: Form_Symbiotic_Withdraw,

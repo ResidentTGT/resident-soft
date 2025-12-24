@@ -275,12 +275,12 @@ export interface FunctionParams {
 			amount: [number, number];
 			minBalanceToKeep: [number, number];
 			minAmountToSend: number;
-			toChainIds: ChainId[];
+			toChainId: ChainId;
 		};
 		RefuelManyGasZip?: {
 			fromChainId: ChainId;
 			amount: [number, number];
-			toChainIds: ChainId[];
+			toChainId: ChainId;
 			addresses: string[];
 		};
 		RefuelRelayLink?: {

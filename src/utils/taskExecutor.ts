@@ -48,7 +48,7 @@ export async function executeTask(launchParams: LaunchParams, functionParams: an
 
 export function checkTaskCancellation(stateName: string): void {
 	if (activeTasksTracker.isCancelled(stateName)) {
-		throw new Error('Task cancelled by user');
+		throw new Error('Задача остановлена пользователем.');
 	}
 }
 

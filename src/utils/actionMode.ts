@@ -30,7 +30,7 @@ import { sendTelemetry } from './telemetry';
  * Error messages used throughout action execution
  */
 const ERROR_MESSAGES = {
-	ACTION_EXECUTION_FAILED: 'Возникла ошибка при выполнении действия',
+	ACTION_EXECUTION_FAILED: 'Возникла ошибка при выполнении действия.',
 } as const;
 
 export interface ActionModeParams {
@@ -93,7 +93,8 @@ function finalizeStateSuccess(stateName: string): void {
 function finalizeStateFailure(stateName: string, error: unknown): void {
 	const STATE = getStandardState(stateName);
 	STATE.status = StandardStateStatus.Fail;
-	STATE.info = `${ERROR_MESSAGES.ACTION_EXECUTION_FAILED}. ${error}`;
+	const failMsg = `${ERROR_MESSAGES.ACTION_EXECUTION_FAILED} ${error}`;
+	STATE.info = STATE.info && STATE.info.length > 0 ? `${failMsg}\n${STATE.info}` : failMsg;
 	STATE.save();
 }
 

@@ -1,13 +1,8 @@
 import { ethers } from 'ethers';
-import { Logger, MessageType } from '@utils/logger';
+import { Logger } from '@utils/logger';
 import { Evm } from '@src/free/modules/evm';
 import { ChainId, Network } from '@utils/network';
 import axios from 'axios';
-import { delay } from '@utils/delay';
-import Random from '@utils/random';
-import { getStandardState } from '@utils/state';
-import { getCurrentStateName } from '@src/utils/stateManager';
-import { checkTaskCancellation } from '@src/utils/taskExecutor';
 
 //https://docs.relay.link/resources/supported-chains
 
@@ -52,50 +47,6 @@ export abstract class RelayLink {
 		} catch (e: any) {
 			const errorMsg = e.response?.data?.message;
 			throw new Error(`Refuel ${amount} ${network.nativeCoin} to ${to} failed.\n${errorMsg ?? e}`);
-		}
-	}
-
-	static async refuelManyWalletsFromOneWallet(
-		fromPrivateKey: string,
-		network: Network,
-		toChainId: ChainId,
-		toAddrs: string[],
-		value: number[], // [1,2]
-		delayBetweenAccs: number[], //[1,2]
-	): Promise<any> {
-		const stateName = `refuelManyWalletsFromOneWallet/${new Date().toISOString().split('.')[0].replaceAll(':', '-')}`;
-		for (let i = 0; i < toAddrs.length; i++) {
-			const stateName1 = getCurrentStateName();
-			if (stateName1) checkTaskCancellation(stateName1);
-			try {
-				await Logger.getInstance().log(`Starting ${i + 1} of ${toAddrs.length} ...`);
-				await RelayLink.refuel(
-					fromPrivateKey,
-					network,
-					toChainId,
-					Random.float(value[0], value[1]).toFixed(6),
-					toAddrs[i],
-				);
-
-				const STATE = getStandardState(stateName);
-				STATE.successes.push(toAddrs[i]);
-				STATE.fails = STATE.fails.filter((f: string) => f !== toAddrs[i]);
-				STATE.save();
-
-				if (delayBetweenAccs[1] && i !== toAddrs.length - 1) {
-					const waiting = Random.int(delayBetweenAccs[0], delayBetweenAccs[1]);
-					await Logger.getInstance().log(`Waiting ${waiting} s. ...`);
-					await delay(waiting);
-				}
-			} catch (e) {
-				await Logger.getInstance().log(`Error: ${e}`, MessageType.Error);
-				const STATE = getStandardState(stateName);
-				if (!STATE.fails.includes(toAddrs[i])) {
-					STATE.fails.push(toAddrs[i]);
-					STATE.save();
-				}
-				await delay(5);
-			}
 		}
 	}
 
