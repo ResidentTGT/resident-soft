@@ -6,5 +6,8 @@ export const polymarketActions: ActionsGroup = {
 	premium: true,
 	name: 'Polymarket',
 	allowed: true,
-	actions: [{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм наград (UI)' }],
+	actions: [
+		{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм наград (UI)' },
+		{ action: ActionName.TEST, isolated: true, allowed: true, name: 'TEST' },
+	],
 };
