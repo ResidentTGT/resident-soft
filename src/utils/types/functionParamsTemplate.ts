@@ -68,6 +68,12 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			minAmountToSend: 0,
 			to: '',
 		},
+		SendTokenToMany: {
+			chainId: ChainId.Solana,
+			token: 'SOL',
+			amount: [0, 0],
+			to: [],
+		},
 	},
 	CexDex: {
 		Withdraw: {

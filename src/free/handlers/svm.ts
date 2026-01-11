@@ -9,6 +9,8 @@ import { resolveAdresses } from '@src/utils/resolveAddresses';
 import { MissingFieldError } from '@src/utils/errors';
 import { Logger, MessageType } from '@src/utils/logger';
 import { Network } from '@src/utils/network';
+import { sendTokenFromOneToMany } from '../scenarios/svm/sendTokenFromOneToMany';
+import { shuffleArray } from '@src/utils/shuffleArray';
 
 export class SvmHandler extends BaseHandler {
 	async executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }> {
@@ -45,7 +47,7 @@ export class SvmHandler extends BaseHandler {
 
 				if (!amount) amount = functionParams.token === network.nativeCoin ? bal - 0.00001 : bal;
 
-				if (amount && (bal <= +amount || +amount <= 0))
+				if (amount && (bal < +amount || +amount <= 0))
 					throw new Error(`Not enough balance (${bal} ${token.symbol}) to send!`);
 
 				if (amount < functionParams.minAmountToSend) {
@@ -67,6 +69,25 @@ export class SvmHandler extends BaseHandler {
 		return { skipDelay: false };
 	}
 	async executeJoint(params: ActionModeParams): Promise<void> {
-		return;
+		const { LAUNCH_PARAMS, FUNCTION_PARAMS, SECRET_STORAGE } = params;
+
+		switch (LAUNCH_PARAMS.ACTION_PARAMS.action) {
+			case ActionName.SendTokenToMany: {
+				if (!SECRET_STORAGE.mainSvmWallet?.private) throw new MissingFieldError('mainSvmWallet.private', false);
+
+				await sendTokenFromOneToMany(
+					SECRET_STORAGE.mainSvmWallet.private,
+					FUNCTION_PARAMS.chainId,
+					FUNCTION_PARAMS.token,
+					LAUNCH_PARAMS.SHUFFLE_ACCOUNTS ? shuffleArray(FUNCTION_PARAMS.to) : FUNCTION_PARAMS.to,
+					FUNCTION_PARAMS.amount,
+					LAUNCH_PARAMS.DELAY_BETWEEN_ACCS_IN_S,
+				);
+				break;
+			}
+
+			default:
+				this.unsupportedAction(params.LAUNCH_PARAMS.ACTION_PARAMS.action);
+		}
 	}
 }

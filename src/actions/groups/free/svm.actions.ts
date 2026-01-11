@@ -6,5 +6,8 @@ export const svmActions: ActionsGroup = {
 	premium: false,
 	name: 'SVM',
 	allowed: true,
-	actions: [{ action: ActionName.SendToken, isolated: true, allowed: true, name: 'Отправка токенов' }],
+	actions: [
+		{ action: ActionName.SendToken, isolated: true, allowed: true, name: 'Отправка токенов' },
+		{ action: ActionName.SendTokenToMany, isolated: false, allowed: true, name: 'Отправка токенов с 1 мейна' },
+	],
 };

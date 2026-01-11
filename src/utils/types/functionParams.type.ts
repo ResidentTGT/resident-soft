@@ -62,6 +62,12 @@ export interface FunctionParams {
 			minAmountToSend: number;
 			to: string;
 		};
+		SendTokenToMany?: {
+			chainId: ChainId;
+			token: string;
+			amount: [number, number];
+			to: string[];
+		};
 	};
 	CexDex?: {
 		Withdraw?: {

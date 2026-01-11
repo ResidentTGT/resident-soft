@@ -60,6 +60,12 @@
 			"minAmountToSend": 0.0001,
 			"to": "solana",
 		},
+		"SendTokenToMany": {
+			"chainId": "Solana",
+			"token": "SOL",
+			"amount": [0, 1],
+			"to": [],
+		},
 	},
 	"CommonUi": {
 		"OpenPages": {

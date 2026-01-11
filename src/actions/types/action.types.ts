@@ -67,6 +67,7 @@ export enum ActionName {
 	RandomActionInRandomChannelInNativeTown = 'RandomActionInRandomChannelInNativeTown',
 	RandomActionInRandomChannelInRandomTown = 'RandomActionInRandomChannelInRandomTown',
 	SendToken = 'SendToken',
+	SendTokenToMany = 'SendTokenToMany',
 	LikeAndRetweet = 'LikeAndRetweet',
 	Login = 'Login',
 	ChangeName = 'ChangeName',

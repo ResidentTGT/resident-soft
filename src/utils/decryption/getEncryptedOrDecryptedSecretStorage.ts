@@ -11,6 +11,12 @@ export function getEncryptedOrDecryptedSecretStorage(aesKey: string, storage: Se
 		seed: storage.mainEvmWallet?.seed ? func(aesKey, storage.mainEvmWallet.seed) : '',
 	};
 
+	newStorage.mainSvmWallet = {
+		address: storage.mainSvmWallet?.address ? func(aesKey, storage.mainSvmWallet.address) : '',
+		private: storage.mainSvmWallet?.private ? func(aesKey, storage.mainSvmWallet.private) : '',
+		seed: storage.mainSvmWallet?.seed ? func(aesKey, storage.mainSvmWallet.seed) : '',
+	};
+
 	newStorage.mainBinanceAccount = {
 		email: storage.mainBinanceAccount?.email ? func(aesKey, storage.mainBinanceAccount.email) : '',
 		evmDepositAddress: storage.mainBinanceAccount?.evmDepositAddress

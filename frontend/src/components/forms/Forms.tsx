@@ -321,6 +321,31 @@ const Form_Svm_SendToken = ({ params, set, networks, tokens }: FormCtx) => (
 	</Grid>
 );
 
+const Form_Svm_SendTokenToMany = ({ params, set, networks, tokens }: FormCtx) => (
+	<Grid container spacing={2}>
+		<ChainIdSelect label="Сеть" value={params.chainId} onChange={(v) => set('chainId', v)} networks={networks} />
+
+		<FormControl size="small">
+			<InputLabel>Токен</InputLabel>
+			<Select
+				label="Токен"
+				value={params.token ?? ''}
+				onChange={(e) => set('token', (e.target.value as string) || undefined)}
+			>
+				{(tokens.find((g) => String(g.chainId) === String(params.chainId))?.tokens ?? []).map((tok) => (
+					<MenuItem key={String(tok.symbol)} value={String(tok.symbol)}>
+						{String(tok.symbol)}
+					</MenuItem>
+				))}
+			</Select>
+		</FormControl>
+
+		<RangeField labelFrom="Количество от" labelTo="Количество до" value={params.amount} onChange={(v) => set('amount', v)} />
+
+		<CsvField label="Адреса" value={params.to} onChange={(v) => set('to', v)} />
+	</Grid>
+);
+
 /* -------- Dex -------- */
 
 function Form_Dex_Swap({ params, set, networks, tokens }: FormCtx) {
@@ -831,6 +856,7 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Svm]: {
 		[ActionName.SendToken]: Form_Svm_SendToken,
+		[ActionName.SendTokenToMany]: Form_Svm_SendTokenToMany,
 	},
 	[ActionsGroupName.CexDex]: {
 		[ActionName.Withdraw]: Form_Exchanges_Withdraw,

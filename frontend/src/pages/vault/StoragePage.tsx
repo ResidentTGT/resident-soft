@@ -238,6 +238,19 @@ export default function StoragePage() {
 
 					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
 						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
+							<Typography>Основной SVM-кошелёк</Typography>
+						</AccordionSummary>
+						<AccordionDetails>
+							<WalletForm
+								disabled={variant === 'encrypted'}
+								value={current.mainSvmWallet as Wallet | undefined}
+								onChange={(next) => update('mainSvmWallet', next)}
+							/>
+						</AccordionDetails>
+					</Accordion>
+
+					<Accordion slotProps={{ transition: { unmountOnExit: true } }}>
+						<AccordionSummary expandIcon={<ExpandMoreIcon />}>
 							<Typography>Биржи</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
