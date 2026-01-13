@@ -537,7 +537,11 @@ export class EvmHandler extends BaseHandler {
 ```typescript
 ❌ catch (error) { console.log('Error'); } // Swallows error
 ✅ await operation(); // Let error propagate, BaseHandler catches it
-✅ catch (error) { await logger.log(error.message, MessageType.Error); throw error; }
+✅ catch (error) { 
+     const logger = Logger.getInstance();
+     await logger.log(error.message, MessageType.Error); 
+     throw error; // Re-throw to propagate
+   }
 ```
 
 **Network Validation**:
@@ -550,8 +554,8 @@ export class EvmHandler extends BaseHandler {
 **Token Lookup**:
 ```typescript
 ❌ const token = '0xA0b86991...'; // Hardcoded
-✅ const token = Network.getTokenBySymbol(chainId, 'USDC');
-✅ if (!token) throw new Error('Token not found');
+✅ const tokenObj = network.tokens.find((t) => t.symbol === 'USDC');
+✅ if (!tokenObj) throw new Error('Token not found');
 ```
 
 **Encryption**:
