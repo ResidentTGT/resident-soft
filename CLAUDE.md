@@ -18,6 +18,29 @@ This file provides guidance to Claude Code when working with this repository.
 
 ---
 
+## Quick Start
+
+### Run a Task
+1. Edit `launchParams.jsonc` → set `ACTION_PARAMS: {group, action}`
+2. Edit `functionParams.jsonc` → configure action parameters
+3. `npm run start:backend`
+
+### Add New Action
+1. Add enums to `src/actions/types/action.types.ts` (ActionsGroupName, ActionName)
+2. Create `src/actions/groups/free/<group>.actions.ts` and register in `src/actions/index.ts`
+3. Create `src/free/handlers/<group>.ts` and register in `src/free/handlersList.ts`
+4. Create `src/free/modules/<group>.ts` (optional - business logic)
+5. Add types to `src/utils/types/functionParams.type.ts` and `functionParamsTemplate.ts`
+6. Add examples to `functionParams.jsonc`
+7. Run `npm run typecheck`
+
+### Debug
+- **Logs**: Console + `states/<state_name>.log` file
+- **Frontend**: `npm run start:frontend` → real-time logs at http://localhost:3000
+- **State**: `states/<group>_<action>_<timestamp>.json`
+
+---
+
 ## Build & Run Commands
 
 ### Backend
@@ -93,7 +116,7 @@ Actions are organized into **Action Groups**, each containing multiple **Actions
 - **isolated: true** - Per-account execution (parallel, controlled by NUMBER_OF_THREADS). Handler: `executeIsolated()`
 - **isolated: false** - Joint execution (runs once for all accounts). Handler: `executeJoint()`
 
-### Free Action Groups (8)
+### Free Action Groups (9)
 
 | Group | Handler | Purpose | Key Actions |
 |-------|---------|---------|-------------|
@@ -103,6 +126,7 @@ Actions are organized into **Action Groups**, each containing multiple **Actions
 | CexDex | CexDexHandler | Exchanges | WithdrawOkx, WithdrawBinance, OdosSwap, 1inchSwap |
 | Bridges | BridgesHandler | Cross-chain | Stargate, GasZip, RelayLink, Orbiter, Bungee, Owlto |
 | Symbiotic | SymbioticHandler | Symbiotic protocol | Deposit, Withdraw, Claim |
+| Morpho | MorphoHandler | Morpho vaults | DepositVault, WithdrawVault |
 | Checkers | CheckersHandler | Validation | CheckProxies, CheckCexBalances |
 | TEST | TestHandler | Development | Test actions |
 
@@ -149,20 +173,13 @@ abstract executeJoint(params: ActionModeParams): Promise<void>;
 
 **Location**: `src/free/modules/`
 
-**EVM Module** (`evm.ts`):
-- Balance: getBalance, getDecimals, getAllowance
-- Token Ops: approve, sendToken, sendNative, wrap, unwrap
-- Transactions: generateTransactionRequest, makeTransaction, waitForTransaction, estimateGas
-- Gas: getGasPrice, getMaxFeePerGas, getMaxPriorityFeePerGas
-- **Type0 Networks** (BSC, Scroll, Arbitrum Nova, Harmony, Fuse, Core): Use legacy transactions
-
-**SVM Module** (`svmApi.ts`): getBalance, sendToken, sendSol, getTokenAccount, createAssociatedTokenAccount
-
-**Exchange Modules** (`exchanges/`): OKX, Binance, Bitget, Bybit, KuCoin (withdraw, getBalance, getDepositAddress), Odos, 1inch, Bebop, SyncSwap, Sushiswap, Velodrome (swap, quote)
-
-**Bridge Modules**: Stargate, Orbiter, Bungee, Owlto, Router Nitro, Relay, GasZip (bridge, refuel functions)
-
-**Utility Modules**: EvmScan (blockchain explorer API), CoinMarketCap (price feeds), Cursor (ghost cursor), Symbiotic
+| Module | File | Key Functions | Notes |
+|--------|------|---------------|-------|
+| **EVM** | `evm.ts` | getBalance, getDecimals, getAllowance, approve, sendToken, sendNative, wrap, unwrap, makeTransaction, waitForTransaction, estimateGas, getGasPrice | Type0 networks (BSC, Scroll, Arbitrum Nova, Harmony, Fuse, Core) use legacy transactions |
+| **SVM** | `svmApi.ts` | getBalance, sendToken, sendSol, getTokenAccount, createAssociatedTokenAccount | Solana/Eclipse support |
+| **Exchanges** | `exchanges/` | OKX, Binance, Bitget, Bybit, KuCoin (withdraw, getBalance, getDepositAddress); Odos, 1inch, Bebop, SyncSwap, Sushiswap, Velodrome (swap, quote) | CEX withdrawals + DEX swaps |
+| **Bridges** | Various | Stargate, Orbiter, Bungee, Owlto, Router Nitro, Relay, GasZip | bridge, refuel functions |
+| **Utilities** | Various | EvmScan (explorer API), CoinMarketCap (price feeds), Cursor (ghost cursor), Symbiotic | Helper modules |
 
 ### Scenarios
 
@@ -345,16 +362,153 @@ import { Network } from '../../utils/network';
 
 ## Adding New Actions
 
-1. **Define Action**: Add to `src/actions/groups/free/<group>.actions.ts` with action name, isolated flag, allowed, name
-2. **Add Enum**: Add to ActionName enum in `src/actions/types/action.types.ts`
-3. **Add Params**: Add to functionParams.jsonc under group/action
-4. **Implement Handler**: Add case in handler's executeIsolated() or executeJoint()
-5. **Add Module** (if needed): Create module functions in `src/free/modules/`
-6. **Update Types** (if needed): Add to `src/utils/types/functionParams.type.ts`
-7. **Test**: Update launchParams.jsonc ACTION_PARAMS, run `npm run start:backend`
+**Process**: 9 steps - 3 new files, 6 updates
+
+### 1. Add Enums (`src/actions/types/action.types.ts`)
+- Add group to `ActionsGroupName` enum: `Evm = 'Evm'`
+- Add actions to `ActionName` enum: `SendToken`, `Wrap`, `Unwrap`
+
+### 2. Create Action Group (`src/actions/groups/free/<group>.actions.ts`)
+- Export `ActionsGroup` object with group name, actions array
+- Set `isolated: true` (per-account parallel) or `false` (joint execution)
+
+### 3. Register Action Group (`src/actions/index.ts`)
+- Import: `import { evmActions } from './groups/free/evm.actions';`
+- Add to `ACTIONS` array: `evmActions,`
+
+### 4. Create Handler (`src/free/handlers/<group>.ts`)
+- Extend `BaseHandler`
+- Implement `executeIsolated()` with `switch (actionParams.action)` statement
+- Call module methods with `await Module.method(account, functionParams.param1, ...)`
+- Use `this.unsupportedAction()` in default case
+- Return `{ skipDelay: false }`
+- Implement `executeJoint()` (return empty if no joint actions)
+
+### 5. Register Handler (`src/free/handlersList.ts`)
+- Import: `import { EvmHandler } from './handlers/evm';`
+- Add to `FREE_HANDLERS` Map: `[ActionsGroupName.Evm, new EvmHandler(ActionsGroupName.Evm)]`
+
+### 6. Create Module (`src/free/modules/<group>.ts`) - Optional
+- Use `export abstract class` with `static` methods
+- Validate required fields: `if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');`
+- Get network: `const network = await Network.getNetworkByChainId(chainId);`
+- Find token: `const tokenObj = network.tokens.find((t) => t.symbol === token); if (!tokenObj) throw new Error('Token not found');`
+- Use `Logger.getInstance()` for logging
+- Use `Evm` helper functions: `getBalance`, `getDecimals`, `sendToken`, `makeTransaction`
+
+### 7. Add TypeScript Interface (`src/utils/types/functionParams.type.ts`)
+```typescript
+Evm?: {
+  SendToken?: {
+    fromChainId: ChainId;
+    token: string;
+    amount: [number, number];  // Range [min, max]
+    minBalanceToKeep: [number, number];
+    minAmountToSend: number;
+    to: string;  // Address or 'evm'
+  };
+};
+```
+
+### 8. Add Template (`src/utils/types/functionParamsTemplate.ts`)
+```typescript
+Evm: {
+  SendToken: {
+    fromChainId: ChainId.BNB,  // Use enum, not string "56"
+    token: 'USDC',
+    amount: [0.001, 0.001],  // [min, max] range
+    minBalanceToKeep: [0.0001, 0.0001],
+    minAmountToSend: 0.000001,
+    to: 'evm',  // Sends to own EVM address
+  },
+},
+```
+
+### 9. Update Config (`functionParams.jsonc`)
+```jsonc
+"Evm": {
+  "SendToken": {
+    "fromChainId": "56",  // String in JSON
+    "token": "USDC",
+    "amount": [0.001, 0.001],
+    "minBalanceToKeep": [0.0001, 0.0001],
+    "minAmountToSend": 0.000001,
+    "to": "evm"
+  }
+}
+```
+
+### File Tree
+```
+src/
+├── actions/
+│   ├── types/action.types.ts          # 1. Enums
+│   ├── groups/free/<group>.actions.ts # 2. Definition (NEW)
+│   └── index.ts                       # 3. Register
+├── free/
+│   ├── handlers/<group>.ts            # 4. Handler (NEW)
+│   ├── handlersList.ts                # 5. Register handler
+│   └── modules/<group>.ts             # 6. Module (NEW, optional)
+└── utils/types/
+    ├── functionParams.type.ts         # 7. Interface
+    └── functionParamsTemplate.ts      # 8. Template
+functionParams.jsonc                   # 9. Config
+```
+
+### Complete Example
+```typescript
+// Handler (src/free/handlers/evm.ts)
+import { ActionName } from '@src/actions';
+import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
+import { Evm } from '@freeModules/evm';
+import { Network } from '@src/utils/network';
+import { MissingFieldError } from '@src/utils/errors';
+import { resolveAdresses } from '@src/utils/resolveAddresses';
+import { ethers } from 'ethers';
+import Random from '@src/utils/random';
+
+export class EvmHandler extends BaseHandler {
+  async executeIsolated(params: IsolatedHandlerParams) {
+    const { account, functionParams, actionParams } = params;
+
+    switch (actionParams.action) {
+      case ActionName.SendToken: {
+        if (!account.wallets?.evm?.private) throw new MissingFieldError('wallets.evm.private');
+
+        const network = await Network.getNetworkByChainId(functionParams.fromChainId);
+        const token = network.tokens.find((t) => t.symbol === functionParams.token);
+        if (!token) throw new Error(`No ${functionParams.token} in ${network.name}`);
+
+        const toAddr = resolveAdresses(account, functionParams.to);
+        const decimals = await Evm.getDecimals(network, token);
+        const wallet = new ethers.Wallet(account.wallets.evm.private);
+        const bal = +ethers.formatUnits(await Evm.getBalance(network, wallet.address, token.symbol), decimals);
+
+        const amount = Random.float(functionParams.amount[0], functionParams.amount[1]).toFixed(decimals);
+        if (bal <= +amount || +amount <= 0) throw new Error(`Insufficient balance: ${bal} ${token.symbol}`);
+
+        if (functionParams.token === network.nativeCoin)
+          await Evm.sendNative(account.wallets.evm.private, network, toAddr, amount);
+        else
+          await Evm.sendToken(account.wallets.evm.private, network, toAddr, functionParams.token, amount);
+
+        break;
+      }
+
+      default:
+        this.unsupportedAction(actionParams.action);
+    }
+
+    return { skipDelay: false };
+  }
+
+  async executeJoint() { return; }
+}
+```
+
+**Validation**: `npm run typecheck` → `npm run start:backend`
 
 ---
-
 ## Common Pitfalls & Best Practices
 
 ### ❌ WRONG → ✅ CORRECT
@@ -410,17 +564,14 @@ import { Network } from '../../utils/network';
 
 ## Key Dependencies
 
-**Blockchain**: ethers@6.15.0, @solana/web3.js@2.0.0-rc.4, starknet@7.6.4, @aptos-labs/ts-sdk@4.0.0, @mysten/sui@1.37.1, @1inch/fusion-sdk@2.3.6, @polymarket/clob-client@5.1.2
-
-**Browser**: rebrowser-puppeteer-core@24.8.1, puppeteer-extra@3.3.6, ghost-cursor@1.4.1, @2captcha/captcha-solver@1.3.0
-
-**Server**: express@5.1.0, axios@1.11.0
-
-**Utilities**: exceljs@4.4.0, grammy@1.37.0, crypto-js@4.2.0, bip39@3.1.0, jsonc-parser@3.3.1, uuid@11.1.0, https-proxy-agent@7.0.6, socks-proxy-agent@8.0.5
-
-**Frontend**: react@19.1.1, vite, Material-UI, Handsontable
-
-**Dev**: typescript@5.9.2, esbuild@0.25.8, tsc-alias@1.8.16, eslint@9.32.0, prettier@3.6.2, secretlint@10.2.2, postject@1.0.0-alpha.6
+| Category | Key Packages | Versions |
+|----------|-------------|----------|
+| **Blockchain** | ethers, @solana/web3.js, starknet, @aptos-labs/ts-sdk, @mysten/sui, @1inch/fusion-sdk, @polymarket/clob-client | 6.15.0, 2.0.0-rc.4, 7.6.4, 4.0.0, 1.37.1, 2.3.6, 5.1.2 |
+| **Browser** | rebrowser-puppeteer-core, puppeteer-extra, ghost-cursor, @2captcha/captcha-solver | 24.8.1, 3.3.6, 1.4.1, 1.3.0 |
+| **Server** | express, axios | 5.1.0, 1.11.0 |
+| **Utilities** | exceljs, grammy, crypto-js, bip39, jsonc-parser, uuid, https-proxy-agent, socks-proxy-agent | 4.4.0, 1.37.0, 4.2.0, 3.1.0, 3.3.1, 11.1.0, 7.0.6, 8.0.5 |
+| **Frontend** | react, vite, Material-UI, Handsontable | 19.1.1, latest |
+| **Dev** | typescript, esbuild, tsc-alias, eslint, prettier, secretlint, postject | 5.9.2, 0.25.8, 1.8.16, 9.32.0, 3.6.2, 10.2.2, 1.0.0-alpha.6 |
 
 ---
 
@@ -456,48 +607,35 @@ import { Network } from '../../utils/network';
 
 ## Troubleshooting
 
-**Common Errors**:
-1. "Action doesn't exist" → Check enums, group file, src/actions/index.ts
-2. "Network not found" → Chain ID must be string, check networks.jsonc
-3. "Token not found" → Check tokens.jsonc, use Network.getTokenBySymbol()
-4. "Insufficient funds" → Check balance, account for gas, verify minBalanceToKeep
-5. "License invalid" → Check launchParams.jsonc, verify active, contact support
-6. "Cannot decrypt" → Verify AES key, check encrypted/ folders
-7. "Proxy error" → Verify format, test connection
-8. "RPC error" → Try alternative RPC, add custom to secretStorage
+### Common Errors
 
-**Debug**: Use MessageType.Debug/Trace, view logs in console/file/frontend
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "Action doesn't exist" | Missing enum or registration | Check ActionsGroupName/ActionName enums, group file, src/actions/index.ts |
+| "Network not found" | Invalid chain ID | Chain ID must be string, check networks.jsonc |
+| "Token not found" | Token not in config | Check tokens.jsonc, use Network.getTokenBySymbol() |
+| "Insufficient funds" | Low balance | Check balance, account for gas, verify minBalanceToKeep |
+| "License invalid" | Expired or wrong license | Check launchParams.jsonc LICENSE field, verify active, contact support |
+| "Cannot decrypt" | Wrong AES key or corrupted file | Verify AES key matches encryption key, check encrypted/ folders exist |
+| "Proxy error" | Invalid proxy format or dead proxy | Verify format: `http://user:pass@ip:port`, test connection |
+| "RPC error" | RPC node down or rate limited | Try alternative RPC from networks.jsonc, add custom to secretStorage |
 
-**Performance**: Increase NUMBER_OF_THREADS, reduce delays (risk: rate limiting)
+### Debug & Performance
+
+- **Debug**: Use `MessageType.Debug`/`Trace`, view logs in console + `states/<state>.log` file + frontend
+- **Performance**: Increase `NUMBER_OF_THREADS`, reduce `DELAY_BETWEEN_ACCS_IN_S` (risk: rate limiting)
 
 ---
 
-## Summary
+## Quick Reference
 
-**Key Files**:
-- Entry: `index.ts`
-- Actions: `src/actions/index.ts`
-- Handlers: `src/free/handlersList.ts`
-- Core Module: `src/free/modules/evm.ts`
-- Network: `src/utils/network/network.ts`
-- Handler Base: `src/utils/handler.ts`
-- Logger: `src/utils/logger.ts`
-- State: `src/utils/state/state.ts`
-
-**Key Concepts**:
-- Actions: isolated (per-account, parallel) vs joint (all accounts, once)
-- Handlers: executeIsolated() / executeJoint() with thread pool management
-- Modules: Reusable blockchain functions
-- Scenarios: Multi-step workflows
-- State: Success/fail tracking, resume capability
-- Premium: Encrypted, license-gated features
-
-**Best Practices**:
-- Use path aliases (@utils/*, @freeModules/*, etc.)
-- Chain IDs are strings, not numbers
-- Validate with Network.checkChainId()
-- Let errors propagate to BaseHandler
-- Use Logger, not console.log
-- Test with TEST action group
-
-**Docs**: https://resident.gitbook.io/resident-soft
+| Category | Key Info |
+|----------|----------|
+| **Entry Point** | `index.ts` → Network.loadConfigs() → startHttpServer() → executeTask() → actionMode() |
+| **Core Files** | Actions: `src/actions/index.ts`, Handlers: `src/free/handlersList.ts`, Modules: `src/free/modules/evm.ts`, Network: `src/utils/network/network.ts`, State: `src/utils/state/` |
+| **Actions** | isolated: true (per-account parallel), isolated: false (joint execution once) |
+| **Handlers** | Extend BaseHandler, implement executeIsolated()/executeJoint(), thread pool with NUMBER_OF_THREADS |
+| **Config Files** | launchParams.jsonc (execution settings), functionParams.jsonc (action params), networks.jsonc (chains), tokens.jsonc (token addresses), secretStorage.jsonc (API keys) |
+| **Must Know** | ✅ Path aliases (@utils/*, not ../../), ✅ Chain IDs as strings ('1', not 1), ✅ Use Logger.getInstance(), ✅ Let errors propagate to BaseHandler |
+| **Premium** | src/premium.zip encrypted, decrypt with `npm run decrypt_premium`, requires LICENSE in launchParams |
+| **Docs** | https://resident.gitbook.io/resident-soft |
