@@ -1,154 +1,503 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-Resident Soft is a multi-chain automation framework for blockchain operations. It supports EVM chains, Solana (SVM), and various DeFi protocols, centralized exchanges, and Web3 projects. The application consists of a Node.js backend with a React frontend UI for configuration editing.
+**Resident Soft** (v0.8.1) is a multi-chain blockchain automation framework supporting:
+- **EVM Chains**: Ethereum, BSC, Arbitrum, Base, Optimism, Polygon, Avalanche, zkSync, Scroll, Linea, 40+ more
+- **Non-EVM**: Solana, Eclipse, Starknet, Aptos, Sui
+- **DeFi**: DEX aggregators (Odos, 1inch), bridges, staking protocols
+- **CEX**: OKX, Binance, Bitget, Bybit, KuCoin
+- **Web3 Projects**: Twitter, Berachain, Polymarket, OpenSea, Abstract, 15+ more
+- **Browser Automation**: Puppeteer with AdsPower, Vision, Afina antidetect browsers
+
+**Stack**: Node.js/TypeScript backend (188 files) + React frontend (58 files)
+
+**Statistics**: 27 action groups (8 free, 19 premium), 150+ actions, 8 free handlers, 50+ chains, 10+ DEXs, 7+ bridges
+
+---
 
 ## Build & Run Commands
 
 ### Backend
-- **Build backend**: `npm run bundle:backend` - Uses esbuild to bundle TypeScript to `dist/index.js`
-- **Start backend**: `npm run start:backend` - Bundles and runs the backend
-- **Restart backend**: `npm run restart:backend` - Runs already bundled backend from `build/index.js`
-- **Type check**: `npm run typecheck` - Run TypeScript compiler without emitting files
+- `npm run bundle:backend` - Build with esbuild to dist/index.js
+- `npm run start:backend` - Bundle and run backend on port 3000
+- `npm run restart:backend` - Run existing build/index.js
+- `npm run typecheck` - TypeScript validation
 
 ### Frontend
-- **Start frontend dev server**: `npm run start:frontend` - Runs Vite dev server on port 3000
-- **Build frontend**: `npm run build:frontend` - Builds production frontend
+- `npm run start:frontend` - Vite dev server on port 3000
+- `npm run build:frontend` - Production build to frontend/dist
 
 ### Code Quality
-- **Lint**: `npm run lint` - Run ESLint with config from `configs/eslint.config.mjs`
-- **Lint fix**: `npm run lint-fix` - Auto-fix ESLint issues
-- **Format check**: `npm run prettier` - Check formatting
-- **Format fix**: `npm run prettier-fix` - Auto-format files
-- **Secret scan**: `npm run secretlint` - Scan for exposed secrets
+- `npm run lint` / `npm run lint-fix` - ESLint
+- `npm run prettier` / `npm run prettier-fix` - Format code
+- `npm run secretlint` - Scan for exposed secrets
+- `npm run check_all` - Full validation (typecheck + lint + prettier + build + secretlint)
 
 ### Advanced
-- **Single Executable Application (SEA)**: `npm run sea_build` - Create standalone executables for Windows/Linux/Mac
-- **Dependency graph**: `npm run depcruise` - Generate dependency visualization
-- **Premium encryption**: `npm run encrypt_premium` - Encrypt premium features
-- **Premium decryption**: `npm run decrypt_premium` - Decrypt premium features for development
+- `npm run sea_build` - Create standalone executables (Windows/Linux/macOS)
+- `npm run encrypt_premium` - Encrypt src/premium/ to src/premium.zip
+- `npm run decrypt_premium` - Decrypt src/premium.zip for development
+
+---
 
 ## Architecture
 
-### Entry Point & Flow
-The application starts from `index.ts`, which:
-1. Loads network and token configurations from `networks.jsonc` and `tokens.jsonc`
-2. Starts HTTP server (port 3000) for the frontend config editor
-3. Enters main loop waiting for user to select action via terminal or UI
-4. Reads `launchParams.jsonc` (execution settings) and `functionParams.jsonc` (action-specific params)
-5. Verifies license if premium features are requested
-6. Executes the selected action via `actionMode()`
+### Entry Point Flow
+
+**File**: `index.ts`
+
+**Startup Sequence**:
+1. `setupUnhandledRejectionHandler()` - Prevent crashes
+2. `failAllProcessStates()` - Mark interrupted tasks as failed
+3. `Network.loadNetworksAndTokensConfigs()` - Load networks.jsonc, tokens.jsonc
+4. `startHttpServer()` - Express on port 3000
+5. `validateAndFixFunctionParams()`, `validateAndFixAccountFiles()` - Validate configs
+6. `terminalInterface()` - Wait for ENTER key
+7. Read launchParams.jsonc, functionParams.jsonc
+8. Prompt for AES key if USE_ENCRYPTION: true
+9. Verify license if premium
+10. `executeTask()` → `actionMode()` - Execute action
 
 ### Core Configuration Files
-- **launchParams.jsonc**: Controls execution behavior (threads, delays, account selection, proxy settings, encryption)
-- **functionParams.jsonc**: Action-specific parameters organized by group (e.g., `Common.CheckBalances`, `Evm.Swap`)
-- **networks.jsonc**: Network definitions and RPC endpoints
-- **tokens.jsonc**: Token addresses for each chain
-- **secrets/accounts/**: Account data (wallets, CEX credentials, proxies, browser profiles)
-- **secrets/secretStorage/**: API keys, Telegram config, RPC endpoints
 
-### Actions System
-Actions are organized in `src/actions/`:
-- **Action Groups**: Collections of related actions (e.g., `Common`, `Evm`, `Okx`, `Twitter`)
-- **Action Types**: Each action is either `isolated` (runs per account in parallel) or `joint` (runs once across all accounts)
-- **Actions Registry**: `src/actions/index.ts` exports `ACTIONS` array with all groups
-- Action groups are split into:
-  - `src/actions/groups/free/`: Free tier actions
-  - `src/actions/groups/premium/`: Premium actions (require license)
+**launchParams.jsonc** - Execution settings:
+- `ACTION_PARAMS`: {group, action}
+- `SHUFFLE_ACCOUNTS`, `TAKE_STATE`, `STATE_NAME`
+- `JOB_ACCOUNTS`: [{file, start, end, include, exclude}]
+- `DELAY_BETWEEN_ACCS_IN_S`, `DELAY_AFTER_ERROR_IN_S`, `ATTEMPTS_UNTIL_SUCCESS`
+- `NUMBER_OF_THREADS`, `NUMBER_OF_EXECUTIONS`
+- `PROXY`, `ROTATE_PROXY`, `USE_ENCRYPTION`, `LICENSE`
 
-### Handlers System
-Handlers implement the business logic for action groups:
-- **Base Handler**: `src/utils/handler.ts` defines `BaseHandler` abstract class
-- **Free Handlers**: Registered in `src/free/handlersList.ts`
-- **Premium Handlers**: Loaded dynamically from `src/premium/handlersList.ts` (if decrypted)
-- Each handler implements:
-  - `executeIsolated()`: For per-account actions (parallel execution with thread control)
-  - `executeJoint()`: For actions that operate on all accounts together
-- Handlers use `actionModeParams` containing accounts, launch params, function params, and secret storage
+**functionParams.jsonc** - Action-specific params organized by group/action
 
-### Modules & Scenarios
-- **Modules** (`src/free/modules/`, `src/premium/modules/`): Reusable blockchain interaction functions (e.g., swap on DEX, bridge, claim)
-- **Scenarios** (`src/free/scenarios/`, `src/premium/scenarios/`): Complex multi-step workflows composed from modules
+**networks.jsonc** - Chain configs (chainId, name, nativeCoin, rpc[], explorer, type0)
 
-### Utilities (`src/utils/`)
-- **Network**: `Network` class manages chain configs, RPC providers, tokens
-- **Account**: Type definitions for wallets, CEX accounts, proxies, browser profiles
-- **Browser**: Puppeteer-based browser automation with AdsPower/Vision antidetect support
-- **State**: Tracks success/failure per account for retries
-- **Logger**: Centralized logging with Telegram notification support
-- **Encryption**: AES encryption for accounts and secrets
-- **Task Manager**: Tracks task execution for UI/telemetry
+**tokens.jsonc** - Token addresses per chain {chainId: {symbol: address}}
 
-### TypeScript Path Aliases
-The project uses path aliases defined in `tsconfig.json`:
-- `@src/*`: Maps to `src/*`
-- `@utils/*`: Maps to `src/utils/*`
-- `@freeModules/*`: Maps to `src/free/modules/*`
-- `@freeScenarios/*`: Maps to `src/free/scenarios/*`
-- `@freeHandlers/*`: Maps to `src/free/handlers/*`
-- `@premiumModules/*`: Maps to `src/premium/modules/*`
-- `@premiumScenarios/*`: Maps to `src/premium/scenarios/*`
-- `@premiumHandlers/*`: Maps to `src/premium/handlers/*`
+**secrets/accounts/** - Excel/CSV with 7 sheets: Account, Wallets, Cexs, Extensions, Twitter, Discord, Mail
 
-Always use these aliases instead of relative imports.
+**secrets/secretStorage/secretStorage.jsonc** - API keys (CMC, Etherscan, 2Captcha), Telegram config, custom RPCs
 
-### Premium Features
-Premium features are encrypted in `src/premium.zip`. To develop premium features:
-1. Run `npm run decrypt_premium` with the decryption key
-2. Work in the decrypted `src/premium/` folder
-3. Run `npm run encrypt_premium` before committing
+---
 
-### Account Processing
-The handler executes accounts with:
-- **Thread control**: `NUMBER_OF_THREADS` parallel workers
-- **Retry logic**: `ATTEMPTS_UNTIL_SUCCESS` retry attempts for failed accounts
-- **Delays**: `DELAY_BETWEEN_ACCS_IN_S` between accounts, `DELAY_AFTER_ERROR_IN_S` after errors
-- **Proxy support**: Optional proxy rotation per account
-- **State persistence**: Success/failure tracking in `states/` directory
+## Actions System
 
-## Adding New Actions
+Actions are organized into **Action Groups**, each containing multiple **Actions**.
 
-1. **Define the action** in appropriate group file under `src/actions/groups/free/` or `src/actions/groups/premium/`
-2. **Add function params schema** to `functionParams.jsonc` under the group key
-3. **Implement handler logic** in the corresponding handler file (or create new handler if needed)
-4. **Add modules/scenarios** as needed in `src/free/` or `src/premium/`
-5. **Register handler** in `src/free/handlersList.ts` or `src/premium/handlersList.ts`
+**Registry**: `src/actions/index.ts` exports `ACTIONS` array (27 groups)
 
-## Working with Accounts
+**Action Types**:
+- **isolated: true** - Per-account execution (parallel, controlled by NUMBER_OF_THREADS). Handler: `executeIsolated()`
+- **isolated: false** - Joint execution (runs once for all accounts). Handler: `executeJoint()`
 
-Accounts are stored as Excel/CSV files in `secrets/accounts/`. Each account file contains columns defined in `src/utils/account/models/csvSheets.ts`:
-- **Wallet columns**: name, evm private key, solana private key, etc.
-- **CEX columns**: exchange name, API key, API secret, passphrase
-- **Proxy columns**: proxy URL, rotate URL
-- **Browser columns**: AdsPower/Vision profile IDs
-- **Social columns**: Twitter credentials
+### Free Action Groups (8)
 
-The `JOB_ACCOUNTS` array in `launchParams.jsonc` specifies which account files and row ranges to process.
+| Group | Handler | Purpose | Key Actions |
+|-------|---------|---------|-------------|
+| Common | CommonHandler | Core utilities | CheckBalances, GenerateWallets, GetAccounts |
+| Evm | EvmHandler | EVM operations | SendToken, Wrap, Unwrap, Approve, MakeTransaction, CheckNft |
+| Svm | SvmHandler | Solana/Eclipse | SendToken, SendTokenToMany |
+| CexDex | CexDexHandler | Exchanges | WithdrawOkx, WithdrawBinance, OdosSwap, 1inchSwap |
+| Bridges | BridgesHandler | Cross-chain | Stargate, GasZip, RelayLink, Orbiter, Bungee, Owlto |
+| Symbiotic | SymbioticHandler | Symbiotic protocol | Deposit, Withdraw, Claim |
+| Checkers | CheckersHandler | Validation | CheckProxies, CheckCexBalances |
+| TEST | TestHandler | Development | Test actions |
 
-## Networks & Tokens
+### Premium Action Groups (19)
 
-- **Chain IDs**: Use string format (e.g., "1" for Ethereum, "8453" for Base)
-- **Network config**: Located in `networks.jsonc`, includes RPC URLs, explorers, native token
-- **Token config**: Located in `tokens.jsonc`, maps token symbol → address per chain
-- **Access**: Use `Network.getNetworkByChainId(chainId)` and `Network.getTokenBySymbol(chainId, symbol)`
-- **Validation**: Always validate chain IDs with `Network.checkChainId(id)` in handlers
+Twitter, CommonUi (wallet restoration), Berachain, Opensea, Shape, Sophon, Superchain, Abstract, Polymarket, Meteora, ZksyncLite, Hemi, Plasma, Towns, Eclipse, AdsPower, Vision, Afina, TEST_PREMIUM
+
+**Notable Premium**: Twitter (login, post, like, retweet, follow), OpenSea (NFT trading), Polymarket (prediction markets), CommonUi (Metamask/Rabby/Phantom/Petra/Backpack/Argent restoration)
+
+---
+
+## Handlers System
+
+**Base Class**: `src/utils/handler.ts` - `BaseHandler` abstract class
+
+**Registries**:
+- Free: `src/free/handlersList.ts` → `FREE_HANDLERS` Map
+- Premium: `src/premium/handlersList.ts` → `PREMIUM_HANDLERS` Map (encrypted)
+
+**Abstract Methods**:
+```typescript
+abstract executeIsolated(params: IsolatedHandlerParams): Promise<{ skipDelay?: boolean }>;
+abstract executeJoint(params: ActionModeParams): Promise<void>;
+```
+
+### Thread Pool Execution
+
+`BaseHandler.actionIsolated()` orchestrates per-account execution:
+
+1. **Thread Pool**: Processes accounts with NUMBER_OF_THREADS parallel workers using Promise.race()
+2. **Retry Logic**: Failed accounts retry up to ATTEMPTS_UNTIL_SUCCESS times
+3. **Proxy Setup**: Rotates proxy if ROTATE_PROXY: true
+4. **State Tracking**: Updates state file after each account (successes/fails arrays)
+5. **Delays**: Random DELAY_BETWEEN_ACCS_IN_S between accounts, DELAY_AFTER_ERROR_IN_S after errors
+6. **Task Cancellation**: Checks checkTaskCancellation() before each account
+
+**Algorithm**: Initialize pool with first N accounts → Wait for any to complete → Remove from pool → Add next from queue → Repeat
+
+---
+
+## Modules & Scenarios
+
+### Core Modules
+
+**Location**: `src/free/modules/`
+
+**EVM Module** (`evm.ts`):
+- Balance: getBalance, getDecimals, getAllowance
+- Token Ops: approve, sendToken, sendNative, wrap, unwrap
+- Transactions: generateTransactionRequest, makeTransaction, waitForTransaction, estimateGas
+- Gas: getGasPrice, getMaxFeePerGas, getMaxPriorityFeePerGas
+- **Type0 Networks** (BSC, Scroll, Arbitrum Nova, Harmony, Fuse, Core): Use legacy transactions
+
+**SVM Module** (`svmApi.ts`): getBalance, sendToken, sendSol, getTokenAccount, createAssociatedTokenAccount
+
+**Exchange Modules** (`exchanges/`): OKX, Binance, Bitget, Bybit, KuCoin (withdraw, getBalance, getDepositAddress), Odos, 1inch, Bebop, SyncSwap, Sushiswap, Velodrome (swap, quote)
+
+**Bridge Modules**: Stargate, Orbiter, Bungee, Owlto, Router Nitro, Relay, GasZip (bridge, refuel functions)
+
+**Utility Modules**: EvmScan (blockchain explorer API), CoinMarketCap (price feeds), Cursor (ghost cursor), Symbiotic
+
+### Scenarios
+
+**Location**: `src/free/scenarios/`
+
+Key scenarios: checkBalances (multi-chain + USD pricing), deployContract, refuelFromOneToMany (disperse ETH), odosSwapAllTokensToEth, lombardUnstake, stgUnstake, syncswapWithdrawLP, svm/sendTokenFromOneToMany, evm/makeAnyEvmTransaction, evm/checkNft
+
+---
+
+## Network Management
+
+**File**: `src/utils/network/network.ts`
+
+**Key Methods**:
+- `static async loadNetworksAndTokensConfigs()` - Load configs from disk
+- `static async getNetworkByChainId(chainId)` - Get network instance
+- `static isEvm(chainId)` / `static isSvm(chainId)` - Check chain type
+- `static getTokens(chainId)` / `static getTokenBySymbol(chainId, symbol)` - Token queries
+- `static checkChainId(id)` - Validate chain ID (throws if invalid)
+- `async getProvider()` - Get or create ethers.JsonRpcProvider
+
+**Chain IDs**: ALWAYS strings! Examples: "1" (Ethereum), "56" (BSC), "8453" (Base), "Solana", "Eclipse"
+
+**RPC Selection**: Tests each RPC with getBlockNumber(), selects first working, caches provider
+
+**Custom RPCs**: Override in secretStorage.jsonc under `rpcs: { [chainId]: [urls] }`
+
+---
+
+## Account Management
+
+**Account Structure**: `src/utils/account/models/account.type.ts`
+
+**Properties**: name, wallets (evm, solana, eclipse, starknet, aptos, sui), cexs (okx, binance, bitget, bybit, kucoin), extensions (metamask, rabby, phantom, petra, backpack, argent), proxy, socials (twitter, discord), browserProfile (adsPower, vision, afina), mail, github
+
+**Sheet Structure** (`csvSheets.ts`): 7 sheets per file
+1. Account: Browser profiles, proxy, GitHub token
+2. Wallets: EVM, Solana, Eclipse, Starknet, Aptos, Sui (seeds, private keys, addresses)
+3. Cexs: Exchange API credentials
+4. Extensions: Wallet extension data
+5. Twitter: Social credentials
+6. Discord: Social credentials
+7. Mail: Email details
+
+**Location**: `secrets/accounts/encrypted/` or `secrets/accounts/decrypted/`
+
+**Processing**: `getAllAccounts()` → Parse Excel/CSV → Filter by start/end/include/exclude → Decrypt if USE_ENCRYPTION → Shuffle if SHUFFLE_ACCOUNTS
+
+**Encryption**: AES-256-CBC with PBKDF2 key derivation
+
+---
 
 ## Browser Automation
 
-The project uses Puppeteer with antidetect browsers:
-- **Supported browsers**: AdsPower, Vision
-- **Browser utility**: `src/utils/browser.ts` provides `getBrowser()` to launch profiles
-- **Extensions**: Automatically handles Metamask, Rabby, Phantom, Petra, Backpack, Argent wallet restoration
-- **Captcha solving**: Integrated 2Captcha support
+**Technology**: rebrowser-puppeteer-core, puppeteer-extra, ghost-cursor, puppeteer-extra-plugin-recaptcha
 
-## Common Pitfalls
+**Browsers**: AdsPower, Vision, Afina (antidetect browsers for fingerprint management)
 
-- **Path aliases**: Always use `@src/*`, `@utils/*`, etc. instead of relative imports
-- **Chain IDs**: Use string format, not numbers
-- **Async/await**: Most blockchain operations are async; always await properly
-- **Error handling**: Handlers automatically catch errors and track failures; don't swallow errors
-- **Encryption**: When `USE_ENCRYPTION: true`, accounts and secrets are AES-encrypted; decryption happens in `actionMode()`
-- **Premium check**: Premium actions require license verification via `verifyLicense()`
+**Main Functions** (`src/utils/browsers/index.ts`):
+- `getBrowser(browserType, account, secretStorage)` - Open browser and launch profile
+- `getPage(browser)` - Get page from browser
+- `waitForElement(page, selector, timeout)` - Wait for element
+- `safeClosePage(page)` - Safe close with error handling
+- `clearCache/Cookies/LocalStorage(page)` - Clear browser data
+
+**Wallet Restoration** (Premium): Metamask, Rabby, Phantom, Petra, Backpack, Argent
+
+**CAPTCHA**: 2Captcha integration via puppeteer-extra-plugin-recaptcha (API key in secretStorage)
+
+**Human-Like Behavior**: Ghost cursor with Bezier curves, random speeds, natural clicks
+
+---
+
+## State Management
+
+**Location**: `src/utils/state/`
+
+**StateStorage**: JSON-on-disk in `states/` directory with thread-safe writes
+
+**StandardState Interface**:
+- `status`: Idle | Process | Finish | Fail
+- `successes`: string[] - Successful account names
+- `fails`: string[] - Failed account names
+- `info`: Error messages or additional info
+- `launchParams`, `actionFunctionParams`: Execution snapshots
+- `createdAt`: ISO timestamp
+
+**Lifecycle**:
+1. **Creation**: Initialize with Process status, empty successes/fails
+2. **Updates**: Push account names to successes/fails after each completion
+3. **Finalization**: Mark as Finish or Fail
+4. **Resume**: Set TAKE_STATE: true, STATE_NAME: "..." to resume
+
+**Files**: `states/<group>_<action>_<timestamp>.json`, `states/<state_name>.log`
+
+---
+
+## Logging System
+
+**File**: `src/utils/logger.ts` - Singleton Logger class
+
+**Message Types**: Fatal, Error, Warn, Info, Notice, Debug, Trace
+
+**Outputs**:
+1. **Console**: Colored ANSI output, format `[HH:MM:SS] [TYPE] Message`
+2. **File**: Appended to `states/<stateName>.log`, thread-safe
+3. **Telegram**: Via Grammy bot (botToken, chatId in secretStorage)
+4. **SSE**: Real-time broadcast to frontend via `/api/events`
+
+**Usage**: `await logger.log('Message', MessageType.Info)`
+
+---
+
+## HTTP Server & Frontend
+
+**Backend**: Express v5 on port 3000 (`src/utils/server/server.ts`)
+
+**API Routes**:
+- `/api/events` - Server-Sent Events (log, taskStarted, taskFinished, taskCancelled, accountSuccess, accountFailed)
+- `/api/configs` - GET/PUT launchParams.jsonc, functionParams.jsonc
+- `/api/tasks` - POST execute, POST cancel, GET active
+- `/api/accsfiles` - List/get/update account files
+- `/api/process/states` - List/get/delete states, get logs
+- `/api/secrets` - GET/PUT secretStorage.jsonc
+- `/api/metadata` - GET actions, networks, tokens
+
+**Frontend**: React 19 + Vite + TypeScript (`frontend/src/`)
+
+**Features**: Config editor, task control, account management (Handsontable), state viewer, real-time SSE updates, secret management
+
+---
+
+## TypeScript Path Aliases
+
+**Configuration**: `tsconfig.json`
+
+**Aliases**:
+- `@src/*` → `src/*`
+- `@utils/*` → `src/utils/*`
+- `@freeModules/*` → `src/free/modules/*`
+- `@freeScenarios/*` → `src/free/scenarios/*`
+- `@freeHandlers/*` → `src/free/handlers/*`
+- `@premiumModules/*` → `src/premium/modules/*`
+- `@premiumScenarios/*` → `src/premium/scenarios/*`
+- `@premiumHandlers/*` → `src/premium/handlers/*`
+
+**ALWAYS use path aliases, NEVER relative imports!**
+
+```typescript
+// ✅ CORRECT
+import { Network } from '@utils/network';
+import { Evm } from '@freeModules/evm';
+
+// ❌ WRONG
+import { Network } from '../../utils/network';
+```
+
+---
+
+## Premium Features
+
+**Encryption**: Premium features in `src/premium.zip` (2.3MB encrypted)
+
+**Structure** (when decrypted): `src/premium/` with handlersList.ts, handlers/, modules/, scenarios/
+
+**Access Control**:
+1. User provides LICENSE in launchParams.jsonc
+2. `verifyLicense()` called in actionMode()
+3. Sends telemetry, validates license
+4. Loads premium handlers if valid via `loadPremiumHandlers()`
+
+**Development Workflow**:
+1. `npm run decrypt_premium` (enter key)
+2. Develop in src/premium/
+3. Test with LICENSE: "key" in launchParams
+4. `npm run encrypt_premium` before commit
+5. Never commit decrypted src/premium/ (gitignored)
+
+---
+
+## Adding New Actions
+
+1. **Define Action**: Add to `src/actions/groups/free/<group>.actions.ts` with action name, isolated flag, allowed, name
+2. **Add Enum**: Add to ActionName enum in `src/actions/types/action.types.ts`
+3. **Add Params**: Add to functionParams.jsonc under group/action
+4. **Implement Handler**: Add case in handler's executeIsolated() or executeJoint()
+5. **Add Module** (if needed): Create module functions in `src/free/modules/`
+6. **Update Types** (if needed): Add to `src/utils/types/functionParams.type.ts`
+7. **Test**: Update launchParams.jsonc ACTION_PARAMS, run `npm run start:backend`
+
+---
+
+## Common Pitfalls & Best Practices
+
+### ❌ WRONG → ✅ CORRECT
+
+**Path Aliases**:
+```typescript
+❌ import { Network } from '../../utils/network';
+✅ import { Network } from '@utils/network';
+```
+
+**Chain IDs**:
+```typescript
+❌ const chainId: number = 1;
+✅ const chainId: string = '1';
+✅ if (chainId === ChainId.Ethereum) { }
+```
+
+**Async/Await**:
+```typescript
+❌ const balance = Evm.getBalance(wallet, token, network);
+✅ const balance = await Evm.getBalance(wallet, token, network);
+✅ await tx.wait();
+```
+
+**Error Handling**:
+```typescript
+❌ catch (error) { console.log('Error'); } // Swallows error
+✅ await operation(); // Let error propagate, BaseHandler catches it
+✅ catch (error) { await logger.log(error.message, MessageType.Error); throw error; }
+```
+
+**Network Validation**:
+```typescript
+❌ const network = await Network.getNetworkByChainId(chainId);
+✅ Network.checkChainId(chainId); // Throws if invalid
+✅ const network = await Network.getNetworkByChainId(chainId);
+```
+
+**Token Lookup**:
+```typescript
+❌ const token = '0xA0b86991...'; // Hardcoded
+✅ const token = Network.getTokenBySymbol(chainId, 'USDC');
+✅ if (!token) throw new Error('Token not found');
+```
+
+**Encryption**:
+```typescript
+❌ const accounts = await readAccountFile('secrets/accounts/decrypted/accs.xlsx');
+✅ const accounts = await getEncryptedOrDecryptedAccounts(aesKey);
+```
+
+---
+
+## Key Dependencies
+
+**Blockchain**: ethers@6.15.0, @solana/web3.js@2.0.0-rc.4, starknet@7.6.4, @aptos-labs/ts-sdk@4.0.0, @mysten/sui@1.37.1, @1inch/fusion-sdk@2.3.6, @polymarket/clob-client@5.1.2
+
+**Browser**: rebrowser-puppeteer-core@24.8.1, puppeteer-extra@3.3.6, ghost-cursor@1.4.1, @2captcha/captcha-solver@1.3.0
+
+**Server**: express@5.1.0, axios@1.11.0
+
+**Utilities**: exceljs@4.4.0, grammy@1.37.0, crypto-js@4.2.0, bip39@3.1.0, jsonc-parser@3.3.1, uuid@11.1.0, https-proxy-agent@7.0.6, socks-proxy-agent@8.0.5
+
+**Frontend**: react@19.1.1, vite, Material-UI, Handsontable
+
+**Dev**: typescript@5.9.2, esbuild@0.25.8, tsc-alias@1.8.16, eslint@9.32.0, prettier@3.6.2, secretlint@10.2.2, postject@1.0.0-alpha.6
+
+---
+
+## Build & Deployment
+
+**Backend Build**: `npm run bundle:backend` (esbuild → dist/index.js, CommonJS, path aliases resolved)
+
+**Frontend Build**: `npm run build:frontend` (Vite → frontend/dist/, optimized React)
+
+**SEA**: `npm run sea_build` creates standalone executables (Windows/Linux/macOS) with embedded Node.js runtime
+
+**CI/CD**: `.github/workflows/build-release.yml` triggered by git tags `v*`, builds for 3 platforms (Node 24.5.0), uploads to GitHub Releases
+
+---
+
+## Advanced Topics
+
+**Gas Pricing**: EIP-1559 (maxFeePerGas, maxPriorityFeePerGas) vs Type0 (gasPrice, type: 0). Check `network.type0`
+
+**Proxy Formats**: http://user:pass@ip:port, https://..., socks4://..., socks5://... Set proxy_rotateUrl for rotation
+
+**RPC Fallback**: Tests all RPCs with getBlockNumber(), selects first working, caches provider
+
+**Account Order**: Default sequential, SHUFFLE_ACCOUNTS: true randomizes, include/exclude for filtering
+
+**State Recovery**: failAllProcessStates() at startup marks interrupted as failed. TAKE_STATE: true resumes execution
+
+**Task Cancellation**: checkTaskCancellation(taskId) before each account, throws if cancelled
+
+**Telemetry**: Sent on task start (premium only) and license validation (license, action, timestamp, version)
+
+---
+
+## Troubleshooting
+
+**Common Errors**:
+1. "Action doesn't exist" → Check enums, group file, src/actions/index.ts
+2. "Network not found" → Chain ID must be string, check networks.jsonc
+3. "Token not found" → Check tokens.jsonc, use Network.getTokenBySymbol()
+4. "Insufficient funds" → Check balance, account for gas, verify minBalanceToKeep
+5. "License invalid" → Check launchParams.jsonc, verify active, contact support
+6. "Cannot decrypt" → Verify AES key, check encrypted/ folders
+7. "Proxy error" → Verify format, test connection
+8. "RPC error" → Try alternative RPC, add custom to secretStorage
+
+**Debug**: Use MessageType.Debug/Trace, view logs in console/file/frontend
+
+**Performance**: Increase NUMBER_OF_THREADS, reduce delays (risk: rate limiting)
+
+---
+
+## Summary
+
+**Key Files**:
+- Entry: `index.ts`
+- Actions: `src/actions/index.ts`
+- Handlers: `src/free/handlersList.ts`
+- Core Module: `src/free/modules/evm.ts`
+- Network: `src/utils/network/network.ts`
+- Handler Base: `src/utils/handler.ts`
+- Logger: `src/utils/logger.ts`
+- State: `src/utils/state/state.ts`
+
+**Key Concepts**:
+- Actions: isolated (per-account, parallel) vs joint (all accounts, once)
+- Handlers: executeIsolated() / executeJoint() with thread pool management
+- Modules: Reusable blockchain functions
+- Scenarios: Multi-step workflows
+- State: Success/fail tracking, resume capability
+- Premium: Encrypted, license-gated features
+
+**Best Practices**:
+- Use path aliases (@utils/*, @freeModules/*, etc.)
+- Chain IDs are strings, not numbers
+- Validate with Network.checkChainId()
+- Let errors propagate to BaseHandler
+- Use Logger, not console.log
+- Test with TEST action group
+
+**Docs**: https://resident.gitbook.io/resident-soft
