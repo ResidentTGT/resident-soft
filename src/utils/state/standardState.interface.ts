@@ -15,4 +15,5 @@ export interface StandardState {
 	createdAt?: string;
 	launchParams?: LaunchParams;
 	actionFunctionParams?: any;
+	displayName?: string;
 }

@@ -362,7 +362,7 @@ import { Network } from '../../utils/network';
 
 ## Adding New Actions
 
-**Process**: 9 steps - 3 new files, 6 updates
+**Process**: 10 steps - 3 new files, 7 updates
 
 ### 1. Add Enums (`src/actions/types/action.types.ts`)
 - Add group to `ActionsGroupName` enum: `Evm = 'Evm'`
@@ -438,6 +438,38 @@ Evm: {
 }
 ```
 
+### 10. Add Frontend Form (`frontend/src/components/forms/Forms.tsx`)
+If action has parameters, create a form component for the frontend UI:
+```typescript
+/* -------- EthGas -------- */
+const Form_EthGas_CreateGasReport = ({ params, set }: FormCtx) => (
+  <Grid container spacing={2}>
+    <BrowserField value={params.browser} onChange={(v) => set('browser', v)} />
+    <StrField label="Referral Code" value={params.referralCode} onChange={(v) => set('referralCode', v)} />
+  </Grid>
+);
+```
+
+Register in `FORMS` object at the end of the file:
+```typescript
+export const FORMS = {
+  // ... existing entries ...
+  [ActionsGroupName.EthGas]: {
+    [ActionName.CreateGasReport]: Form_EthGas_CreateGasReport,
+  },
+};
+```
+
+**Available Form Fields** (from `frontend/src/components/forms/fields/`):
+- `BrowserField` - Browser selector (Vision/AdsPower/Afina)
+- `StrField` - Text input
+- `NumField` - Number input
+- `BoolField` - Checkbox
+- `RangeField` - Min/max range [number, number]
+- `CsvField` - Comma-separated values array
+- `ChainIdSelect` - Single chain selector
+- `ChainIdMultiSelect` - Multiple chain selector
+
 ### File Tree
 ```
 src/
@@ -453,6 +485,7 @@ src/
     ├── functionParams.type.ts         # 7. Interface
     └── functionParamsTemplate.ts      # 8. Template
 functionParams.jsonc                   # 9. Config
+frontend/src/components/forms/Forms.tsx # 10. Frontend form
 ```
 
 ### Complete Example

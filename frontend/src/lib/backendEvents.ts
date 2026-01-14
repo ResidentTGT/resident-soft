@@ -4,6 +4,7 @@ import type { MessageType } from '../pages/ResultsPage/components/StateLogsTab.t
 export interface SSEMessage<T = unknown> {
 	eventName: EventName;
 	stateName?: string;
+	displayName?: string;
 	type?: MessageType;
 	timestamp: string;
 	payload?: T;

@@ -51,7 +51,7 @@ export async function getActiveTasks(): Promise<ActiveTasksResponse> {
  * POST /api/tasks/:stateName/cancel
  */
 export async function cancelTask(stateName: string): Promise<{ ok: boolean }> {
-	const r = await fetch(`/api/tasks/${encodeURIComponent(stateName)}/cancel`, {
+	const r = await fetch(`/api/tasks/${stateName}/cancel`, {
 		method: 'POST',
 	});
 

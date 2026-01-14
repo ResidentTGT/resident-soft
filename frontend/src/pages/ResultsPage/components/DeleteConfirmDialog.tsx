@@ -36,13 +36,13 @@ export const DeleteConfirmDialog = ({
 							{Array.from(selectedStates)
 								.slice(0, 5)
 								.map((name) => (
-									<div key={name}>• {name}</div>
+									<div key={name}>• {statesMap[name]?.data.displayName || name}</div>
 								))}
 							{selectedStates.size > 5 && <div>... и ещё {selectedStates.size - 5}</div>}
 						</>
 					) : (
 						<>
-							Вы точно хотите удалить стейт <b>{deleteTarget || '(не выбран)'}</b>?
+							Вы точно хотите удалить стейт <b>{targetData?.displayName || deleteTarget || '(не выбран)'}</b>?
 							<br />
 							<br />
 							Успешно: <b>{successCount}</b>, Неудачно: <b>{failCount}</b>

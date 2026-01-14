@@ -48,8 +48,7 @@ export interface StateLogsResponse {
 }
 
 export async function getStateLogs(stateName: string, signal?: AbortSignal): Promise<StateLogsResponse> {
-	const encodedName = encodeURIComponent(stateName);
-	const r = await fetch(`/api/process/states/logs/${encodedName}`, { signal });
+	const r = await fetch(`/api/process/states/logs/${stateName}`, { signal });
 
 	if (!r.ok) {
 		throw new Error(`Failed to fetch logs: ${r.status} ${r.statusText}`);

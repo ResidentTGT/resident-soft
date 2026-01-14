@@ -309,4 +309,10 @@ export interface FunctionParams {
 			vaultAddr: string;
 		};
 	};
+	EthGas?: {
+		CreateGasReport?: {
+			browser: string;
+			referralCode: string;
+		};
+	};
 }

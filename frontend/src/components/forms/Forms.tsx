@@ -819,6 +819,15 @@ function Form_Stargate_Bridge({ params, set, networks, tokens }: FormCtx) {
 	);
 }
 
+/* -------- / EthGas -------- */
+
+const Form_EthGas_CreateGasReport = ({ params, set }: FormCtx) => (
+	<Grid container spacing={2}>
+		<BrowserField value={params.browser} onChange={(v) => set('browser', v)} />
+		<StrField label="Referral Code" value={params.referralCode} onChange={(v) => set('referralCode', v)} />
+	</Grid>
+);
+
 /* -------- / Symbiotic -------- */
 
 function Form_Symbiotic_Withdraw({ params, set, networks }: FormCtx) {
@@ -917,5 +926,8 @@ export const FORMS = {
 	},
 	[ActionsGroupName.Symbiotic]: {
 		[ActionName.Withdraw]: Form_Symbiotic_Withdraw,
+	},
+	[ActionsGroupName.EthGas]: {
+		[ActionName.CreateGasReport]: Form_EthGas_CreateGasReport,
 	},
 };

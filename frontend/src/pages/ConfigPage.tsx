@@ -10,6 +10,7 @@ import type { NetworkConfig } from '../../../src/utils/network';
 import type { TokenConfig } from '../../../src/utils/network/network';
 import type { FunctionParams } from '../../../src/utils/types/functionParams.type';
 import DecryptionKeyDialog from './DecryptionKeyDialog';
+import type { StandardState } from '../../../src/utils/state/standardState.interface';
 
 export default function ConfigPage() {
 	const [launchParams, setLaunchParams] = useState<LaunchParams>();
@@ -18,13 +19,7 @@ export default function ConfigPage() {
 	const [networks, setNetworks] = useState<NetworkConfig[]>([]);
 	const [tokens, setTokens] = useState<TokenConfig[]>([]);
 	const [accsFiles, setAccsFiles] = useState<string[]>([]);
-	const [availableStates, setAvailableStates] = useState<
-		{
-			name: string;
-			successCount: number;
-			failCount: number;
-		}[]
-	>([]);
+	const [availableStates, setAvailableStates] = useState<{ name: string; updatedAt: string; data: StandardState }[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [saved, setSaved] = useState<'idle' | 'process'>('idle');
 	const [toast, setToast] = useState<{
@@ -51,14 +46,8 @@ export default function ConfigPage() {
 					getStates(),
 				]);
 
-				const statesWithStats = states.states.map((s) => ({
-					name: s.name,
-					successCount: s.data.successes.length,
-					failCount: s.data.fails.length,
-				}));
-
 				let launchParamsToSet = cfg.launchParams;
-				if (statesWithStats.length === 0 && cfg.launchParams.TAKE_STATE) {
+				if (states.states.length === 0 && cfg.launchParams.TAKE_STATE) {
 					launchParamsToSet = {
 						...cfg.launchParams,
 						TAKE_STATE: false,
@@ -86,7 +75,7 @@ export default function ConfigPage() {
 				});
 				setTokens(sortedtkns);
 
-				setAvailableStates(statesWithStats);
+				setAvailableStates(states.states);
 			} catch (e) {
 				console.error(e);
 				alert(`Не удалось загрузить данные. ${e}.`);

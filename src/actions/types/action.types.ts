@@ -50,6 +50,7 @@ export enum ActionsGroupName {
 	Afina = 'Afina',
 	Bridges = 'Bridges',
 	Symbiotic = 'Symbiotic',
+	EthGas = 'EthGas',
 }
 
 export enum ActionName {
@@ -147,4 +148,5 @@ export enum ActionName {
 	Stargate = 'Stargate',
 	OdosSwap = 'OdosSwap',
 	GetAccounts = 'GetAccounts',
+	CreateGasReport = 'CreateGasReport',
 }

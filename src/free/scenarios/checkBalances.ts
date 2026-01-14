@@ -41,6 +41,8 @@ export async function checkBalances(
 	},
 	cmcApiKey?: string,
 ) {
+	const stateName = getCurrentStateName();
+	if (!stateName) throw new Error('stateName');
 	const time = new Date().toISOString().replaceAll(':', '-');
 	const allNetworks = await Promise.all(params.networks.map((a) => a.chainId).map((a) => Network.getNetworkByChainId(a)));
 	const excelFileName = `balances/${allNetworks.map((a) => a.name).join('_')}/${time}`;
@@ -241,7 +243,7 @@ export async function checkBalances(
 
 	await Logger.getInstance().log(message, MessageType.Notice);
 
-	const state = await StateStorage.load<StandardState>(launchParams.STATE_NAME);
+	const state = await StateStorage.load<StandardState>(stateName);
 	state.info = message;
 	state.save();
 }

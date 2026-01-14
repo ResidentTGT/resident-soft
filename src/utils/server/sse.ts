@@ -5,6 +5,7 @@ import { type EventName } from './eventName.type';
 export interface SSEMessage<T = unknown> {
 	eventName: EventName;
 	stateName?: string;
+	displayName?: string;
 	type?: MessageType;
 	timestamp: string;
 	payload?: T;

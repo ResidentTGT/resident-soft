@@ -314,4 +314,10 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			vaultAddr: '0xB26ff591F44b04E78de18f43B46f8b70C6676984',
 		},
 	},
+	EthGas: {
+		CreateGasReport: {
+			browser: 'Vision',
+			referralCode: 'EVUJ13W',
+		},
+	},
 };

@@ -11,7 +11,7 @@ import path from 'node:path';
 const DECRYPT_ERROR_PATTERN = /invalid key|couldn'?t decrypt|decrypt(ion)? failed|UI run requires decryption key/i;
 
 export async function executeTask(launchParams: LaunchParams, functionParams: any, encryptionKey?: string): Promise<string> {
-	const { group, action } = await validateActionAndGroup(launchParams);
+	const { group, action } = validateActionAndGroup(launchParams);
 	const stateName = generateStateName(launchParams, group, action);
 	launchParams.STATE_NAME = stateName;
 
@@ -70,7 +70,7 @@ export async function failAllProcessStates(): Promise<number> {
 
 		for (const file of files) {
 			try {
-				const name = decodeURIComponent(path.basename(file, '.json'));
+				const name = path.basename(file, '.json');
 				const state = StateStorage.load<StandardState>(name, {
 					defaultState: {
 						fails: [],

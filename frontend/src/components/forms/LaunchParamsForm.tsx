@@ -20,6 +20,7 @@ import DelayArrayInput from './fields/DelayArrayInput';
 import type { ActionsGroup } from '../../../../src/actions';
 import type { LaunchParams } from '../../../../src/utils/types/launchParams.type';
 import AccountsSelector from './fields/AccountsSelector';
+import type { StandardState } from '../../../../src/utils/state/standardState.interface';
 
 export default function LaunchParamsForm({
 	launchParams,
@@ -32,7 +33,7 @@ export default function LaunchParamsForm({
 	onChange: (patch: Partial<LaunchParams>) => void;
 	actions: ActionsGroup[];
 	accountsFiles: string[];
-	availableStates: { name: string; successCount: number; failCount: number }[];
+	availableStates: { name: string; updatedAt: string; data: StandardState }[];
 }) {
 	const setField = (key: keyof LaunchParams, val: any) => onChange({ [key]: val });
 
@@ -164,15 +165,15 @@ export default function LaunchParamsForm({
 									{availableStates.map((state) => (
 										<MenuItem key={state.name} value={state.name}>
 											<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-												<Typography>{state.name}</Typography>
+												<Typography>{state.data.displayName}</Typography>
 												<Chip
-													label={`✓ ${state.successCount}`}
+													label={`✓ ${state.data.successes.length}`}
 													size="small"
 													color="success"
 													variant="outlined"
 												/>
 												<Chip
-													label={`✗ ${state.failCount}`}
+													label={`✗ ${state.data.fails.length}`}
 													size="small"
 													color="error"
 													variant="outlined"

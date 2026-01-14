@@ -24,26 +24,30 @@ export async function withStateContext<T>(name: string, fn: () => Promise<T>): P
 }
 
 /**
- * Broadcast run_started event with current state name
+ * Broadcast run_started event with current state name and displayName
  */
-export function broadcastStartState(group: string, action: string): void {
+export function broadcastStartState(group: string, action: string, displayName?: string): void {
 	const stateName = getCurrentStateName();
+
 	broadcast({
 		eventName: 'run_started',
-		stateName: stateName,
+		stateName,
+		displayName,
 		type: MessageType.Notice,
 		payload: { group, action },
 	});
 }
 
 /**
- * Broadcast run_finished event with current state name
+ * Broadcast run_finished event with current state name and displayName
  */
-export function broadcastFinishState(group: string, action: string): void {
+export function broadcastFinishState(group: string, action: string, displayName?: string): void {
 	const stateName = getCurrentStateName();
+
 	broadcast({
 		eventName: 'run_finished',
 		stateName: stateName,
+		displayName,
 		type: MessageType.Notice,
 		payload: { group, action },
 	});
@@ -52,11 +56,16 @@ export function broadcastFinishState(group: string, action: string): void {
 /**
  * Broadcast run_failed event with current state name
  */
-export function broadcastFailState(message: string, eventName: 'run_failed' | 'decrypt_error' = 'run_failed'): void {
+export function broadcastFailState(
+	message: string,
+	eventName: 'run_failed' | 'decrypt_error' = 'run_failed',
+	displayName?: string,
+): void {
 	const stateName = getCurrentStateName();
 
 	broadcast({
 		eventName: eventName,
+		displayName,
 		stateName: stateName,
 		type: MessageType.Error,
 		payload: { message },

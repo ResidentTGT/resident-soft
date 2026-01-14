@@ -127,7 +127,7 @@ export const StateListItem = ({ name, item, isSelected, onToggleSelect, onCancel
 									}}
 								>
 									<Typography variant="subtitle1" fontWeight="medium">
-										{name}
+										{item.data.displayName || name}
 									</Typography>
 								</Box>
 								{(successCount > 0 || failCount > 0) && (

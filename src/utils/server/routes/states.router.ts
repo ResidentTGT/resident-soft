@@ -13,10 +13,10 @@ router.get('/', async (_req, res) => {
 		const ok: { name: string; updatedAt: string; data: StandardState }[] = [];
 		const failed: { name: string; error?: string }[] = [];
 
-		for (const f of files) {
+		for (const file of files) {
 			// Decode URL-encoded filename (node-localstorage encodes Cyrillic/special chars)
-			const name = decodeURIComponent(path.basename(f, '.json'));
-			const filePath = path.join(PROCESS_DIR, f);
+			const name = path.basename(file, '.json');
+			const filePath = path.join(PROCESS_DIR, file);
 			try {
 				const raw = await fs.readFileSync(filePath, 'utf8');
 				const json = JSON.parse(raw) as unknown;
@@ -40,6 +40,7 @@ router.get('/', async (_req, res) => {
 				}
 
 				const data: StandardState = {
+					displayName: typeof o.displayName === 'string' ? o.displayName : undefined,
 					successes: uniq(o.successes),
 					fails: uniq(o.fails),
 					info: typeof o.info === 'string' ? o.info : '',
@@ -110,7 +111,7 @@ router.post('/delete', async (req, res) => {
 				// Find the actual file on disk by decoding all file names
 				let actualFileName: string | null = null;
 				for (const diskFile of allFiles) {
-					const decodedName = decodeURIComponent(path.basename(diskFile, '.json'));
+					const decodedName = path.basename(diskFile, '.json');
 					if (decodedName === nameWithoutExt) {
 						actualFileName = diskFile;
 						break;
@@ -163,11 +164,8 @@ router.get('/logs/:stateName', async (req, res) => {
 			return res.status(400).json({ error: 'Invalid stateName format' });
 		}
 
-		// Encode state name to match encoded log file names
-		const encodedSafeName = encodeURIComponent(safeName);
-
 		const LOG_DIR = path.resolve(process.cwd(), 'states', 'logs');
-		const logFilePath = path.join(LOG_DIR, `${encodedSafeName}.jsonl`);
+		const logFilePath = path.join(LOG_DIR, `${stateName}.jsonl`);
 
 		if (!fs.existsSync(logFilePath)) {
 			return res.json({ logs: [] });

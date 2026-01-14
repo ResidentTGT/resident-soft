@@ -8,13 +8,16 @@ export default function BackendEventsToast() {
 
 	useBackendEvents({
 		run_started: (msg) => {
-			showToast('success', `Задача запущена: ${msg.stateName}`);
+			const name = msg.displayName || msg.stateName;
+			showToast('success', `Задача запущена: ${name}`);
 		},
 		run_finished: (msg) => {
-			showToast('success', `Задача завершена: ${msg.stateName}`);
+			const name = msg.displayName || msg.stateName;
+			showToast('success', `Задача завершена: ${name}`);
 		},
 		run_failed: (msg) => {
-			showToast('error', `Ошибка при выполнении задачи: ${msg.stateName}`);
+			const name = msg.displayName || msg.stateName;
+			showToast('error', `Ошибка при выполнении задачи: ${name}`);
 		},
 		decrypt_error: (_msg) => {
 			showToast('error', 'Ошибка расшифровки (неверный пароль)');

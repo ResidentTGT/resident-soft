@@ -19,8 +19,8 @@ import { readFileSync } from 'fs';
 import { getEncryptedOrDecryptedSecretStorage, getEncryptedOrDecryptedAccounts } from './decryption';
 import { filterAccounts } from './filterAccounts';
 import { getAllAccounts } from './getAllAccounts';
-import { getStandardState } from './state';
-import { StandardStateStatus } from './state/standardState.interface';
+import { getStandardState, State } from './state';
+import { StandardState, StandardStateStatus } from './state/standardState.interface';
 import { broadcastFailState, broadcastFinishState, getCurrentStateName, broadcastStartState } from './stateManager';
 import { checkTaskCancellation } from './taskExecutor';
 import { getVerifyLicenseMessage } from './welcome';
@@ -66,7 +66,7 @@ function sanitizeLaunchParams(params: LaunchParams): LaunchParams {
 /**
  * Initializes state with Process status and launch params
  */
-export function initializeState(stateName: string, launchParams: LaunchParams, actionFunctionParams: any): void {
+export function initializeState(stateName: string, launchParams: LaunchParams, actionFunctionParams: any): State<StandardState> {
 	const STATE = getStandardState(stateName);
 	STATE.status = StandardStateStatus.Process;
 	STATE.launchParams = sanitizeLaunchParams(launchParams);
@@ -75,7 +75,13 @@ export function initializeState(stateName: string, launchParams: LaunchParams, a
 	if (!STATE.createdAt) {
 		STATE.createdAt = new Date().toISOString();
 	}
+	if (!STATE.displayName) {
+		const { group, action } = validateActionAndGroup(launchParams);
+		STATE.displayName = `${group.name} | ${action.name} | ${formatTimestampRussian(new Date(STATE.createdAt))}`;
+	}
 	STATE.save();
+
+	return STATE;
 }
 
 /**
@@ -135,7 +141,7 @@ async function loadData(launchParams: LaunchParams, aesKey?: string): Promise<Lo
 /**
  * Validates that the requested action and group exist and are accessible
  */
-export async function validateActionAndGroup(launchParams: LaunchParams): Promise<ValidatedAction> {
+export function validateActionAndGroup(launchParams: LaunchParams): ValidatedAction {
 	const group = ACTIONS.find((g) => g.group === launchParams.ACTION_PARAMS.group);
 
 	if (!group) {
@@ -248,8 +254,7 @@ export function generateStateName(launchParams: LaunchParams, group: ActionsGrou
 		return launchParams.STATE_NAME;
 	}
 
-	const timestamp = formatTimestampRussian(new Date());
-	return `${group.name}_${action.name}_${timestamp}`;
+	return `${group.group}${action.action}${Date.now()}`;
 }
 
 /**
@@ -269,17 +274,18 @@ export function formatTimestampRussian(date: Date): string {
 export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: any, AES_KEY?: string) {
 	const stateName = getCurrentStateName();
 	if (!stateName) throw new Error('State name is not defined');
+	let state;
 
 	try {
 		const actionFunctionParams = extractFunctionParams(FUNCTION_PARAMS, LAUNCH_PARAMS);
-		initializeState(stateName, LAUNCH_PARAMS, actionFunctionParams);
-		broadcastStartState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
+		state = initializeState(stateName, LAUNCH_PARAMS, actionFunctionParams);
+		broadcastStartState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action, state.displayName);
 
 		const licenseResult = await getVerifyLicenseMessage(LAUNCH_PARAMS);
 		const licenseValid = licenseResult.ok;
 		await sendTelemetry(licenseResult);
 
-		const { group, action } = await validateActionAndGroup(LAUNCH_PARAMS);
+		const { group, action } = validateActionAndGroup(LAUNCH_PARAMS);
 
 		if (group.premium && !licenseValid) {
 			throw new Error(`Group is only for PREMIUM users: ${group.name}`);
@@ -318,10 +324,10 @@ export async function actionMode(LAUNCH_PARAMS: LaunchParams, FUNCTION_PARAMS: a
 		}
 
 		finalizeStateSuccess(stateName);
-		broadcastFinishState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action);
+		broadcastFinishState(LAUNCH_PARAMS.ACTION_PARAMS.group, LAUNCH_PARAMS.ACTION_PARAMS.action, state.displayName);
 	} catch (e: any) {
 		finalizeStateFailure(stateName, e);
-		broadcastFailState(e);
+		broadcastFailState(e, 'run_failed', state?.displayName);
 		throw e;
 	}
 }

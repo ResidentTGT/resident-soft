@@ -36,6 +36,7 @@ import { adsPowerActions } from './groups/premium/adsPower.actions';
 import { visionActions } from './groups/premium/vision.actions';
 import { testPremiumActions } from './groups/premium/TEST_PREMIUM.actions';
 import { afinaActions } from './groups/premium/afina.actions';
+import { ethGasActions } from './groups/premium/ethGas.actions';
 
 import type { ActionsGroup } from './types/action.types';
 import { bridgesActions } from './groups/free/bridges.actions';
@@ -68,4 +69,5 @@ export const ACTIONS: ActionsGroup[] = [
 	testActions,
 	testPremiumActions,
 	bridgesActions,
+	ethGasActions,
 ];
