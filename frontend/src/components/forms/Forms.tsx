@@ -913,6 +913,7 @@ export const FORMS = {
 		[ActionName.Swap]: Form_Abstract_Swap,
 		[ActionName.ClaimUi]: Form_Abstract_ClaimBadges,
 		[ActionName.CollectRedBullNft]: Form_Abstract_CollectRedBullNft,
+		[ActionName.SpeedTrading]: Form_Browser,
 	},
 	[ActionsGroupName.Afina]: {
 		[ActionName.GetProfiles]: Form_Afina_GetProfiles,

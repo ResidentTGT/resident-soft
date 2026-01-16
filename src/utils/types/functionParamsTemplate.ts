@@ -264,6 +264,9 @@ export const FUNCTION_PARAMS_TEMPLATE: FunctionParams = {
 			browser: 'Vision',
 			day: 1,
 		},
+		SpeedTrading: {
+			browser: 'Vision',
+		},
 	},
 	Afina: {
 		GetProfiles: {

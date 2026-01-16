@@ -14,5 +14,6 @@ export const abstractActions: ActionsGroup = {
 		{ action: ActionName.Swap, isolated: true, allowed: true, name: 'Trade' },
 		{ action: ActionName.ClaimUi, isolated: true, allowed: true, name: 'Клейм бейджей и проверка XP' },
 		{ action: ActionName.CollectRedBullNft, isolated: true, allowed: true, name: 'Минт RedBull NFT' },
+		{ action: ActionName.SpeedTrading, isolated: true, allowed: true, name: 'Speed Trading' },
 	],
 };

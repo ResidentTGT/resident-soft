@@ -229,11 +229,14 @@
 		},
 		"ClaimUi": {
 			"browser": "Vision",
-			"badgesIds": [],
+			"badgesIds": [46],
 		},
 		"CollectRedBullNft": {
 			"browser": "Vision",
 			"day": "3",
+		},
+		"SpeedTrading": {
+			"browser": "Vision",
 		},
 	},
 	"Afina": {

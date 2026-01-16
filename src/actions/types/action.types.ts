@@ -145,6 +145,7 @@ export enum ActionName {
 	Quote = 'Quote',
 	Bubbles = 'Bubbles',
 	CollectRedBullNft = 'CollectRedBullNft',
+	SpeedTrading = 'SpeedTrading',
 	Stargate = 'Stargate',
 	OdosSwap = 'OdosSwap',
 	GetAccounts = 'GetAccounts',

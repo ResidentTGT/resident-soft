@@ -259,6 +259,9 @@ export interface FunctionParams {
 			browser: string;
 			day: number;
 		};
+		SpeedTrading?: {
+			browser: string;
+		};
 	};
 	Afina?: {
 		GetProfiles?: {
