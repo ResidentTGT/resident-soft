@@ -1,9 +1,9 @@
 import { ChainId } from '@src/utils/network';
-import { Binance } from './binance';
-import { Bitget } from './bitget/bitget';
-import { Bybit } from './bybit/bybit';
-import { Gate } from './gate';
-import { Okx } from './okx';
+import { Binance } from '../modules/exchanges/cex/binance';
+import { Bitget } from '../modules/exchanges/cex/bitget/bitget';
+import { Bybit } from '../modules/exchanges/cex/bybit/bybit';
+import { Gate } from '../modules/exchanges/cex/gate';
+import { Okx } from '../modules/exchanges/cex/okx';
 import { SecretStorage } from '@src/utils/secretStorage.type';
 import { MissingFieldError } from '@src/utils/errors';
 import { shuffleArray } from '@src/utils/shuffleArray';

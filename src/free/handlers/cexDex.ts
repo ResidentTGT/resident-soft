@@ -1,6 +1,6 @@
 import { ActionName } from '@src/actions';
 import { BaseHandler, IsolatedHandlerParams } from '@src/utils/handler';
-import { withdraw } from '../modules/exchanges/exchanges';
+import { withdraw } from '../scenarios/exchanges';
 import { resolveAdresses } from '@src/utils/resolveAddresses';
 import Random from '@src/utils/random';
 import { Network } from '@src/utils/network';
