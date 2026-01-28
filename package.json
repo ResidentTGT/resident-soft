@@ -42,9 +42,13 @@
 		"@solana-program/system": "^0.6.2",
 		"@solana-program/token": "^0.4.1",
 		"@solana/web3.js": "^2.0.0-rc.4",
+		"@types/ws": "^8.18.1",
+		"@x10xchange/stark-crypto-wrapper-wasm": "^0.2.0",
 		"axios": "^1.11.0",
 		"bip39": "^3.1.0",
 		"bs58": "^6.0.0",
+		"chart.js": "^4.5.1",
+		"chartjs-node-canvas": "^5.0.0",
 		"copy-paste": "^2.2.0",
 		"crypto-js": "^4.2.0",
 		"ethers": "^6.15.0",
@@ -68,7 +72,8 @@
 		"seedrandom": "^3.0.5",
 		"socks-proxy-agent": "^8.0.5",
 		"starknet": "^7.6.4",
-		"uuid": "^11.1.0"
+		"uuid": "^11.1.0",
+		"ws": "^8.19.0"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.1",

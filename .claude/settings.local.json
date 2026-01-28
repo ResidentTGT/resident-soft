@@ -1,6 +1,20 @@
 {
 	"permissions": {
-		"allow": ["Bash(xargs cat:*)", "Bash(test:*)", "Bash(echo:*)", "WebSearch", "Bash(npm run typecheck:*)"],
+		"allow": [
+			"Bash(xargs cat:*)",
+			"Bash(test:*)",
+			"Bash(echo:*)",
+			"WebSearch",
+			"Bash(npm run typecheck:*)",
+			"WebFetch(domain:github.com)",
+			"WebFetch(domain:raw.githubusercontent.com)",
+			"Bash(find:*)",
+			"WebFetch(domain:api.github.com)",
+			"WebFetch(domain:www.npmjs.com)",
+			"Bash(npm run bundle:backend:*)",
+			"Bash(ls:*)",
+			"Bash(npm run lint)"
+		],
 		"deny": [],
 		"ask": []
 	}
