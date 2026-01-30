@@ -15,6 +15,9 @@ export interface ExchangeAdapter {
 	closePosition(position: PositionInfo): Promise<string>;
 	getPosition(symbol: string): Promise<PositionInfo | null>;
 
+	// Account data
+	getAvailableBalance(): Promise<number>;
+
 	// Private streams (account data)
 	subscribeOrderUpdates(
 		symbol: string,

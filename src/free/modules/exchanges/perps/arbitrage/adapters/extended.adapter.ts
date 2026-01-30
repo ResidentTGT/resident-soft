@@ -17,7 +17,7 @@ export class ExtendedAdapter implements ExchangeAdapter {
 	}
 
 	subscribeOrderbook(symbol: string, onMessage: (data: UnifiedOrderbook) => void, onError?: (error: Error) => void): WebSocket {
-		this._logger.log(`[Extended] Subscribing to orderbook: ${symbol}`, MessageType.Debug);
+		this._logger.log(`[Extended] Subscribing to orderbook: ${symbol}`);
 
 		return this._client.subscribeOrderbook(
 			symbol,
@@ -96,7 +96,7 @@ export class ExtendedAdapter implements ExchangeAdapter {
 		onMessage: (data: UnifiedOrderUpdate) => void,
 		onError?: (error: Error) => void,
 	): WebSocket {
-		this._logger.log(`[Extended] Subscribing to order updates: ${symbol}`, MessageType.Debug);
+		this._logger.log(`[Extended] Subscribing to order updates: ${symbol}`);
 
 		return this._client.subscribeAccount(
 			(data: ExtendedUpdateWs) => {
@@ -136,5 +136,11 @@ export class ExtendedAdapter implements ExchangeAdapter {
 			EXPIRED: 'expired',
 		};
 		return map[status] || 'rejected';
+	}
+
+	async getAvailableBalance(): Promise<number> {
+		const balance = await this._client.getBalance();
+
+		return parseFloat(balance.availableForTrade);
 	}
 }

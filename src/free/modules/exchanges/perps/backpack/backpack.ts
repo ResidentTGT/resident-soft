@@ -2,13 +2,14 @@ import axios from 'axios';
 import WebSocket from 'ws';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
-import { Logger } from '@utils/logger';
+import { Logger, MessageType } from '@utils/logger';
 import { BackpackCredentials } from './models/credentials.interface';
 import { Balances } from './models/balance.interface';
 import { TickerMessage } from './models/ticker.interface';
 import { BookTickerMessage } from './models/orderbook.interface';
 import { OrderRequest, OrderResponse, OrderSide, BackpackOrderUpdateWs } from './models/order.interface';
 import { Position } from './models/position.interface';
+import { BackpackMarket } from './models/market.interface';
 import { PositionInfo } from '../arbitrage/models';
 
 //https://docs.backpack.exchange/
@@ -19,9 +20,56 @@ export class Backpack {
 	private _credentials: BackpackCredentials;
 	private _defaultWindow = 5000;
 	private _logger = Logger.getInstance();
+	private _marketCache = new Map<string, BackpackMarket>();
+	private _warmupPromise: Promise<void> | null = null;
 
 	constructor(credentials: BackpackCredentials) {
 		this._credentials = credentials;
+	}
+
+	private async _ensureWarmedUp(): Promise<void> {
+		if (this._warmupPromise) return this._warmupPromise;
+		this._warmupPromise = this._doWarmup();
+		return this._warmupPromise;
+	}
+
+	private async _doWarmup(): Promise<void> {
+		const startTime = Date.now();
+		await this._logger.log('[Backpack] Initializing market cache...');
+
+		await this.getMarkets();
+
+		await this._logger.log(`[Backpack] Ready in ${Date.now() - startTime}ms (cached ${this._marketCache.size} markets)`);
+	}
+
+	async warmup(): Promise<void> {
+		return this._ensureWarmedUp();
+	}
+
+	async getMarkets(): Promise<BackpackMarket[]> {
+		const resp = await axios.get<BackpackMarket[]>(`${this._restApiPrefix}api/v1/markets`);
+
+		for (const market of resp.data) {
+			this._marketCache.set(market.symbol, market);
+		}
+		return resp.data;
+	}
+
+	async getMarket(symbol: string): Promise<BackpackMarket> {
+		const cached = this._marketCache.get(symbol);
+		if (cached) return cached;
+
+		await this.getMarkets();
+		const market = this._marketCache.get(symbol);
+		if (!market) throw new Error(`Market not found: ${symbol}`);
+		return market;
+	}
+
+	private _getQuantityDecimals(stepSize: number): number {
+		const str = stepSize.toString();
+		const decimalIndex = str.indexOf('.');
+		if (decimalIndex === -1) return 0;
+		return str.length - decimalIndex - 1;
 	}
 
 	async getAccountDetails() {
@@ -33,6 +81,12 @@ export class Backpack {
 	async getBalances(): Promise<Balances> {
 		const headers = this._getSignedHeaders('balanceQuery');
 		const resp = await axios.get<Balances>(`${this._restApiPrefix}api/v1/capital`, { headers });
+		return resp.data;
+	}
+
+	async getCollateral(): Promise<any> {
+		const headers = this._getSignedHeaders('collateralQuery');
+		const resp = await axios.get<Balances>(`${this._restApiPrefix}api/v1/capital/collateral`, { headers });
 		return resp.data;
 	}
 
@@ -222,17 +276,31 @@ export class Backpack {
 	// Trading Methods
 
 	async placeMarketOrder(symbol: string, side: OrderSide, quantity: string): Promise<OrderResponse> {
+		// Round quantity to market's stepSize
+		const market = await this.getMarket(symbol);
+		const stepSize = parseFloat(market.filters.quantity.stepSize);
+		const qtyNum = parseFloat(quantity);
+		const roundedQty = Math.floor(qtyNum / stepSize) * stepSize;
+		const quantityStr = roundedQty.toFixed(this._getQuantityDecimals(stepSize));
+
 		const params: OrderRequest = {
 			symbol,
 			side,
 			orderType: 'Market',
-			quantity,
+			quantity: quantityStr,
 		};
 
 		const headers = this._getSignedHeaders('orderExecute', params as unknown as Record<string, unknown>);
-		const resp = await axios.post<OrderResponse>(`${this._restApiPrefix}api/v1/order`, params, { headers });
+		try {
+			const resp = await axios.post<OrderResponse>(`${this._restApiPrefix}api/v1/order`, params, { headers });
 
-		return resp.data;
+			return resp.data;
+		} catch (error) {
+			if (axios.isAxiosError(error) && error.response) {
+				await this._logger.log(`[Backpack] API error: ${JSON.stringify(error.response.data)}`, MessageType.Error);
+			}
+			throw error;
+		}
 	}
 
 	async getPosition(symbol?: string): Promise<Position[]> {

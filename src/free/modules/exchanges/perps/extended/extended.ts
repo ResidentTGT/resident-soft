@@ -69,7 +69,7 @@ export class Extended {
 
 	private async _doWarmup(): Promise<void> {
 		const startTime = Date.now();
-		this._logger.log(`[Extended] Initializing WASM and caches...`);
+		await this._logger.log(`[Extended] Initializing WASM and caches...`);
 
 		// Initialize WASM
 		await initWasmModule();
@@ -102,7 +102,7 @@ export class Extended {
 	async getBalance(): Promise<Balance> {
 		const resp = await axios.get(`${this._restApiPrefix}user/balance`, { headers: this._getHeaders() });
 
-		return resp.data;
+		return resp.data.data;
 	}
 
 	private _getHeaders() {
@@ -236,11 +236,19 @@ export class Extended {
 		// Use cached market and fees data
 		const market = this._marketCache.get(symbol) || (await this.getMarket(symbol));
 
+		// Round quantity to market's step size (minOrderSizeChange)
+		const stepSize = parseFloat(market.tradingConfig.minOrderSizeChange);
+		const qtyNum = parseFloat(quantity);
+		const roundedQty = Math.floor(qtyNum / stepSize) * stepSize; // Floor to avoid exceeding balance
+		const quantityStr = roundedQty.toFixed(this._getQuantityDecimals(stepSize));
+
 		const fees = this._feesCache.get(symbol) || (await this.getFees(symbol));
 
-		const feeRate = parseFloat(fees.takerFeeRate);
+		// Preserve original fee rate string to avoid precision loss when sending to API
+		const feeRateStr = fees.takerFeeRate;
+		const feeRate = parseFloat(feeRateStr);
 
-		const qty = parseFloat(quantity);
+		const qty = parseFloat(quantityStr); // Use parsed string to avoid floating-point precision issues
 		const prc = parseFloat(price);
 
 		// Worst price with 5% slippage to guarantee execution, rounded to tick size
@@ -251,6 +259,7 @@ export class Extended {
 		const roundFn = side === 'buy' ? Math.ceil : Math.floor;
 		const worstPriceNum = roundFn(worstPriceRaw / tickSize) * tickSize;
 		const worstPrice = worstPriceNum.toFixed(this._getPriceDecimals(tickSize));
+		const worstPrc = parseFloat(worstPrice); // Use parsed string to avoid floating-point precision issues
 
 		const collateralResolution = market.l2Config.collateralResolution;
 		const syntheticResolution = market.l2Config.syntheticResolution;
@@ -263,13 +272,14 @@ export class Extended {
 		const baseAmountRaw = roundForSide(qty * syntheticResolution);
 		const baseAmount = side === 'sell' ? -baseAmountRaw : baseAmountRaw;
 
-		// Quote amount (collateral) - apply directional rounding, negative if buying
-		// Use worstPriceNum to match the price in the order request (signature must match)
-		const quoteAmountRaw = roundForSide(qty * worstPriceNum * collateralResolution);
+		// Quote amount (collateral) - use Math.round to match server behavior
+		// The worst price already has slippage built in, so we don't need additional rounding
+		// Using Math.round to handle floating point precision, then ensure it's an integer
+		const quoteAmountRaw = Math.round(qty * worstPrc * collateralResolution);
 		const quoteAmount = side === 'buy' ? -quoteAmountRaw : quoteAmountRaw;
 
 		// Fee amount in collateral - always round UP (worst case for user)
-		const feeAmount = Math.ceil(qty * worstPriceNum * feeRate * collateralResolution);
+		const feeAmount = Math.ceil(qty * worstPrc * feeRate * collateralResolution);
 
 		// Generate nonce (must be in valid range: 1 to 2^31)
 		const nonce = Math.floor(Math.random() * 2147483647) + 1;
@@ -306,9 +316,9 @@ export class Extended {
 			market: symbol,
 			type: 'MARKET',
 			side: side === 'buy' ? 'BUY' : 'SELL',
-			qty: quantity,
+			qty: quantityStr,
 			price: worstPrice,
-			fee: feeRate.toString(),
+			fee: feeRateStr,
 			expiryEpochMillis,
 			timeInForce: 'IOC',
 			nonce: nonce.toString(),
@@ -379,6 +389,14 @@ export class Extended {
 	// Helper to get decimal places from tick size
 	private _getPriceDecimals(tickSize: number): number {
 		const str = tickSize.toString();
+		const decimalIndex = str.indexOf('.');
+		if (decimalIndex === -1) return 0;
+		return str.length - decimalIndex - 1;
+	}
+
+	// Helper to get decimal places from step size (for quantity)
+	private _getQuantityDecimals(stepSize: number): number {
+		const str = stepSize.toString();
 		const decimalIndex = str.indexOf('.');
 		if (decimalIndex === -1) return 0;
 		return str.length - decimalIndex - 1;

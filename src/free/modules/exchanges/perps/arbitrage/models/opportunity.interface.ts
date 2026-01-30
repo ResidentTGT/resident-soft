@@ -12,15 +12,19 @@ export interface ArbitrageOpportunity {
 	netSpread: number; // sellRevenue - buyCost (after fees, per unit)
 	netSpreadPercent: number; // (netSpread / buyPrice) * 100
 	profitUsd: number; // netSpread * volume
+	totalFees: number; // total fees for full cycle (4x taker fee)
 }
 
-export interface OpportunityDetectionConfig {
+export interface ArbitrageConfig {
 	timeWindowMs: number; // max timestamp deviation between exchanges
-	minSpreadPercent: number; // minimum NET spread % for filtering (after fees)
+	targetProfitPercent: number; // minimum NET profit % after all fees (4x taker)
+	maxExecutions?: number; // stop after N successful trades (0 or undefined = unlimited)
+	maxTradeInPercentOfBalance: number; // percentage of balance to use (e.g., 50 = 50%)
+	minTradeUsd: number; // minimum trade volume in USD
 }
 
 export interface ArbitrageAnalysis {
-	config: OpportunityDetectionConfig;
+	config: ArbitrageConfig;
 	opportunities: ArbitrageOpportunity[];
 	summary: {
 		totalSnapshots: number;

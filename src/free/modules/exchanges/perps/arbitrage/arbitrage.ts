@@ -8,14 +8,14 @@ import { toChartData, renderChart } from './chart';
 import {
 	Exchange,
 	UnifiedOrderbook,
-	ArbitrageConfig,
+	ExchangesConfig,
 	OrderbookChartData,
 	ChartPoint,
 	ExchangeAdapter,
 	SymbolsMap,
 	SubscriptionsMap,
 	ArbitrageOpportunity,
-	OpportunityDetectionConfig,
+	ArbitrageConfig,
 	ArbitrageAnalysis,
 	ExecutionResult,
 	OpenedPosition,
@@ -27,20 +27,20 @@ import { shouldClosePositions, checkPairOpportunities, calculateOpportunityWithC
 export {
 	Exchange,
 	UnifiedOrderbook,
-	ArbitrageConfig,
+	ExchangesConfig,
 	OrderbookChartData,
 	ChartPoint,
 	SymbolsMap,
 	SubscriptionsMap,
 	ArbitrageOpportunity,
-	OpportunityDetectionConfig,
+	ArbitrageConfig,
 	ArbitrageAnalysis,
 	ExecutionResult,
 	OpenedPosition,
 };
 
 export interface CollectOptions {
-	config?: OpportunityDetectionConfig;
+	config?: ArbitrageConfig;
 	onOpportunity?: (opp: ArbitrageOpportunity) => void;
 	onError?: (exchange: Exchange, error: Error) => void;
 	outputPath?: string; // save data and opportunities to JSON file
@@ -51,22 +51,7 @@ export interface CollectResult {
 	opportunities: ArbitrageOpportunity[];
 }
 export { toChartData, renderChart };
-export {
-	EXCHANGES_FEES,
-	findOpportunities,
-	analyzeOpportunities,
-	calculateOpportunity,
-	calculateOpportunityWithClosingFees,
-	shouldClosePositions,
-	checkPairOpportunities,
-	getGrossSpread,
-	getGrossSpreadPercent,
-	getGrossProfit,
-} from './calculator';
-
-export interface LiveExecutionConfig extends OpportunityDetectionConfig {
-	singleExecution?: boolean; // Stop after first successful trade (for testing)
-}
+export { EXCHANGES_FEES, calculateOpportunityWithClosingFees, shouldClosePositions, checkPairOpportunities } from './calculator';
 
 export class Arbitrage {
 	private _adapters = new Map<Exchange, ExchangeAdapter>();
@@ -82,7 +67,16 @@ export class Arbitrage {
 	/** Latest orderbook data for each exchange (updated by WebSocket callbacks) */
 	private _latestOrderbooks = new Map<Exchange, UnifiedOrderbook>();
 
-	constructor(config: ArbitrageConfig) {
+	/** Cached balances in USDC for each exchange */
+	private _balances = new Map<Exchange, number>();
+
+	/** Counter for executed trades (reset on each monitorAndExecute call) */
+	private _executionCount = 0;
+
+	/** Resolve function for completed promise (used with maxExecutions) */
+	private _resolveCompleted?: () => void;
+
+	constructor(config: ExchangesConfig) {
 		if (config.backpack) {
 			this._adapters.set(Exchange.Backpack, new BackpackAdapter(new Backpack(config.backpack)));
 		}
@@ -140,6 +134,77 @@ export class Arbitrage {
 
 		// Clear the latest orderbooks cache
 		this._latestOrderbooks.clear();
+
+		// Clear the balances cache
+		this._balances.clear();
+	}
+
+	/**
+	 * Update cached balances from all configured exchanges.
+	 * Called at startup and after closing positions.
+	 */
+	private async _updateBalances(): Promise<void> {
+		const MAX_RETRIES = 3;
+		const RETRY_DELAY_MS = 1000;
+
+		const updates = Array.from(this._adapters.entries()).map(async ([exchange, adapter]) => {
+			for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+				try {
+					const balance = await adapter.getAvailableBalance();
+					this._balances.set(exchange, balance);
+					this._logger.log(`[BALANCE] ${exchange}: $${balance.toFixed(2)}`);
+					return;
+				} catch (error) {
+					const err = error as Error;
+					this._logger.log(
+						`[BALANCE] ${exchange} attempt ${attempt}/${MAX_RETRIES} failed: ${err.message}`,
+						MessageType.Warn,
+					);
+
+					if (attempt === MAX_RETRIES) {
+						throw new Error(`Failed to get balance for ${exchange} after ${MAX_RETRIES} attempts: ${err.message}`);
+					}
+
+					await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
+				}
+			}
+		});
+		await Promise.all(updates);
+	}
+
+	/**
+	 * Calculate trade volume based on available balances and opportunity.
+	 * @param opportunity - Arbitrage opportunity with price and volume info
+	 * @returns Volume string formatted to 4 decimal places
+	 * @throws Error if calculated volume is less than 1
+	 */
+	private _calculateTradeVolume(opportunity: ArbitrageOpportunity, config: ArbitrageConfig): string {
+		const { buyExchange, sellExchange, buyPrice, volume } = opportunity;
+
+		const buyBalanceUsd = this._balances.get(buyExchange);
+		const sellBalanceUsd = this._balances.get(sellExchange);
+
+		if (buyBalanceUsd === undefined) {
+			throw new Error(`Balance not found for buy exchange: ${buyExchange}`);
+		}
+		if (sellBalanceUsd === undefined) {
+			throw new Error(`Balance not found for sell exchange: ${sellExchange}`);
+		}
+
+		const minBalanceUsd = Math.min(buyBalanceUsd, sellBalanceUsd);
+
+		const maxFromBalance = (minBalanceUsd * config.maxTradeInPercentOfBalance) / 100 / buyPrice;
+
+		const finalVolume = Math.min(maxFromBalance, volume);
+
+		const finalVolumeUsd = finalVolume * buyPrice;
+		if (finalVolumeUsd < config.minTradeUsd) {
+			throw new Error(
+				`Volume too small: $${finalVolumeUsd.toFixed(2)} (${finalVolume.toFixed(4)} tokens). minTradeUsd: ${config.minTradeUsd}$`,
+			);
+		}
+
+		return finalVolume.toString();
 	}
 
 	/**
@@ -256,25 +321,7 @@ export class Arbitrage {
 		});
 	}
 
-	monitor(
-		symbols: SymbolsMap,
-		config: OpportunityDetectionConfig,
-		onOpportunity: (opp: ArbitrageOpportunity) => void,
-		onError?: (exchange: Exchange, error: Error) => void,
-	): SubscriptionsMap {
-		this._logger.log('Starting real-time arbitrage monitoring...');
-
-		return this.subscribe(
-			symbols,
-			(orderbook) => {
-				this._latestOrderbooks.set(orderbook.exchange, orderbook);
-				this._detectAndNotify(config, onOpportunity);
-			},
-			onError,
-		);
-	}
-
-	private _detectAndNotify(config: OpportunityDetectionConfig, onOpportunity: (opp: ArbitrageOpportunity) => void): void {
+	private _detectAndNotify(config: ArbitrageConfig, onOpportunity: (opp: ArbitrageOpportunity) => void): void {
 		const orderbooks = Array.from(this._latestOrderbooks.values());
 		if (orderbooks.length < 2) return;
 
@@ -285,7 +332,7 @@ export class Arbitrage {
 				const timeDiff = Math.abs(orderbooks[i].timestamp - orderbooks[j].timestamp);
 				if (timeDiff > config.timeWindowMs) continue;
 
-				for (const opp of checkPairOpportunities(orderbooks[i], orderbooks[j], config.minSpreadPercent)) {
+				for (const opp of checkPairOpportunities(orderbooks[i], orderbooks[j], config.targetProfitPercent)) {
 					onOpportunity(opp);
 				}
 			}
@@ -311,7 +358,7 @@ export class Arbitrage {
 	 *
 	 * ## ARBITRAGE FLOW
 	 *
-	 * 1. **DETECTION**: Monitor orderbooks, find spread > minSpreadPercent (after 4x fees)
+	 * 1. **DETECTION**: Monitor orderbooks, find spread > targetProfitPercent (after 4x fees)
 	 *    - Spread = sellExchange.bid - buyExchange.ask
 	 *    - Must cover: open buy fee + open sell fee + close sell fee + close buy fee
 	 *
@@ -334,17 +381,18 @@ export class Arbitrage {
 	 *    - Total = LONG P&L + SHORT P&L - fees
 	 *
 	 * @param symbols - Map of exchange to symbol
-	 * @param liveExecutionConfig - Calculator config + slippage
-	 * @param onCycleComplete - Called when a full cycle completes (optional)
+	 * @param config - Arbitrage configuration (targetProfitPercent, timeWindowMs, maxExecutions)
 	 * @param onError - Called on errors (optional)
 	 * @returns SubscriptionsMap to close monitoring
 	 */
 	async monitorAndExecute(
 		symbols: SymbolsMap,
-		liveExecutionConfig: LiveExecutionConfig,
-		onCycleComplete?: (result: ExecutionResult, pnl: number) => void,
+		config: ArbitrageConfig,
 		onError?: (exchange: Exchange, error: Error) => void,
 	): Promise<{ subs: SubscriptionsMap; completed?: Promise<void> }> {
+		// Reset execution counter for new monitoring session
+		this._executionCount = 0;
+
 		// Warmup Extended adapter if present (WASM + market cache)
 		const extendedAdapter = this._adapters.get(Exchange.Extended) as ExtendedAdapter | undefined;
 		if (extendedAdapter) {
@@ -352,18 +400,25 @@ export class Arbitrage {
 			await extendedAdapter.warmup();
 		}
 
-		this._logger.log(
-			`[monitorAndExecute] Config: minSpread=${liveExecutionConfig.minSpreadPercent}%, timeWindow=${liveExecutionConfig.timeWindowMs}ms`,
-		);
-		if (liveExecutionConfig.singleExecution) {
-			this._logger.log('[monitorAndExecute] Single execution mode: will stop after first trade');
+		const backpackAdapter = this._adapters.get(Exchange.Backpack) as BackpackAdapter | undefined;
+		if (backpackAdapter) {
+			await this._logger.log('[monitorAndExecute] Warming up Backpack...');
+			await backpackAdapter.warmup();
 		}
 
-		// Promise that resolves when singleExecution completes
-		let resolveCompleted: (() => void) | undefined;
-		const completed = liveExecutionConfig.singleExecution
+		await this._updateBalances();
+
+		this._logger.log(
+			`[monitorAndExecute] Config: targetProfit=${config.targetProfitPercent}%, timeWindow=${config.timeWindowMs}ms, balancePercent=${config.maxTradeInPercentOfBalance}%`,
+		);
+		if (config.maxExecutions) {
+			this._logger.log(`[monitorAndExecute] Max executions: ${config.maxExecutions}`);
+		}
+
+		// Promise that resolves when maxExecutions is reached
+		const completed = config.maxExecutions
 			? new Promise<void>((resolve) => {
-					resolveCompleted = resolve;
+					this._resolveCompleted = resolve;
 				})
 			: undefined;
 
@@ -372,7 +427,7 @@ export class Arbitrage {
 			symbols,
 			(orderbook) => {
 				this._latestOrderbooks.set(orderbook.exchange, orderbook);
-				this._checkAndExecute(liveExecutionConfig, subs, resolveCompleted, onCycleComplete);
+				this._checkAndExecute(config, subs);
 			},
 			onError,
 		);
@@ -382,24 +437,15 @@ export class Arbitrage {
 		return { subs, completed };
 	}
 
-	private async _checkAndExecute(
-		config: LiveExecutionConfig,
-		subs: SubscriptionsMap,
-		resolveCompleted?: () => void,
-		onCycleComplete?: (result: ExecutionResult, pnl: number) => void,
-	): Promise<void> {
+	private async _checkAndExecute(config: ArbitrageConfig, subs: SubscriptionsMap): Promise<void> {
 		if (this._isExecuting) {
 			return;
 		}
 
 		const orderbooks = Array.from(this._latestOrderbooks.values());
 
-		if (orderbooks.length < 2) {
-			this._logger.log(`[_checkAndExecute] Skipped: need at least 2 exchanges, have ${orderbooks.length}`);
-			return;
-		}
+		if (orderbooks.length < 2) return;
 
-		// Check all pairs
 		for (let i = 0; i < orderbooks.length; i++) {
 			for (let j = i + 1; j < orderbooks.length; j++) {
 				if (this._isExecuting) return;
@@ -407,34 +453,25 @@ export class Arbitrage {
 				const timeDiff = Math.abs(orderbooks[i].timestamp - orderbooks[j].timestamp);
 
 				if (timeDiff > config.timeWindowMs) {
-					this._logger.log(
-						`[_checkAndExecute] Skipped pair: stale data (${timeDiff}ms > ${config.timeWindowMs}ms)`,
-						MessageType.Warn,
-					);
 					continue;
 				} else {
-					this._logger.log(`[_checkAndExecute] Checking pair:  (${timeDiff}ms < ${config.timeWindowMs}ms)`);
+					this._logger.log(`Checking pair:  (${timeDiff}ms < ${config.timeWindowMs}ms)`);
 				}
 
 				// Use 4x fee calculation for realistic profit
 				const opp1 = calculateOpportunityWithClosingFees(orderbooks[i], orderbooks[j]);
 				const opp2 = calculateOpportunityWithClosingFees(orderbooks[j], orderbooks[i]);
 
-				const opp = opp1 ?? opp2;
+				for (const opp of [opp1, opp2]) {
+					if (!opp) continue;
 
-				if (opp)
-					this._logger.log(
-						`[_checkAndExecute] >>> OPPORTUNITY FOUND: volume=${opp.volume}, net spread: ${opp.netSpread.toFixed(6)} (${opp.netSpreadPercent.toFixed(4)}%), profitUsd=$${opp.profitUsd.toFixed(2)},Input: ${opp.buyExchange}.ask=${opp.buyPrice}, ${opp.sellExchange}.bid=${opp.sellPrice}`,
-					);
-
-				if (opp1 && opp1.netSpreadPercent >= config.minSpreadPercent) {
-					await this._executeOpportunity(opp1, config, subs, resolveCompleted, onCycleComplete);
-					return;
-				}
-
-				if (opp2 && opp2.netSpreadPercent >= config.minSpreadPercent) {
-					await this._executeOpportunity(opp2, config, subs, resolveCompleted, onCycleComplete);
-					return;
+					if (opp.netSpreadPercent >= config.targetProfitPercent) {
+						this._logger.log(
+							`OPPORTUNITY FOUND: volume=${opp.volume}, net spread: ${opp.netSpread.toFixed(6)} (${opp.netSpreadPercent.toFixed(4)}%), profitUsd=$${opp.profitUsd.toFixed(2)}, Input: ${opp.buyExchange}.ask=${opp.buyPrice}, ${opp.sellExchange}.bid=${opp.sellPrice}`,
+						);
+						await this._executeOpportunity(opp, config, subs);
+						return;
+					}
 				}
 			}
 		}
@@ -442,32 +479,30 @@ export class Arbitrage {
 
 	private async _executeOpportunity(
 		opportunity: ArbitrageOpportunity,
-		config: LiveExecutionConfig,
+		config: ArbitrageConfig,
 		subs: SubscriptionsMap,
-		resolveCompleted?: () => void,
-		onCycleComplete?: (result: ExecutionResult, pnl: number) => void,
 	): Promise<void> {
 		this._isExecuting = true;
-		this._logger.log('[EXEC] === EXECUTION STARTED ===');
 
 		try {
-			this._logger.log('[EXEC] Phase 1: Opening positions...');
-			const positions = await this._openPositions(opportunity);
-			this._logger.log(`[EXEC] Phase 1 complete: Positions opened at ${new Date(positions.openedAt).toISOString()}`);
+			await this._logger.log('[EXEC] Phase 1: Opening positions...');
+			const positions = await this._openPositions(opportunity, config);
+			await this._logger.log(`[EXEC] Phase 1 complete: Positions opened at ${new Date(positions.openedAt).toISOString()}`);
 
-			this._logger.log('[EXEC] Phase 2: Monitoring for exit condition...');
+			await this._logger.log('[EXEC] Phase 2: Monitoring for exit condition...');
 			const pnl = await this._monitorAndClosePositions(positions);
-			this._logger.log('[EXEC] Phase 2 complete: Exit triggered, PnL calculated');
+			await this._logger.log('[EXEC] Phase 2 complete: Exit triggered, PnL calculated');
 
-			this._logger.log(`[EXEC] Cycle complete. Realized PnL: $${pnl.toFixed(2)}`);
+			await this._logger.log(`[EXEC] Cycle complete. Realized PnL: $${pnl.toFixed(2)}`);
 
-			onCycleComplete?.(positions, pnl);
+			// Increment execution counter and check if max reached
+			this._executionCount++;
+			this._logger.log(`[EXEC] Execution ${this._executionCount}/${config.maxExecutions || '∞'} complete`);
 
-			// Stop after first successful trade if singleExecution is enabled
-			if (config.singleExecution) {
-				this._logger.log('[EXEC] Single execution mode: stopping monitoring...');
+			if (config.maxExecutions && this._executionCount >= config.maxExecutions) {
+				this._logger.log('[EXEC] Max executions reached, stopping...');
 				this.close(subs);
-				resolveCompleted?.();
+				this._resolveCompleted?.();
 			}
 		} catch (error) {
 			const err = error as Error;
@@ -512,8 +547,8 @@ export class Arbitrage {
 		return results;
 	}
 
-	private async _openPositions(opportunity: ArbitrageOpportunity): Promise<ExecutionResult> {
-		const { buyExchange, sellExchange, buySymbol, sellSymbol, buyPrice, sellPrice, volume } = opportunity;
+	private async _openPositions(opportunity: ArbitrageOpportunity, config: ArbitrageConfig): Promise<ExecutionResult> {
+		const { buyExchange, sellExchange, buySymbol, sellSymbol, buyPrice, sellPrice } = opportunity;
 
 		const buyAdapter = this._adapters.get(buyExchange);
 		const sellAdapter = this._adapters.get(sellExchange);
@@ -526,8 +561,7 @@ export class Arbitrage {
 			throw new Error('Order streams not connected');
 		}
 
-		const volumeStr = '10'; // TODO: use volume
-		if (volume < +volumeStr) throw new Error('Volume too small');
+		const volumeStr = this._calculateTradeVolume(opportunity, config);
 
 		const orderStartTime = Date.now();
 		const [buyResult, sellResult] = await Promise.allSettled([
@@ -587,29 +621,44 @@ export class Arbitrage {
 	private async _monitorAndClosePositions(positions: ExecutionResult): Promise<number> {
 		this._logger.log('[MONITOR_EXIT] === STARTING EXIT MONITORING ===');
 		const startTime = Date.now();
+		let lastLogTime = startTime;
+		const LOG_INTERVAL_MS = 5000;
 
 		while (true) {
 			const buyOrderbook = this._latestOrderbooks.get(positions.buyPosition.exchange);
 			const sellOrderbook = this._latestOrderbooks.get(positions.sellPosition.exchange);
 
-			if (buyOrderbook && sellOrderbook && shouldClosePositions(positions.opportunity, buyOrderbook, sellOrderbook)) {
-				const currentSpread = sellOrderbook.bestBid.price - buyOrderbook.bestAsk.price;
-				const holdDuration = Date.now() - startTime;
-				this._logger.log(
-					`[MONITOR_EXIT] >>> EXIT CONDITION TRIGGERED: spread=${currentSpread.toFixed(6)} <= 0 Hold duration: ${(holdDuration / 1000).toFixed(1)}s`,
-				);
+			if (buyOrderbook && sellOrderbook) {
+				const check = shouldClosePositions(positions.opportunity, buyOrderbook, sellOrderbook);
 
-				const [buyCloseResult, sellCloseResult] = await this._closeAllPositions(
-					positions.buyPosition.exchange,
-					positions.sellPosition.exchange,
-					positions.buyPosition.symbol,
-					positions.sellPosition.symbol,
-				);
+				const now = Date.now();
+				if (now - lastLogTime >= LOG_INTERVAL_MS) {
+					const holdDuration = ((now - startTime) / 1000).toFixed(1);
+					await this._logger.log(
+						`[MONITOR_EXIT] Waiting... spread=${check.currentSpread.toFixed(6)} (${check.currentSpreadPercent.toFixed(4)}%), hold=${holdDuration}s`,
+					);
+					lastLogTime = now;
+				}
 
-				const pnl = this._calculatePnL(positions, buyCloseResult, sellCloseResult);
-				this._logger.log(`[CLOSE] Total PnL: $${pnl}`);
+				if (check.shouldClose) {
+					const holdDuration = Date.now() - startTime;
+					await this._logger.log(
+						`[MONITOR_EXIT] >>> EXIT CONDITION TRIGGERED: spread=${check.currentSpread.toFixed(6)} <= 0 Hold duration: ${(holdDuration / 1000).toFixed(1)}s`,
+					);
 
-				return pnl;
+					const [buyCloseResult, sellCloseResult] = await this._closeAllPositions(
+						positions.buyPosition.exchange,
+						positions.sellPosition.exchange,
+						positions.buyPosition.symbol,
+						positions.sellPosition.symbol,
+					);
+
+					const pnl = this._calculatePnL(positions, buyCloseResult, sellCloseResult);
+
+					await this._updateBalances();
+
+					return pnl;
+				}
 			}
 
 			await new Promise((r) => setImmediate(r));
@@ -649,22 +698,23 @@ export class Arbitrage {
 
 	/**
 	 * Calculate PnL from closed positions.
+	 * Returns net PnL after deducting all fees (4x taker fee).
 	 */
 	private _calculatePnL(
 		positions: ExecutionResult,
 		buyCloseResult: OrderFillResult | null,
 		sellCloseResult: OrderFillResult | null,
 	): number {
-		let pnl = 0;
+		let grossPnl = 0;
 
 		if (buyCloseResult?.avgPrice) {
 			const closePrice = parseFloat(buyCloseResult.avgPrice);
 			const entryPrice = parseFloat(positions.buyPosition.entryPrice);
 			const quantity = parseFloat(positions.buyPosition.quantity);
 			const buyPnl = (closePrice - entryPrice) * quantity;
-			pnl += buyPnl;
+			grossPnl += buyPnl;
 
-			this._logger.log(`[CLOSE] LONG P&L breakdown: (${closePrice} - ${entryPrice}) * ${quantity} = $${buyPnl}`);
+			this._logger.log(`[CLOSE] LONG P&L: (${closePrice} - ${entryPrice}) * ${quantity} = $${buyPnl.toFixed(4)}`);
 		}
 
 		if (sellCloseResult?.avgPrice) {
@@ -672,11 +722,16 @@ export class Arbitrage {
 			const entryPrice = parseFloat(positions.sellPosition.entryPrice);
 			const quantity = parseFloat(positions.sellPosition.quantity);
 			const sellPnl = (entryPrice - closePrice) * quantity;
-			pnl += sellPnl;
+			grossPnl += sellPnl;
 
-			this._logger.log(`[CLOSE] SHORT P&L breakdown: (${entryPrice} - ${closePrice}) * ${quantity} = $${sellPnl}`);
+			this._logger.log(`[CLOSE] SHORT P&L: (${entryPrice} - ${closePrice}) * ${quantity} = $${sellPnl.toFixed(4)}`);
 		}
 
-		return pnl;
+		const totalFees = positions.opportunity.totalFees;
+		const netPnl = grossPnl - totalFees;
+
+		this._logger.log(`[CLOSE] Gross: $${grossPnl.toFixed(4)}, Fees: $${totalFees.toFixed(4)}, Net: $${netPnl.toFixed(4)}`);
+
+		return netPnl;
 	}
 }

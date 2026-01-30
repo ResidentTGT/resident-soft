@@ -12,8 +12,12 @@ export class BackpackAdapter implements ExchangeAdapter {
 
 	constructor(private _client: Backpack) {}
 
+	async warmup(): Promise<void> {
+		await this._client.warmup();
+	}
+
 	subscribeOrderbook(symbol: string, onMessage: (data: UnifiedOrderbook) => void, onError?: (error: Error) => void): WebSocket {
-		this._logger.log(`[Backpack] Subscribing to orderbook: ${symbol}`, MessageType.Debug);
+		this._logger.log(`[Backpack] Subscribing to orderbook: ${symbol}`);
 
 		return this._client.subscribeOrderbook(
 			symbol,
@@ -86,7 +90,7 @@ export class BackpackAdapter implements ExchangeAdapter {
 		onMessage: (data: UnifiedOrderUpdate) => void,
 		onError?: (error: Error) => void,
 	): WebSocket {
-		this._logger.log(`[Backpack] Subscribing to order updates: ${symbol}`, MessageType.Debug);
+		this._logger.log(`[Backpack] Subscribing to order updates: ${symbol}`);
 
 		return this._client.subscribeOrderUpdates(
 			symbol,
@@ -120,5 +124,12 @@ export class BackpackAdapter implements ExchangeAdapter {
 			Expired: 'expired',
 		};
 		return map[status] || 'rejected';
+	}
+
+	async getAvailableBalance(): Promise<number> {
+		const collaterals = await this._client.getCollateral();
+		const usdcCollateral = collaterals.collateral.find((c: any) => c.symbol === 'USDC');
+
+		return parseFloat(usdcCollateral.collateralValue);
 	}
 }
