@@ -22,7 +22,13 @@ import {
 	OrderFillResult,
 	UnifiedOrderUpdate,
 } from './models';
-import { shouldClosePositions, checkPairOpportunities, calculateOpportunityWithClosingFees } from './calculator';
+import {
+	shouldClosePositions,
+	checkPairOpportunities,
+	calculateOpportunityWithClosingFees,
+	roundVolumeToStep,
+	getStepDecimals,
+} from './calculator';
 
 export {
 	Exchange,
@@ -174,11 +180,14 @@ export class Arbitrage {
 
 	/**
 	 * Calculate trade volume based on available balances and opportunity.
+	 * Rounds volume to unifiedStepSize to ensure both exchanges open same quantity.
 	 * @param opportunity - Arbitrage opportunity with price and volume info
-	 * @returns Volume string formatted to 4 decimal places
-	 * @throws Error if calculated volume is less than 1
+	 * @param config - Arbitrage config with trade limits
+	 * @param unifiedStepSize - Maximum stepSize from both exchanges (for unified rounding)
+	 * @returns Volume string formatted to stepSize decimal places
+	 * @throws Error if calculated volume is below minTradeUsd
 	 */
-	private _calculateTradeVolume(opportunity: ArbitrageOpportunity, config: ArbitrageConfig): string {
+	private _calculateTradeVolume(opportunity: ArbitrageOpportunity, config: ArbitrageConfig, unifiedStepSize: number): string {
 		const { buyExchange, sellExchange, buyPrice, volume } = opportunity;
 
 		const buyBalanceUsd = this._balances.get(buyExchange);
@@ -197,14 +206,18 @@ export class Arbitrage {
 
 		const finalVolume = Math.min(maxFromBalance, volume);
 
-		const finalVolumeUsd = finalVolume * buyPrice;
-		if (finalVolumeUsd < config.minTradeUsd) {
+		// Round to unified stepSize (max of both exchanges) to ensure same quantity on both
+		const roundedVolume = roundVolumeToStep(finalVolume, unifiedStepSize);
+		const decimals = getStepDecimals(unifiedStepSize);
+
+		const roundedVolumeUsd = roundedVolume * buyPrice;
+		if (roundedVolumeUsd < config.minTradeUsd) {
 			throw new Error(
-				`Volume too small: $${finalVolumeUsd.toFixed(2)} (${finalVolume.toFixed(4)} tokens). minTradeUsd: ${config.minTradeUsd}$`,
+				`Volume too small: $${roundedVolumeUsd.toFixed(2)} (${roundedVolume.toFixed(decimals)} tokens). minTradeUsd: ${config.minTradeUsd}$`,
 			);
 		}
 
-		return finalVolume.toString();
+		return roundedVolume.toFixed(decimals);
 	}
 
 	/**
@@ -561,7 +574,14 @@ export class Arbitrage {
 			throw new Error('Order streams not connected');
 		}
 
-		const volumeStr = this._calculateTradeVolume(opportunity, config);
+		// Get stepSize from both exchanges and use the maximum (coarsest precision)
+		const [buyStepSize, sellStepSize] = await Promise.all([
+			buyAdapter.getStepSize(buySymbol),
+			sellAdapter.getStepSize(sellSymbol),
+		]);
+		const unifiedStepSize = Math.max(buyStepSize, sellStepSize);
+
+		const volumeStr = this._calculateTradeVolume(opportunity, config, unifiedStepSize);
 
 		const orderStartTime = Date.now();
 		const [buyResult, sellResult] = await Promise.allSettled([

@@ -18,6 +18,9 @@ export interface ExchangeAdapter {
 	// Account data
 	getAvailableBalance(): Promise<number>;
 
+	// Market info
+	getStepSize(symbol: string): Promise<number>;
+
 	// Private streams (account data)
 	subscribeOrderUpdates(
 		symbol: string,

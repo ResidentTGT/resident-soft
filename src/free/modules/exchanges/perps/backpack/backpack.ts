@@ -11,6 +11,7 @@ import { OrderRequest, OrderResponse, OrderSide, BackpackOrderUpdateWs } from '.
 import { Position } from './models/position.interface';
 import { BackpackMarket } from './models/market.interface';
 import { PositionInfo } from '../arbitrage/models';
+import { getStepDecimals } from '../arbitrage/calculator';
 
 //https://docs.backpack.exchange/
 
@@ -63,13 +64,6 @@ export class Backpack {
 		const market = this._marketCache.get(symbol);
 		if (!market) throw new Error(`Market not found: ${symbol}`);
 		return market;
-	}
-
-	private _getQuantityDecimals(stepSize: number): number {
-		const str = stepSize.toString();
-		const decimalIndex = str.indexOf('.');
-		if (decimalIndex === -1) return 0;
-		return str.length - decimalIndex - 1;
 	}
 
 	async getAccountDetails() {
@@ -281,7 +275,7 @@ export class Backpack {
 		const stepSize = parseFloat(market.filters.quantity.stepSize);
 		const qtyNum = parseFloat(quantity);
 		const roundedQty = Math.floor(qtyNum / stepSize) * stepSize;
-		const quantityStr = roundedQty.toFixed(this._getQuantityDecimals(stepSize));
+		const quantityStr = roundedQty.toFixed(getStepDecimals(stepSize));
 
 		const params: OrderRequest = {
 			symbol,

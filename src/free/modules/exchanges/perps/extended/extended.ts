@@ -20,6 +20,7 @@ import { Market, MarketsApiResponse, StarknetDomain, Fees, FeesApiResponse } fro
 import initWasm, { get_order_msg, sign_message } from '@x10xchange/stark-crypto-wrapper-wasm';
 import * as path from 'path';
 import { PositionInfo } from '../arbitrage/models';
+import { getStepDecimals } from '../arbitrage/calculator';
 
 const STARKNET_DOMAIN: StarknetDomain = {
 	name: 'Perpetuals',
@@ -113,12 +114,11 @@ export class Extended {
 
 	// Market Data Methods
 
-	async getMarket(market: string, forceRefresh = false): Promise<Market> {
+	async getMarket(market: string): Promise<Market> {
 		// Use cache if available and not forcing refresh
-		if (!forceRefresh) {
-			const cached = this._marketCache.get(market);
-			if (cached) return cached;
-		}
+
+		const cached = this._marketCache.get(market);
+		if (cached) return cached;
 
 		const resp = await axios.get<MarketsApiResponse>(`${this._restApiPrefix}info/markets`);
 
@@ -240,7 +240,7 @@ export class Extended {
 		const stepSize = parseFloat(market.tradingConfig.minOrderSizeChange);
 		const qtyNum = parseFloat(quantity);
 		const roundedQty = Math.floor(qtyNum / stepSize) * stepSize; // Floor to avoid exceeding balance
-		const quantityStr = roundedQty.toFixed(this._getQuantityDecimals(stepSize));
+		const quantityStr = roundedQty.toFixed(getStepDecimals(stepSize));
 
 		const fees = this._feesCache.get(symbol) || (await this.getFees(symbol));
 
@@ -258,7 +258,7 @@ export class Extended {
 		const worstPriceRaw = prc * slippageMultiplier;
 		const roundFn = side === 'buy' ? Math.ceil : Math.floor;
 		const worstPriceNum = roundFn(worstPriceRaw / tickSize) * tickSize;
-		const worstPrice = worstPriceNum.toFixed(this._getPriceDecimals(tickSize));
+		const worstPrice = worstPriceNum.toFixed(getStepDecimals(tickSize));
 		const worstPrc = parseFloat(worstPrice); // Use parsed string to avoid floating-point precision issues
 
 		const collateralResolution = market.l2Config.collateralResolution;
@@ -372,10 +372,10 @@ export class Extended {
 		let closePrice: string;
 		if (closeSide === 'sell') {
 			// Round down to tick size
-			closePrice = (Math.floor(rawPrice / tickSize) * tickSize).toFixed(this._getPriceDecimals(tickSize));
+			closePrice = (Math.floor(rawPrice / tickSize) * tickSize).toFixed(getStepDecimals(tickSize));
 		} else {
 			// Round up to tick size
-			closePrice = (Math.ceil(rawPrice / tickSize) * tickSize).toFixed(this._getPriceDecimals(tickSize));
+			closePrice = (Math.ceil(rawPrice / tickSize) * tickSize).toFixed(getStepDecimals(tickSize));
 		}
 
 		await this._logger.log(
@@ -384,22 +384,6 @@ export class Extended {
 		);
 
 		return this.placeMarketOrder(positionInfo.symbol, closeSide, closeQuantity, closePrice);
-	}
-
-	// Helper to get decimal places from tick size
-	private _getPriceDecimals(tickSize: number): number {
-		const str = tickSize.toString();
-		const decimalIndex = str.indexOf('.');
-		if (decimalIndex === -1) return 0;
-		return str.length - decimalIndex - 1;
-	}
-
-	// Helper to get decimal places from step size (for quantity)
-	private _getQuantityDecimals(stepSize: number): number {
-		const str = stepSize.toString();
-		const decimalIndex = str.indexOf('.');
-		if (decimalIndex === -1) return 0;
-		return str.length - decimalIndex - 1;
 	}
 
 	// WebSocket Methods

@@ -121,3 +121,21 @@ export function shouldClosePositions(
 		currentSpreadPercent,
 	};
 }
+
+/**
+ * Rounds volume down to the nearest stepSize.
+ * Ensures both exchanges can execute with the same quantity.
+ */
+export function roundVolumeToStep(volume: number, stepSize: number): number {
+	return Math.floor(volume / stepSize) * stepSize;
+}
+
+/**
+ * Determines the number of decimal places in a stepSize.
+ * Used to format the volume string correctly.
+ */
+export function getStepDecimals(stepSize: number): number {
+	const str = stepSize.toString();
+	const dotIndex = str.indexOf('.');
+	return dotIndex === -1 ? 0 : str.length - dotIndex - 1;
+}

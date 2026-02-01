@@ -143,4 +143,9 @@ export class ExtendedAdapter implements ExchangeAdapter {
 
 		return parseFloat(balance.availableForTrade);
 	}
+
+	async getStepSize(symbol: string): Promise<number> {
+		const market = await this._client.getMarket(symbol);
+		return parseFloat(market.tradingConfig.minOrderSizeChange);
+	}
 }

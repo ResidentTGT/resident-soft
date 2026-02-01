@@ -7,17 +7,12 @@ Cross-exchange perpetual futures arbitrage system for Backpack and Extended exch
 This module implements a delta-neutral arbitrage strategy that exploits price discrepancies between perpetual futures exchanges. When the same asset trades at different prices on Backpack vs Extended, the system opens opposite positions (long on cheap exchange, short on expensive) to capture the spread.
 
 **Key Features:**
+
 - Real-time WebSocket orderbook monitoring
 - Automatic opportunity detection with fee-adjusted profit calculation
 - Parallel order execution with rollback on failure
 - Exit monitoring until spread convergence
 - P&L tracking with fee accounting
-
-## Roadmap / TODO
-
-- [ ] **Унификация точности позиции** - привести quantity к единому формату до размещения ордеров (сейчас каждая биржа округляет по-своему: Backpack по `stepSize`, Extended по `minOrderSizeChange`)
-- [ ] **Агрегация объёма по стакану** - собирать максимальный volume не только с лучшего bid/ask, а проходить по уровням стакана пока спред >= targetProfitPercent (сейчас берётся только `min(bestAsk.qty, bestBid.qty)`)
-- [ ] **Логирование данных в файлы** - сохранять полный orderbook и все сделки (open/close) в JSON для анализа и дебага
 
 ## Directory Structure
 
@@ -99,89 +94,94 @@ The system uses an adapter pattern to unify different exchange APIs into a commo
 
 ### Class Responsibilities
 
-| Class | File | Responsibility |
-|-------|------|----------------|
-| `Arbitrage` | `arbitrage.ts` | Main orchestrator: monitors orderbooks, detects opportunities, executes trades |
-| `BackpackAdapter` | `backpack.adapter.ts` | Translates Backpack API to unified interface |
-| `ExtendedAdapter` | `extended.adapter.ts` | Translates Extended API to unified interface |
-| `Backpack` | `backpack.ts` | Low-level Backpack REST/WS client with ED25519 signing |
-| `Extended` | `extended.ts` | Low-level Extended REST/WS client with StarkNet WASM signing |
+| Class             | File                  | Responsibility                                                                 |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------ |
+| `Arbitrage`       | `arbitrage.ts`        | Main orchestrator: monitors orderbooks, detects opportunities, executes trades |
+| `BackpackAdapter` | `backpack.adapter.ts` | Translates Backpack API to unified interface                                   |
+| `ExtendedAdapter` | `extended.adapter.ts` | Translates Extended API to unified interface                                   |
+| `Backpack`        | `backpack.ts`         | Low-level Backpack REST/WS client with ED25519 signing                         |
+| `Extended`        | `extended.ts`         | Low-level Extended REST/WS client with StarkNet WASM signing                   |
 
 ## Data Models
 
 ### Core Interfaces
 
 **UnifiedOrderbook** - Normalized orderbook data from any exchange:
+
 ```typescript
 interface UnifiedOrderbook {
-  exchange: Exchange;          // 'Backpack' | 'Extended'
-  symbol: string;              // e.g., 'BTC_USDC_PERP'
-  bestBid: { price: number; quantity: number };
-  bestAsk: { price: number; quantity: number };
-  timestamp: number;           // milliseconds
+	exchange: Exchange; // 'Backpack' | 'Extended'
+	symbol: string; // e.g., 'BTC_USDC_PERP'
+	bestBid: { price: number; quantity: number };
+	bestAsk: { price: number; quantity: number };
+	timestamp: number; // milliseconds
 }
 ```
 
 **ArbitrageOpportunity** - Detected trading opportunity:
+
 ```typescript
 interface ArbitrageOpportunity {
-  timestamp: number;
-  buyExchange: Exchange;       // Where to buy (has lower ask)
-  sellExchange: Exchange;      // Where to sell (has higher bid)
-  buySymbol: string;           // Symbol on buy exchange
-  sellSymbol: string;          // Symbol on sell exchange
-  buyPrice: number;            // Ask price (we buy at this)
-  sellPrice: number;           // Bid price (we sell at this)
-  volume: number;              // min(buyQty, sellQty)
-  netSpread: number;           // sellPrice - buyPrice - totalFees (per unit)
-  netSpreadPercent: number;    // (netSpread / buyPrice) * 100
-  profitUsd: number;           // netSpread * volume
-  totalFees: number;           // 4x taker fees for full cycle
+	timestamp: number;
+	buyExchange: Exchange; // Where to buy (has lower ask)
+	sellExchange: Exchange; // Where to sell (has higher bid)
+	buySymbol: string; // Symbol on buy exchange
+	sellSymbol: string; // Symbol on sell exchange
+	buyPrice: number; // Ask price (we buy at this)
+	sellPrice: number; // Bid price (we sell at this)
+	volume: number; // min(buyQty, sellQty)
+	netSpread: number; // sellPrice - buyPrice - totalFees (per unit)
+	netSpreadPercent: number; // (netSpread / buyPrice) * 100
+	profitUsd: number; // netSpread * volume
+	totalFees: number; // 4x taker fees for full cycle
 }
 ```
 
 **ArbitrageConfig** - Configuration for monitoring:
+
 ```typescript
 interface ArbitrageConfig {
-  timeWindowMs: number;              // Max timestamp diff between exchanges (e.g., 500)
-  targetProfitPercent: number;       // Min NET profit after 4x fees (e.g., 0.05)
-  maxExecutions?: number;            // Stop after N trades (undefined = unlimited)
-  maxTradeInPercentOfBalance: number; // Max % of balance per trade (e.g., 50)
-  minTradeUsd: number;               // Minimum trade size in USD
+	timeWindowMs: number; // Max timestamp diff between exchanges (e.g., 500)
+	targetProfitPercent: number; // Min NET profit after 4x fees (e.g., 0.05)
+	maxExecutions?: number; // Stop after N trades (undefined = unlimited)
+	maxTradeInPercentOfBalance: number; // Max % of balance per trade (e.g., 50)
+	minTradeUsd: number; // Minimum trade size in USD
 }
 ```
 
 **ExecutionResult** - Result of opening positions:
+
 ```typescript
 interface ExecutionResult {
-  opportunity: ArbitrageOpportunity;
-  buyPosition: OpenedPosition;   // LONG position details
-  sellPosition: OpenedPosition;  // SHORT position details
-  openedAt: number;              // Timestamp when positions opened
+	opportunity: ArbitrageOpportunity;
+	buyPosition: OpenedPosition; // LONG position details
+	sellPosition: OpenedPosition; // SHORT position details
+	openedAt: number; // Timestamp when positions opened
 }
 
 interface OpenedPosition {
-  exchange: Exchange;
-  symbol: string;
-  side: 'long' | 'short';
-  quantity: string;
-  entryPrice: string;
-  orderId: string;
+	exchange: Exchange;
+	symbol: string;
+	side: 'long' | 'short';
+	quantity: string;
+	entryPrice: string;
+	orderId: string;
 }
 ```
 
 **UnifiedOrderUpdate** - WebSocket order status updates:
+
 ```typescript
 interface UnifiedOrderUpdate {
-  exchange: Exchange;
-  orderId: string;
-  symbol: string;
-  side: 'buy' | 'sell';
-  status: 'new' | 'partiallyFilled' | 'filled' | 'cancelled' | 'rejected' | 'expired';
-  quantity: string;
-  filledQuantity: string;
-  avgPrice: string;
-  timestamp: number;
+	exchange: Exchange;
+	orderId: string;
+	symbol: string;
+	side: 'buy' | 'sell';
+	status: 'new' | 'partiallyFilled' | 'filled' | 'cancelled' | 'rejected' | 'expired';
+	quantity: string;
+	filledQuantity: string;
+	avgPrice: string;
+	timestamp: number;
 }
 ```
 
@@ -225,6 +225,7 @@ The main method `monitorAndExecute()` orchestrates the entire arbitrage cycle. B
 ```
 
 **Code snippet**:
+
 ```typescript
 // Warmup sequence
 const extendedAdapter = this._adapters.get(Exchange.Extended);
@@ -236,10 +237,14 @@ if (backpackAdapter) await backpackAdapter.warmup();
 await this._updateBalances();
 
 // Subscribe to market data
-const subs = this.subscribe(symbols, (orderbook) => {
-  this._latestOrderbooks.set(orderbook.exchange, orderbook);
-  this._checkAndExecute(config, subs);
-}, onError);
+const subs = this.subscribe(
+	symbols,
+	(orderbook) => {
+		this._latestOrderbooks.set(orderbook.exchange, orderbook);
+		this._checkAndExecute(config, subs);
+	},
+	onError,
+);
 
 // Subscribe to private order updates
 this.subscribeOrderStreams(symbols, onError);
@@ -321,14 +326,15 @@ When checking for opportunities, the calculator performs:
 ```
 
 **Fee Constants** (`calculator.ts:5-8`):
+
 ```typescript
 EXCHANGES_FEES = {
-  Backpack: { maker: 0.0002, taker: 0.0005 },  // 0.05% taker
-  Extended: { maker: 0,      taker: 0.00025 }, // 0.025% taker
-}
+	Backpack: { maker: 0.0002, taker: 0.0005 }, // 0.05% taker
+	Extended: { maker: 0, taker: 0.00025 }, // 0.025% taker
+};
 ```
 
-### Phase 3: Opening Positions (_openPositions)
+### Phase 3: Opening Positions (\_openPositions)
 
 **Location**: `arbitrage.ts:550-619`
 
@@ -382,10 +388,11 @@ EXCHANGES_FEES = {
 ```
 
 **Position Types After Opening**:
+
 - **buyPosition**: LONG position on buyExchange (bought asset)
 - **sellPosition**: SHORT position on sellExchange (sold asset)
 
-### Phase 4: Exit Monitoring (_monitorAndClosePositions)
+### Phase 4: Exit Monitoring (\_monitorAndClosePositions)
 
 **Location**: `arbitrage.ts:621-666`
 
@@ -497,6 +504,7 @@ EXCHANGES_FEES = {
 ```
 
 **P&L Formula Summary**:
+
 ```
 LONG P&L  = (closePrice - entryPrice) * quantity
 SHORT P&L = (entryPrice - closePrice) * quantity
@@ -508,15 +516,16 @@ Net P&L   = Gross P&L - totalFees
 
 **File**: `calculator.ts`
 
-| Function | Purpose |
-|----------|---------|
-| `checkPairOpportunities(ob1, ob2, target)` | Checks both directions, returns profitable opportunities |
-| `calculateOpportunityWithClosingFees(buy, sell)` | Calculates net spread after 4x fees |
-| `shouldClosePositions(opp, buyOB, sellOB)` | Returns `{ shouldClose, currentSpread, currentSpreadPercent }` |
+| Function                                         | Purpose                                                        |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `checkPairOpportunities(ob1, ob2, target)`       | Checks both directions, returns profitable opportunities       |
+| `calculateOpportunityWithClosingFees(buy, sell)` | Calculates net spread after 4x fees                            |
+| `shouldClosePositions(opp, buyOB, sellOB)`       | Returns `{ shouldClose, currentSpread, currentSpreadPercent }` |
 
 **Exit Condition**:
+
 ```typescript
-shouldClose = currentSpread <= 0
+shouldClose = currentSpread <= 0;
 // Where: currentSpread = sellOrderbook.bestBid - buyOrderbook.bestAsk
 ```
 
@@ -538,6 +547,7 @@ shouldClose = currentSpread <= 0
 | `subscribeOrderUpdates(symbol, onMessage)` | Private account.orderUpdate stream |
 
 **Signing**:
+
 ```typescript
 // ED25519 PKCS8 signing
 _sign(message: string): string {
@@ -564,6 +574,7 @@ _sign(message: string): string {
 | `subscribeAccount(onMessage)` | Private account stream |
 
 **Order Signing** (StarkNet):
+
 ```typescript
 // 1. Build order params (baseAmount, quoteAmount, feeAmount with resolutions)
 // 2. Compute hash via WASM: get_order_msg(...)
@@ -572,6 +583,7 @@ _sign(message: string): string {
 ```
 
 **WASM Initialization**:
+
 ```typescript
 import initWasm, { get_order_msg, sign_message } from '@x10xchange/stark-crypto-wrapper-wasm';
 // Loads .wasm file from node_modules at runtime
@@ -580,26 +592,28 @@ import initWasm, { get_order_msg, sign_message } from '@x10xchange/stark-crypto-
 ## Configuration
 
 **ExchangesConfig** - Credentials for exchanges:
+
 ```typescript
 interface ExchangesConfig {
-  backpack?: BackpackCredentials;
-  extended?: ExtendedCredentials;
+	backpack?: BackpackCredentials;
+	extended?: ExtendedCredentials;
 }
 
 interface BackpackCredentials {
-  apiKey: string;
-  apiSecret: string;  // Base64-encoded ED25519 private key
+	apiKey: string;
+	apiSecret: string; // Base64-encoded ED25519 private key
 }
 
 interface ExtendedCredentials {
-  apiKey: string;
-  starkPrivateKey: string;
-  starkPublicKey: string;
-  vaultId: string;
+	apiKey: string;
+	starkPrivateKey: string;
+	starkPublicKey: string;
+	vaultId: string;
 }
 ```
 
 **ArbitrageConfig** - Runtime settings:
+
 ```typescript
 {
   timeWindowMs: 500,              // Max 500ms between exchange timestamps
@@ -615,6 +629,7 @@ interface ExtendedCredentials {
 ### Rollback Mechanism
 
 If either order fails during opening:
+
 1. Log `[ROLLBACK] Order failed...`
 2. Call `_closeAllPositions()` to close any opened position
 3. Log `[ROLLBACK] === ROLLBACK COMPLETE ===`
@@ -623,11 +638,11 @@ If either order fails during opening:
 ### Volume Limits
 
 ```typescript
-minBalance = min(buyBalance, sellBalance)
-maxVolume = (minBalance * maxTradePercent) / buyPrice
-finalVolume = min(maxVolume, orderbookVolume)
+minBalance = min(buyBalance, sellBalance);
+maxVolume = (minBalance * maxTradePercent) / buyPrice;
+finalVolume = min(maxVolume, orderbookVolume);
 
-if (finalVolume * price < minTradeUsd) throw Error
+if (finalVolume * price < minTradeUsd) throw Error;
 ```
 
 ### Exit Conditions
@@ -642,16 +657,16 @@ if (finalVolume * price < minTradeUsd) throw Error
 
 ## Exchange Comparison
 
-| Feature | Backpack | Extended |
-|---------|----------|----------|
-| **Blockchain** | Solana | StarkNet |
-| **Signing** | ED25519 | StarkNet WASM |
-| **Taker Fee** | 0.05% | 0.025% |
-| **Maker Fee** | 0.02% | 0% |
-| **Market Order** | Pure market | Market with 5% slippage price |
-| **Warmup** | Market cache | WASM + markets + fees |
-| **Order Stream** | account.orderUpdate.{symbol} | /stream/account |
-| **Orderbook Stream** | bookTicker.{symbol} | orderbooks/{market}?depth=1 |
+| Feature              | Backpack                     | Extended                      |
+| -------------------- | ---------------------------- | ----------------------------- |
+| **Blockchain**       | Solana                       | StarkNet                      |
+| **Signing**          | ED25519                      | StarkNet WASM                 |
+| **Taker Fee**        | 0.05%                        | 0.025%                        |
+| **Maker Fee**        | 0.02%                        | 0%                            |
+| **Market Order**     | Pure market                  | Market with 5% slippage price |
+| **Warmup**           | Market cache                 | WASM + markets + fees         |
+| **Order Stream**     | account.orderUpdate.{symbol} | /stream/account               |
+| **Orderbook Stream** | bookTicker.{symbol}          | orderbooks/{market}?depth=1   |
 
 ## Usage Example
 
@@ -659,21 +674,21 @@ if (finalVolume * price < minTradeUsd) throw Error
 import { Arbitrage, Exchange } from '@freeModules/exchanges/perps/arbitrage';
 
 const arb = new Arbitrage({
-  backpack: { apiKey: '...', apiSecret: '...' },
-  extended: { apiKey: '...', starkPrivateKey: '...', starkPublicKey: '...', vaultId: '...' }
+	backpack: { apiKey: '...', apiSecret: '...' },
+	extended: { apiKey: '...', starkPrivateKey: '...', starkPublicKey: '...', vaultId: '...' },
 });
 
 const symbols = new Map<Exchange, string>([
-  [Exchange.Backpack, 'BTC_USDC_PERP'],
-  [Exchange.Extended, 'BTC-USD']
+	[Exchange.Backpack, 'BTC_USDC_PERP'],
+	[Exchange.Extended, 'BTC-USD'],
 ]);
 
 const { subs, completed } = await arb.monitorAndExecute(symbols, {
-  timeWindowMs: 500,
-  targetProfitPercent: 0.05,
-  maxExecutions: 10,
-  maxTradeInPercentOfBalance: 50,
-  minTradeUsd: 100
+	timeWindowMs: 500,
+	targetProfitPercent: 0.05,
+	maxExecutions: 10,
+	maxTradeInPercentOfBalance: 50,
+	minTradeUsd: 100,
 });
 
 // Wait for maxExecutions or manually close

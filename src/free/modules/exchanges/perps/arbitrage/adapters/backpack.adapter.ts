@@ -132,4 +132,9 @@ export class BackpackAdapter implements ExchangeAdapter {
 
 		return parseFloat(usdcCollateral.collateralValue);
 	}
+
+	async getStepSize(symbol: string): Promise<number> {
+		const market = await this._client.getMarket(symbol);
+		return parseFloat(market.filters.quantity.stepSize);
+	}
 }
