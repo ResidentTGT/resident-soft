@@ -234,7 +234,7 @@ export async function checkBalances(
 		await logger.log(
 			`Balances for ${network.name}: ` +
 				finalMessage +
-				`\nData for ${network.name} saved to ${jsonStateName}.json and states/${excelFileName}.xlsx\n`,
+				`\nData for ${network.name} saved to ${jsonStateName}.json and ${excelFileName}.xlsx\n`,
 			MessageType.Info,
 		);
 	}
@@ -251,7 +251,7 @@ export async function checkBalances(
 async function saveToExcel(state: State<BalanceState>, networkName: string, stateName: string) {
 	const workbook = new Workbook();
 	if (fs.existsSync(`${stateName}.xlsx`)) {
-		await workbook.xlsx.readFile(`states/${stateName}.xlsx`);
+		await workbook.xlsx.readFile(`${stateName}.xlsx`);
 	}
 
 	const worksheet = workbook.addWorksheet(networkName);
